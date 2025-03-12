@@ -13,11 +13,21 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('fname');
+            $table->string('mname')->nullable();
+            $table->string('lname');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->foreignId('current_team_id')->nullable();
+            $table->string('profile_photo_path', 2048)->nullable();
+            $table->string('user_type')->default('user');
+            $table->integer('isSubscribed')->nullable()->default(0);
+            $table->string('subscription_date')->nullable();
+            $table->string('subscription_end_date')->nullable();
+            $table->integer('subscription_count')->nullable();
+            $table->string('subscription_type')->nullable()->default('none');
             $table->timestamps();
         });
 
