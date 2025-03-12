@@ -17,3 +17,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
+
+    //railway run composer require santigarcor/laratrust
+    //railway run php artisan laratrust:install
+    //railway run composer dump-autoload
+    //railway run php artisan db:seed
