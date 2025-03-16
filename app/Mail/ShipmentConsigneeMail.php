@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ShipmentCreated extends Mailable
+class ShipmentConsigneeMail extends Mailable
 {
     use Queueable, SerializesModels;
     protected $shipment;
@@ -27,7 +27,7 @@ class ShipmentCreated extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Shipment Created',
+            subject: 'Shipment Uploaded Successfully',
         );
     }
 
@@ -37,7 +37,8 @@ class ShipmentCreated extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.shipment-created',
+            view: 'mail.consigneeMail',
+            with: ['shipment' => $this->shipment],
         );
     }
 

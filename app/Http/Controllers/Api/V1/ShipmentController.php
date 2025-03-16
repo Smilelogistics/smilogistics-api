@@ -15,16 +15,20 @@ use App\Models\ShipmentCharge;
 use App\Mail\AssigneDriverMail;
 use App\Models\ShipmentExpense;
 use App\Models\ShipmentUploads;
+use App\Models\GoodsDescription;
 use App\Helpers\FileUploadHelper;
 use Illuminate\Support\Facades\DB;
+use App\Mail\ShipmentConsigneeMail;
 use App\Http\Controllers\Controller;
 use App\Models\ConsolidatedShipment;
 use App\Notifications\AssigneDriver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\ShipmentNotifyPartyMail;
 use App\Models\ShipmentConsolidation;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Notifications\Notification;
+use App\Mail\ShipmentAdditionalNotifyPartyMail;
 
 class ShipmentController extends Controller
 {
@@ -61,6 +65,9 @@ class ShipmentController extends Controller
             'branch_id' => 'required|exists:branches,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'user_id' => 'nullable|exists:users,id',
+            'carrier_id' => 'nullable|exists:carriers,id',
+            'truck_id' => 'nullable|exists:trucks,id',
+            'bike_id' => 'nullable|exists:bikes,id',
             'shipment_tracking_number' => 'nullable|string|max:255',
             'shipment_status' => 'nullable|string|max:255',
             'signature' => 'nullable|string|max:255',
@@ -117,20 +124,58 @@ class ShipmentController extends Controller
             'notes.*.note' => 'nullable|string',
             //expense starts here
             'expenses' => 'nullable|array',
-            'expenses.*.expense_type' => 'required|string|max:255',
-            'expenses.*.expense_units' => 'required|integer|min:1',
-            'expenses.*.expense_rate' => 'required|numeric|min:0',
-            'expenses.*.expense_amount' => 'required|numeric|min:0',
+            'expenses.*.expense_type' => 'nullable|string|max:255',
+            'expenses.*.expense_unit' => 'nullable|integer|min:1',
+            'expenses.*.expense_rate' => 'nullable|numeric|min:0',
+            'expenses.*.expense_amount' => 'nullable|numeric|min:0',
             'expenses.*.credit_reimbursement_amount' => 'nullable|numeric|min:0',
-            'expenses.*.vendor_invoice_name' => 'required|string|max:255',
-            'expenses.*.vendor_invoice_number' => 'required|string|max:100',
+            'expenses.*.vendor_invoice_name' => 'nullable|string|max:255',
+            'expenses.*.vendor_invoice_number' => 'nullable|string|max:100',
             'expenses.*.payment_reference_note' => 'nullable|string|max:255',
             'expenses.*.disputed_note' => 'nullable|string',
             'expenses.*.billed' => 'nullable|boolean',
             'expenses.*.paid' => 'nullable|boolean',
-            'expenses.*.expense_disputed' => 'required|boolean',
+            'expenses.*.expense_disputed' => 'nullable|boolean',
             'expenses.*.disputed_amount' => 'nullable|numeric|min:0',
             //'disputed_date' => 'nullable|date',
+
+            //Ocean shipment
+            'shipment_type' => 'nullable|string',
+            'shipper_name' => 'nullable|string',
+            'ocean_shipper_address' => 'nullable|string',
+            'ocean_shipper_reference_number' => 'nullable|string',
+            'carrier_name' => 'nullable|string',
+            'carrier_reference_number' => 'nullable|string',
+            'ocean_bill_of_ladening_number' => 'nullable|string',
+            'consignee' => 'nullable|string',
+            'consignee_phone' => 'nullable|string',
+            'consignee_email' => 'nullable|email',
+            'first_notify_party_name' => 'nullable|string',
+            'first_notify_party_phone' => 'nullable|string',
+            'first_notify_party_email' => 'nullable|email',
+            'second_notify_party_name' => 'nullable|string',
+            'second_notify_party_phone' => 'nullable|string',
+            'second_notify_party_email' => 'nullable|email',
+            'pre_carrier' => 'nullable|string',
+            'vessel_aircraft_name' => 'nullable|string',
+            'voyage_number' => 'nullable|string',
+            'port_of_discharge' => 'nullable|string',
+            'place_of_delivery' => 'nullable|string',
+            'final_destination' => 'nullable|string',
+            'port_of_landing' => 'nullable|string',
+            'ocean_note' => 'nullable|string',
+            'ocean_freight_charges' => 'nullable|numeric',
+            'ocean_total_containers_in_words' => 'nullable|string',
+            'no_original_bill_of_landing' => 'nullable|integer',
+            'original_bill_of_landing_payable_at' => 'nullable|string',
+            'shipped_on_board_date' => 'nullable|date',
+            //'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
+            'signature' => 'nullable|string',
+            'goods' => 'nullable|array',
+            'goods .*.goods_name' => 'nullable|string|min:255',
+            'goods .*.ocean_vin' => 'nullable|string|min:255',
+            'goods .*.ocean_weight' => 'nullable|string|min:255',
+
             //file upload starts here
             //'file_path' => 'nullable|file|mimes:jpg,jpeg,png,doc,docx,pdf|max:2048',
             'file_path' => 'nullable|string|max:255',
@@ -142,38 +187,23 @@ class ShipmentController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-
-    $units = $validator['units'];
-    $rates = $validator['rate'];
-    $discounts = $validator['discount'];
-    
-    $total = 0;
-    $net_total = 0;
-    
-    // Process each set of values
-    foreach ($units as $key => $unit) {
-        // Make sure all arrays have this key
-        if (isset($rates[$key]) && isset($discounts[$key])) {
-            // Calculate item total
-            $itemTotal = $unit * $rates[$key];
-            
-            // Add to the grand total
-            $total += $itemTotal;
-            
-            // Calculate net total after discount
-            $net_total += ($itemTotal - $discounts[$key]);
-        }
-    }
+        //dd($validator);
+        
 
         $validatedData = $validator->validated(); 
+        //dd($validatedData);
+       
         DB::beginTransaction();
 
         try {
             $shipment = Shipment::create([
-                'branch_id' => $validatedData['branch_id'] ?? null,
+            'branch_id' => $validatedData['branch_id'] ?? null,
             'driver_id' => $validatedData['driver_id'] ?? null,
             'user_id' => $validatedData['user_id'] ?? null,
-            'shipment_tracking_number' => $shipment_prefix . $validatedData['shipment_tracking_number'] ?? null,
+            'carrier_id' => $validatedData['carrier_id'] ?? null,
+            'truck_id' => $validatedData['truck_id'] ?? null,
+            'bike_id' => $validatedData['bike_id'] ?? null,
+            'shipment_tracking_number' => $shipment_prefix . Shipment::generateTrackingNumber() ?? null,
             'shipment_status' => $validatedData['shipment_status'] ?? null,
             'signature' => $validatedData['signature'] ?? null,
             'office' => $validatedData['office'] ?? null,
@@ -210,11 +240,50 @@ class ShipmentController extends Controller
             'broker_sales_rep' => $validatedData['broker_sales_rep'] ?? null,
             'broker_edi_api_shipment_number' => $validatedData['broker_edi_api_shipment_number'] ?? null,
             'broker_notes' => $validatedData['broker_notes'] ?? null,
+            //ocean shipment
+            'shipment_type' => $validatedData['shipment_type'] ?? null,
+            'shipper_name' => $validatedData['shipper_name'] ?? null,
+            'ocean_shipper_reference_number' => $validatedData['ocean_shipper_reference_number'] ?? null,
+            'carrier_name' => $validatedData['carrier_name'] ?? null,
+            'carrier_reference_number' => $validatedData['carrier_reference_number'] ?? null,
+            'ocean_bill_of_ladening_number' => $validatedData['ocean_bill_of_ladening_number'] ?? null,
+            'consignee' => $validatedData['consignee'] ?? null,
+            'consignee_phone' => $validatedData['consignee_phone'] ?? null,
+            'consignee_email' => $validatedData['consignee_email'] ?? null,
+            'first_notify_party_name' => $validatedData['first_notify_party_name'] ?? null,
+            'first_notify_party_phone' => $validatedData['first_notify_party_phone'] ?? null,
+            'first_notify_party_email' => $validatedData['first_notify_party_email'] ?? null,
+            'second_notify_party_name' => $validatedData['second_notify_party_name'] ?? null,
+            'second_notify_party_phone' => $validatedData['second_notify_party_phone'] ?? null,
+            'second_notify_party_email' => $validatedData['second_notify_party_email'] ?? null,
+            'pre_carrier' => $validatedData['pre_carrier'] ?? null,
+            'vessel_aircraft_name' => $validatedData['vessel_aircraft_name'] ?? null,
+            'voyage_number' => $validatedData['voyage_number'] ?? null,
+            'port_of_discharge' => $validatedData['port_of_discharge'] ?? null,
+            'place_of_delivery' => $validatedData['place_of_delivery'] ?? null,
+            'final_destination' => $validatedData['final_destination'] ?? null,
+            'port_of_landing' => $validatedData['port_of_landing'] ?? null,
+            'ocean_note' => $validatedData['ocean_note'] ?? null,
+            'ocean_freight_charges' => $validatedData['ocean_freight_charges'] ?? null,
+            'ocean_total_containers_in_words' => $validatedData['ocean_total_containers_in_words'] ?? null,
+            'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'] ?? null,
+            'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'] ?? null,
+            'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
+            'signature' => $validatedData['signature'] ?? null,
             //'comment' => $validatedData['comment'] ?? null,
             ]);
-       
-           
-
+            
+            if ($request->hasFile('signature')) {
+                $file = $request->file('signature');
+                $filename = $user->email . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $destinationPath = public_path("uploads/{$branch->branch_code}/signatures");
+                if (!is_dir($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
+                $file->move($destinationPath, $filename);
+                $validatedData['signature'] = "uploads/{$branch->branch_code}/signatures/{$filename}";
+            }
+            
             if ($request->has('charges')) {
                 foreach ($request->charges as $charge) {
                     ShipmentCharge::create([
@@ -246,27 +315,58 @@ class ShipmentController extends Controller
                 }
             }
 
+            if($request->has('goods')) {
+                foreach($request->goods as $good) {
+                    GoodsDescription::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $validatedData['branch_id'] ?? null,
+                        'goods_name' => $good['goods_name'],
+                        'ocean_vin' => $good['ocean_vin'],
+                        'ocean_weight' => $good['ocean_weight'],
+                    ]);
+                }
+            }
+
 
             if ($request->has('expenses')) {
-                //dd($request->expenses);
+                $total = 0;
+                $net_total = 0;
+            
                 foreach ($request->expenses as $expense) {
+                    // Validate required fields
+                    // if (!isset($expense['expense_unit'], $expense['expense_rate'], $expense['disputed_amount'])) {
+                    //     dd("Missing keys in expense entry:", $expense);
+                    // }
+                    
+            
+                    $unit = $expense['expense_unit'];
+                    $rate = $expense['expense_rate'];
+                    $discount = $expense['disputed_amount'];
+            
+                    // Calculate totals
+                    $itemTotal = $unit * $rate;
+                    $total += $itemTotal;
+                    $net_total += ($itemTotal - $discount);
+            
+                    // Store expense
                     ShipmentExpense::create([
                         'shipment_id' => $shipment->id,
                         'branch_id' => $validatedData['branch_id'],
                         'expense_type' => $expense['expense_type'],
-                        'units' => $expense['units'],
-                        'rate' => $expense['rate'],
-                        'amount' => $expense['amount'],
-                        'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'],
-                        'vendor_invoice_name' => $expense['vendor_invoice_name'],
-                        'vendor_invoice_number' => $expense['vendor_invoice_number'],
-                        'payment_reference_note' => $expense['payment_reference_note'],
-                        'disputed_note' => $expense['disputed_note'],
-                        'billed' => $expense['billed'],
-                        'paid' => $expense['paid'],
+                        'units' => $unit,
+                        'rate' => $rate,
+                        'amount' => $expense['amount'] ?? 0,
+                        'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'] ?? 0,
+                        'vendor_invoice_name' => $expense['vendor_invoice_name'] ?? '',
+                        'vendor_invoice_number' => $expense['vendor_invoice_number'] ?? '',
+                        'payment_reference_note' => $expense['payment_reference_note'] ?? '',
+                        'disputed_note' => $expense['disputed_note'] ?? '',
+                        'billed' => $expense['billed'] ?? false,
+                        'paid' => $expense['paid'] ?? false,
                     ]);
                 }
             }
+            
 
             $uploadedPaths = FileUploadHelper::upload($request->file('files'), 'ShipmentUploads');
 
@@ -310,7 +410,21 @@ class ShipmentController extends Controller
             if ($customer && $customer->email) {
                 Mail::to($customer->email)->send(new ShipmentCreated($shipment));
             }
-        }               
+        }
+        // notify party email
+        if($request->consignee_email) {
+            $consignee_email = $request->consignee_email;
+            Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
+        }
+        if($request->first_notify_party_email) {
+            $first_notify_party_email = $request->first_notify_party_email;
+            Mail::to($first_notify_party_email)->send(new ShipmentNotifyPartyMail($shipment));
+        } 
+
+        if($request->second_notify_party_email) {
+            $second_notify_party_email = $request->second_notify_party_email;
+            Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
+        }            
         
         return response()->json($shipment, 201);
     }

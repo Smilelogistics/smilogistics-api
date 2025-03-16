@@ -11,6 +11,7 @@
         "laravel/jetstream": "*",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "picqer/php-barcode-generator": "^3.2",
         "santigarcor/laratrust": "^8.4"
     },
     "require-dev": {

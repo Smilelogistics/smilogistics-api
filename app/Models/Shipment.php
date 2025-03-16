@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\User;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Notifications\NewShipmentCreated;
@@ -47,10 +48,9 @@ class Shipment extends Model
     {
         return $this->belongsToMany(ConsolidatedShipment::class, 'shipment_consolidations');
     }
-
-    function generateTrackingNumber() {
+    public static function generateTrackingNumber() {
         do {
-            $trackingNumber = Str::upper(Str::random(10));
+            $trackingNumber = random_int(1000000000, 9999999999);
         } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists()); 
     
         return $trackingNumber;
