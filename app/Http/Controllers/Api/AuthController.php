@@ -64,7 +64,7 @@ class AuthController extends Controller
              if ($user->user_type == 'businessadministrator') {
                  Branch::create([
                      'user_id' => $user->id, // Ensure user_id is assigned
-                     'branch_code' => 'BR-' . $user->id,
+                     'branch_code' => 'SML-' . $user->id,
                      'phone' => $request->phone,
                      'address' => $request->address ?? null,
                      'about_us' => $request->about_us ?? null
