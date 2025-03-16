@@ -22,7 +22,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
-            $table->string('user_type')->default('user');
+            $table->string('user_type')->nullable();
             $table->integer('isSubscribed')->nullable()->default(0);
             $table->string('subscription_date')->nullable();
             $table->string('subscription_end_date')->nullable();

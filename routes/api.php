@@ -19,9 +19,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/send-reset-link', [AuthController::class, 'sendResetLink']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-    Route::post('/register', [AuthController::class, 'register']);
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 
