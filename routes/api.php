@@ -28,7 +28,7 @@ Route::prefix('v1')->group(function () {
         // Shipment routes
         Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
         Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
-        Route::post('/create', [ShipmentController::class, 'store'])->name('shipments.store');
+        Route::post('/shipments/create', [ShipmentController::class, 'store'])->name('shipments.store');
         Route::post('/shipments/{id}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
         Route::get('/shipments/track', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
         Route::post('/agency', [ShipmentController::class, 'storeAgency'])->name('shipments.agency.store');
