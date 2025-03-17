@@ -426,7 +426,11 @@ class ShipmentController extends Controller
             Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
         }            
         
-        return response()->json($shipment, 201);
+        return response()->json([
+            'success' => true,  
+            'message' => 'Shipment created successfully',
+            'shipment' => $shipment
+        ]);
     }
 
     public function update(Request $request, $id)
