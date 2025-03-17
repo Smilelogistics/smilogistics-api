@@ -26,7 +26,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/user', [AuthController::class, 'user']);
 
         // Shipment routes
-        Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+        Route::get('/newload', [ShipmentController::class, 'index'])->name('shipments.index');
         Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
         Route::post('/shipments', [ShipmentController::class, 'store'])->name('shipments.store');
         Route::post('/shipments/{id}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
