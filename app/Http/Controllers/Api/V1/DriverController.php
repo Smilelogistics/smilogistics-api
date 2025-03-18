@@ -70,8 +70,8 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => 'nullable|string',
                 'flash_notes_to_payroll' => 'nullable|string',
                 'internal_notes' => 'nullable|string',
-                //'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
-                'file_path' => 'nullable|string|max:255',
+                'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+                //'file_path' => 'nullable|string|max:255',
             ]);
 
             if($validator->fails()) {
