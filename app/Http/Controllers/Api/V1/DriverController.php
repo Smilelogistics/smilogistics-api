@@ -11,6 +11,7 @@ use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -83,7 +84,7 @@ class DriverController extends Controller
 
             DB::beginTransaction();
 
-            $authUser = auth()->user();
+            $authUser = Auth::user();
             $branchId = $authUser->branch ? $authUser->branch->id : null;
             Log::info('Authenticated User Branch ID:', ['branch_id' => $branchId]);
 
