@@ -32,7 +32,9 @@ class DriverController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        return response ()->json([
+            'message' => 'we got here created successfully'
+        ]);
     }
 
     /**
