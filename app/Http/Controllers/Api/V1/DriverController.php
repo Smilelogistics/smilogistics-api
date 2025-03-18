@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Exception;
+use App\Models\User;
 use App\Models\Driver;
 use App\Models\DriverDocs;
 use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
@@ -143,7 +146,7 @@ class DriverController extends Controller
             ], 200);
             
         }
-        catch (\Exception $e) {
+        catch (Exception $e) {
             return response()->json(['message' => 'Driver not found.'], 404);
         }
     }
