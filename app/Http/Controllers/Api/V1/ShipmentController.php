@@ -166,7 +166,7 @@ class ShipmentController extends Controller
             'final_destination' => 'nullable|string',
             'port_of_landing' => 'nullable|string',
             'ocean_note' => 'nullable|string',
-            'ocean_freight_charges' => 'nullable|numeric',
+            'ocean_freight_charges' => 'nullable|string',
             'ocean_total_containers_in_words' => 'nullable|string',
             'no_original_bill_of_landing' => 'nullable|integer',
             'original_bill_of_landing_payable_at' => 'nullable|string',
