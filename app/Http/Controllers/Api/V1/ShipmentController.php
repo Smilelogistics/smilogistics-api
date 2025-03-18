@@ -55,6 +55,7 @@ class ShipmentController extends Controller
         $branch = Branch::where('user_id', $user->id)->first();
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
+        $branchId = $user->branch ? $user->branch->id : null;
 
         // On charges, you multiply Unist * Rate = Amount
         // if there is a discount, you multiply Unist * Rate - discount = Amount
@@ -198,7 +199,7 @@ class ShipmentController extends Controller
 
         try {
             $shipment = Shipment::create([
-            'branch_id' => $validatedData['branch_id'] ?? null,
+            'branch_id' => $branchId ?? null,
             'driver_id' => $validatedData['driver_id'] ?? null,
             'user_id' => $validatedData['user_id'] ?? null,
             'carrier_id' => $validatedData['carrier_id'] ?? null,
