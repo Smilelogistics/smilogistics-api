@@ -10,6 +10,7 @@ use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -41,7 +42,7 @@ class DriverController extends Controller
                 'lname' => 'required|string|max:255',
                 'mname' => 'nullable|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
-                'driver_type' => 'required|string|max:255',
+                'driver_type' => 'required|integer',
                 'truck_id' => 'nullable|integer|exists:trucks,id',	
                 'quick_note' => 'nullable|string',
                 'dispatcher_note' => 'nullable|string',
@@ -69,7 +70,8 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => 'nullable|string',
                 'flash_notes_to_payroll' => 'nullable|string',
                 'internal_notes' => 'nullable|string',
-                'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+                //'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+                'file_path' => 'nullable|string|max:255',
             ]);
 
             if($validator->fails()) {
@@ -82,7 +84,6 @@ class DriverController extends Controller
 
             $authUser = auth()->user();
             $branchId = $authUser->branch ? $authUser->branch->id : null;
-            return $branchId;
             $createUser = User::create([
                 'fname' => $validateData['fname'],
                 'lname' => $validateData['lname'],
@@ -96,7 +97,6 @@ class DriverController extends Controller
                 'user_id' => $createUser->id,
                 'branch_id' => $branchId,
                 'driver_type' => $validateData['driver_type'],
-                'truck_id' => $validateData['truck_id'],
                 'quick_note' => $validateData['quick_note'],
                 'dispatcher_note' => $validateData['dispatcher_note'],
                 'driver_phone' => $validateData['driver_phone'],
@@ -147,7 +147,7 @@ class DriverController extends Controller
             
         }
         catch (Exception $e) {
-            return response()->json(['message' => 'Driver not found.'], 404);
+            return response()->json(['message' => 'Driver not found.'. $e], 404);
         }
     }
 
