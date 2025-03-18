@@ -38,6 +38,7 @@ class AdditionalShipmentConsigneeMail extends Mailable
     {
         return new Content(
             view: 'view.name',
+            with: ['shipment' => $this->shipment],
         );
     }
 

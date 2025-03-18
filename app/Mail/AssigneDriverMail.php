@@ -40,6 +40,7 @@ class AssigneDriverMail extends Mailable
     {
         return new Content(
             view: 'mail.assigne-driver-shipment',
+            with: ['shipment' => $this->shipment, 'driver' => $this->driver],
         );
     }
 

@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Driver;
 use App\Models\DriverDocs;
+use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
@@ -31,9 +33,11 @@ class DriverController extends Controller
     {
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
+        return response()->json($branchId);
         try {
             if (!$branchId) {
-                return response()->json(['error' => 'User does not have an associated branch.'], 400);
+            
+                return response()->json(['error' => $authUser .'User does not have an associated branch.'], 400);
             }
             $validator = Validator::make(request()->all(), [
                 'fname' => 'required|string|max:255',
@@ -133,6 +137,8 @@ class DriverController extends Controller
             }
 
             DB::commit();
+            ///if($createUser->email) wanted to check if email is present in the request but no need since its required in validation
+            Mail::to($driver->user->email)->send(new newDriverMail($createUser));
 
             return response()->json([
                 'message' => 'Driver created successfully.',

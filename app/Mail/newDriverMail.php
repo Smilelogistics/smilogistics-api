@@ -12,13 +12,13 @@ use Illuminate\Queue\SerializesModels;
 class newDriverMail extends Mailable
 {
     use Queueable, SerializesModels;
-    public $user;
+    public $createUser;
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct($createUser)
     {
-        $this->user = $user;
+        $this->createUser = $createUser;
     }
 
     /**
@@ -27,7 +27,7 @@ class newDriverMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'New Driver Mail',
+            subject: 'Account Created Successfully',
         );
     }
 
@@ -38,6 +38,7 @@ class newDriverMail extends Mailable
     {
         return new Content(
             markdown: 'mail.new-driver-mail',
+            with: ['createUser' => $this->createUser],
         );
     }
 
