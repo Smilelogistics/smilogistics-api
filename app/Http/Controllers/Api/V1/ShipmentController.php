@@ -64,7 +64,7 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), [
             //'shipment_prefix' => 'nullable|string|max:255',
             //'agency_id' => 'nullable|exists:agencies,id',
-            'branch_id' => 'required|exists:branches,id',
+            //'branch_id' => 'required|exists:branches,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'user_id' => 'nullable|exists:users,id',
             'carrier_id' => 'nullable|exists:carriers,id',
