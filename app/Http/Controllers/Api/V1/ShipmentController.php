@@ -19,6 +19,7 @@ use App\Models\GoodsDescription;
 use App\Helpers\FileUploadHelper;
 use Illuminate\Support\Facades\DB;
 use App\Mail\ShipmentConsigneeMail;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use App\Models\ConsolidatedShipment;
 use App\Notifications\AssigneDriver;
