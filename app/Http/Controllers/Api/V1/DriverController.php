@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Log;
 use Exception;
 use App\Models\User;
 use App\Models\Driver;
@@ -84,6 +85,8 @@ class DriverController extends Controller
 
             $authUser = auth()->user();
             $branchId = $authUser->branch ? $authUser->branch->id : null;
+            Log::info('Authenticated User Branch ID:', ['branch_id' => $branchId]);
+
             $createUser = User::create([
                 'fname' => $validateData['fname'],
                 'lname' => $validateData['lname'],
