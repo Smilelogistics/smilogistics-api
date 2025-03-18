@@ -31,14 +31,8 @@ class DriverController extends Controller
      */
     public function store(Request $request)
     {
-        $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
-        return response()->json($branchId);
         try {
-            if (!$branchId) {
             
-                return response()->json(['error' => $authUser .'User does not have an associated branch.'], 400);
-            }
             $validator = Validator::make(request()->all(), [
                 'fname' => 'required|string|max:255',
                 'lname' => 'required|string|max:255',
@@ -83,6 +77,9 @@ class DriverController extends Controller
 
             DB::beginTransaction();
 
+            $authUser = auth()->user();
+            $branchId = $authUser->branch ? $authUser->branch->id : null;
+            return $branchId;
             $createUser = User::create([
                 'fname' => $validateData['fname'],
                 'lname' => $validateData['lname'],
