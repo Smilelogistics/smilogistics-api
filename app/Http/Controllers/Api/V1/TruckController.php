@@ -34,7 +34,7 @@ class TruckController extends Controller
     {
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
-
+        //dd($branchId);
         try {
             $validateTruck = Validator::make($request->all(), [
                 //'branch_id' => 'required|integer|exists:branches,id',

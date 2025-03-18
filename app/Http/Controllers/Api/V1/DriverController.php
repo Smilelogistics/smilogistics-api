@@ -22,19 +22,127 @@ class DriverController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
-    {
-        //
-    }
+ 
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        return response ()->json([
-            'message' => 'we got here created successfully'
-        ]);
+        $authUser = auth()->user();
+        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        try {
+            if (!$branchId) {
+                return response()->json(['error' => 'User does not have an associated branch.'], 400);
+            }
+            $validator = Validator::make(request()->all(), [
+                'fname' => 'required|string|max:255',
+                'lname' => 'required|string|max:255',
+                'mname' => 'nullable|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email',
+                'driver_type' => 'required|string|max:255',
+                'truck_id' => 'nullable|integer|exists:trucks,id',	
+                'quick_note' => 'nullable|string',
+                'dispatcher_note' => 'nullable|string',
+                'driver_phone' => 'nullable|string|max:20|regex:/^\+?[0-9\-]+$/',
+                'driver_phone_carrier' => 'nullable|string|max:255',
+                'driver_primary_address' => 'nullable|string|max:255',
+                'driver_secondary_address' => 'nullable|string|max:255',
+                'driver_city' => 'nullable|string|max:255',
+                'driver_state' => 'nullable|string|max:255',
+                'driver_zip' => 'nullable|string|max:20',
+                'emergency_contact_info' => 'nullable|string|max:255',
+                'hired_on' => 'nullable|date',
+                'years_of_experience' => 'nullable|integer|min:0',
+                'endorsements' => 'nullable|string',
+                'rating' => 'nullable|numeric|min:0|max:5',
+                'tags' => 'nullable|string',
+                'notes_about_the_choices_made' => 'nullable|string',
+                'isAccessToMobileApp' => 'nullable|boolean',
+                'mobile_settings' => 'nullable|string',
+                'pay_via' => 'nullable|string|max:255',
+                'company_name_paid_to' => 'nullable|string|max:255',
+                'employer_identification_number' => 'nullable|string|max:255',
+                'send_settlements_mail' => 'nullable|email',
+                'print_settlements_under_this_company' => 'nullable|string',
+                'flash_notes_to_dispatch' => 'nullable|string',
+                'flash_notes_to_payroll' => 'nullable|string',
+                'internal_notes' => 'nullable|string',
+                'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+            ]);
+
+            if($validator->fails()) {
+                return response()->json(['errors' => $validator->errors()], 422);
+            }
+
+            $validateData = $validator->validate();
+
+            DB::beginTransaction();
+
+            $createUser = User::create([
+                'fname' => $validateData['fname'],
+                'lname' => $validateData['lname'],
+                'mname' => $validateData['mname'],
+                'email' => $validateData['email'],
+                'password' => Hash::make('0000000000'), //10 zeros is your default password to the app
+                'role' => 'driver',
+            ]);
+
+            $driver = Driver::create([
+                'user_id' => $createUser->id,
+                'branch_id' => $branchId,
+                'driver_type' => $validateData['driver_type'],
+                'truck_id' => $validateData['truck_id'],
+                'quick_note' => $validateData['quick_note'],
+                'dispatcher_note' => $validateData['dispatcher_note'],
+                'driver_phone' => $validateData['driver_phone'],
+                'driver_phone_carrier' => $validateData['driver_phone_carrier'],
+                'driver_primary_address' => $validateData['driver_primary_address'],
+                'driver_secondary_address' => $validateData['driver_secondary_address'],
+                'driver_city' => $validateData['driver_city'],
+                'driver_state' => $validateData['driver_state'],
+                'driver_zip' => $validateData['driver_zip'],
+                'emergency_contact_info' => $validateData['emergency_contact_info'],
+                'hired_on' => $validateData['hired_on'],
+                'years_of_experience' => $validateData['years_of_experience'],
+                'endorsements' => $validateData['endorsements'],
+                'rating' => $validateData['rating'],
+                'tags' => $validateData['tags'],
+                'notes_about_the_choices_made' => $validateData['notes_about_the_choices_made'],
+                'isAccessToMobileApp' => $validateData['isAccessToMobileApp'],
+                'mobile_settings' => $validateData['mobile_settings'],
+                'pay_via' => $validateData['pay_via'],
+                'company_name_paid_to' => $validateData['company_name_paid_to'],
+                'employer_identification_number' => $validateData['employer_identification_number'],
+                'send_settlements_mail' => $validateData['send_settlements_mail'],
+                'print_settlements_under_this_company' => $validateData['print_settlements_under_this_company'],
+                'flash_notes_to_dispatch' => $validateData['flash_notes_to_dispatch'],
+                'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'],
+                'internal_notes' => $validateData['internal_notes'],
+            ]);
+
+            if ($request->hasFile('file_path')) {
+                $file = $request->file('file_path');
+                $fileName = time() . '.' . $file->getClientOriginalExtension();
+                $file->move(public_path('drivers'), $fileName);
+        
+                DriverDocs::create([
+                    'driver_id' => $driver->id,
+                    'file_path' => $fileName
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Driver created successfully.',
+                'driver' => $driver
+            ], 200);
+            
+        }
+        catch (\Exception $e) {
+            return response()->json(['message' => 'Driver not found.'], 404);
+        }
     }
 
     /**
