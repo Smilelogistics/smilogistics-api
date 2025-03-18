@@ -426,7 +426,7 @@ class ShipmentController extends Controller
             $second_notify_party_email = $request->second_notify_party_email;
             Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
         }            
-        Log::info(request()->headers->all());
+        //Log::info(request()->headers->all());
         Log::info('Authorization Header:', [request()->header('Authorization')]);
 
 
