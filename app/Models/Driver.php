@@ -57,4 +57,8 @@ class Driver extends Model
         return $this->belongsTo(Branch::class);
     }
     
+    public function driverDocs()
+    {
+        return $this->hasMany(DriverDocs::class);
+    }
 }

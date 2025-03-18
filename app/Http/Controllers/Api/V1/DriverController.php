@@ -15,7 +15,8 @@ class DriverController extends Controller
      */
     public function index()
     {
-        //
+        $driver = Driver::with(['branch', 'user', 'driverDocs'])->get();
+        return response()->json($driver);
     }
 
     /**
