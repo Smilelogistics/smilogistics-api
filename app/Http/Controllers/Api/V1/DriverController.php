@@ -96,33 +96,33 @@ class DriverController extends Controller
             $driver = Driver::create([
                 'user_id' => $createUser->id,
                 'branch_id' => $branchId,
-                'driver_type' => $validateData['driver_type'],
-                'quick_note' => $validateData['quick_note'],
-                'dispatcher_note' => $validateData['dispatcher_note'],
-                'driver_phone' => $validateData['driver_phone'],
-                'driver_phone_carrier' => $validateData['driver_phone_carrier'],
-                'driver_primary_address' => $validateData['driver_primary_address'],
-                'driver_secondary_address' => $validateData['driver_secondary_address'],
-                'driver_city' => $validateData['driver_city'],
-                'driver_state' => $validateData['driver_state'],
-                'driver_zip' => $validateData['driver_zip'],
-                'emergency_contact_info' => $validateData['emergency_contact_info'],
-                'hired_on' => $validateData['hired_on'],
-                'years_of_experience' => $validateData['years_of_experience'],
-                'endorsements' => $validateData['endorsements'],
-                'rating' => $validateData['rating'],
-                'tags' => $validateData['tags'],
-                'notes_about_the_choices_made' => $validateData['notes_about_the_choices_made'],
-                'isAccessToMobileApp' => $validateData['isAccessToMobileApp'],
-                'mobile_settings' => $validateData['mobile_settings'],
-                'pay_via' => $validateData['pay_via'],
-                'company_name_paid_to' => $validateData['company_name_paid_to'],
-                'employer_identification_number' => $validateData['employer_identification_number'],
-                'send_settlements_mail' => $validateData['send_settlements_mail'],
-                'print_settlements_under_this_company' => $validateData['print_settlements_under_this_company'],
-                'flash_notes_to_dispatch' => $validateData['flash_notes_to_dispatch'],
-                'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'],
-                'internal_notes' => $validateData['internal_notes'],
+                'driver_type' => $validateData['driver_type'] ?? null,
+                'quick_note' => $validateData['quick_note'] ?? null,
+                'dispatcher_note' => $validateData['dispatcher_note'] ?? null,
+                'driver_phone' => $validateData['driver_phone'] ?? null,
+                'driver_phone_carrier' => $validateData['driver_phone_carrier'] ?? null,
+                'driver_primary_address' => $validateData['driver_primary_address'] ?? null,
+                'driver_secondary_address' => $validateData['driver_secondary_address'] ?? null,
+                'driver_city' => $validateData['driver_city'] ?? null,
+                'driver_state' => $validateData['driver_state'] ?? null,
+                'driver_zip' => $validateData['driver_zip'] ?? null,
+                'emergency_contact_info' => $validateData['emergency_contact_info'] ?? null,
+                'hired_on' => $validateData['hired_on'] ?? null,
+                'years_of_experience' => $validateData['years_of_experience'] ?? null,
+                'endorsements' => $validateData['endorsements'] ?? null,
+                'rating' => $validateData['rating'] ?? null,
+                'tags' => $validateData['tags'] ?? null,
+                'notes_about_the_choices_made' => $validateData['notes_about_the_choices_made'] ?? null,
+                'isAccessToMobileApp' => $validateData['isAccessToMobileApp'] ?? null,
+                'mobile_settings' => $validateData['mobile_settings'] ?? null,
+                'pay_via' => $validateData['pay_via'] ?? null,
+                'company_name_paid_to' => $validateData['company_name_paid_to'] ?? null,
+                'employer_identification_number' => $validateData['employer_identification_number'] ?? null,
+                'send_settlements_mail' => $validateData['send_settlements_mail'] ?? null,
+                'print_settlements_under_this_company' => $validateData['print_settlements_under_this_company'] ?? null,
+                'flash_notes_to_dispatch' => $validateData['flash_notes_to_dispatch'] ?? null,
+                'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'] ?? null,
+                'internal_notes' => $validateData['internal_notes'] ?? null,
             ]);
 
             if ($request->hasFile('file_path')) {
@@ -147,7 +147,7 @@ class DriverController extends Controller
             
         }
         catch (Exception $e) {
-            return response()->json(['message' => 'Driver not found.'. $e], 404);
+            return response()->json(['message' => 'Something went wrong 😫.'. $e], 404);
         }
     }
 
