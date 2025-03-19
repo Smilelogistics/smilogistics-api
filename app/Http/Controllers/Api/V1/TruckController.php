@@ -7,15 +7,17 @@ use App\Models\Driver;
 use App\Models\TruckDoc;
 use App\Models\TruckDriver;
 use Illuminate\Http\Request;
+use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
-use App\Notifications\DriverAssignedTruckNotification;
 use Illuminate\Support\Facades\Notification;
+use App\Notifications\DriverAssignedTruckNotification;
 
 
 class TruckController extends Controller
 {
+    use FileUploadTrait;
     public function index()
     {
         $trucks = Truck::with(['truckDocs', 'driver', 'user'])->get();
@@ -32,6 +34,7 @@ class TruckController extends Controller
     }
     public function store(Request $request)
     {
+
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
         //dd($branchId);
@@ -124,20 +127,32 @@ class TruckController extends Controller
             ]);
 
             if ($truck) {
-                if ($request->hasFile('file_path')) {
-                    $files = $request->file('file_path');
-                    $fileTitles = $request->input('file_titles', []);
-
-                    foreach ($files as $index => $file) {
-                        $filePath = $this->uploadFile($file, 'trucks');
-                        if ($filePath) {
-                            TruckDoc::create([
-                                'truck_id' => $truck->id,
-                                'file' => $filePath,
-                                'file_title' => $fileTitles[$index] ?? null,
-                            ]);
+                if ($truck) {
+                    if ($request->hasFile('file_path')) {
+                        $files = $request->file('file_path');
+                        //$fileTitles = $request->input('file_titles', []);
+                
+                        foreach ($files as $index => $file) {
+                            try {
+                                $filePath = $this->uploadFile($file, 'trucks');
+                                if ($filePath) {
+                                    TruckDoc::create([
+                                        'truck_id' => $truck->id,
+                                        'file' => $filePath,
+                                        //'file_title' => $fileTitles[$index] ?? null,
+                                    ]);
+                                } else {
+                                    \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
+                                }
+                            } catch (\Exception $e) {
+                                \Log::error('Error uploading file: ' . $e->getMessage());
+                            }
                         }
+                    } else {
+                        \Log::error('No files found in the request.');
                     }
+                } else {
+                    \Log::error('Truck not found.');
                 }
 
                 if ($request->filled('driver_id')) {
