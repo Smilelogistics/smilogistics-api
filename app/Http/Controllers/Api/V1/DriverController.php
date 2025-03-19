@@ -73,7 +73,7 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => 'nullable|string',
                 'flash_notes_to_payroll' => 'nullable|string',
                 'internal_notes' => 'nullable|string',
-                'file_path' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+                'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
                 //'file_path' => 'nullable|string|max:255',
             ]);
 
@@ -131,8 +131,8 @@ class DriverController extends Controller
                 'internal_notes' => $validateData['internal_notes'] ?? null,
             ]);
 
-            if ($request->hasFile('file_path')) {
-                $file = $request->file('file_path');
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
                 $folderPath = 'public/drivers';
 
@@ -145,7 +145,7 @@ class DriverController extends Controller
                 // Save file path in the database
                 DriverDocs::create([
                     'driver_id' => $driver->id,
-                    'file_path' => $fileName
+                    'file' => $fileName
                 ]);
             }
 
@@ -221,7 +221,6 @@ class DriverController extends Controller
             'driver_status' => 'required|string|in:active,inactive,suspended',
             // 'file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
             // 'file_path' => 'nullable|string|max:500',
-            'file_path' => 'nullable|string|max:500',
             'file' => 'nullable|string|max:500',
         ]);
     

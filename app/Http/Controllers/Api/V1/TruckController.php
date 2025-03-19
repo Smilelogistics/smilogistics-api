@@ -123,8 +123,8 @@ class TruckController extends Controller
             ]);
 
             if ($truck) {
-                if ($request->hasFile('file')) {
-                    $files = $request->file('file');
+                if ($request->hasFile('file_path')) {
+                    $files = $request->file('file_path');
                     $fileTitles = $request->input('file_titles', []);
 
                     foreach ($files as $index => $file) {
@@ -132,7 +132,7 @@ class TruckController extends Controller
                         if ($filePath) {
                             TruckDoc::create([
                                 'truck_id' => $truck->id,
-                                'file_path' => $filePath,
+                                'file' => $filePath,
                                 'file_title' => $fileTitles[$index] ?? null,
                             ]);
                         }
