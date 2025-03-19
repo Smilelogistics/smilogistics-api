@@ -151,11 +151,12 @@ class TruckController extends Controller
 
                 $driver = Driver::find($request->driver_id);
                 //dd($driver->user);
-
+                
+                // $userNotification = $driver->user->email;
+                // dd($userNotification);
                 if ($driver && $driver->user) {
-                    $userNotification = $driver->user;
-    
-                    $userNotification->notify(new DriverAssignedTruckNotification($truck));
+                    $user = $driver->user;
+                    $user->notify(new DriverAssignedTruckNotification($truck));
                 }
 
                 DB::commit();
