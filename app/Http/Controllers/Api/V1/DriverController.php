@@ -77,8 +77,8 @@ class DriverController extends Controller
                 'internal_notes' => 'nullable|string',
 
                   // Files
-                'file' => 'nullable|array',
-                'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
+                'file_path' => 'nullable|array',
+                'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
                 // 'file_titles' => 'nullable|array',
                 // 'file_titles.*' => 'string|max:255',
                 //'file_path' => 'nullable|string|max:255',
