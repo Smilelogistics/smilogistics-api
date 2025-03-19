@@ -133,8 +133,15 @@ class DriverController extends Controller
             if ($request->hasFile('file_path')) {
                 $file = $request->file('file_path');
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('drivers'), $fileName);
-        
+            
+                // Ensure the directory exists
+                $destinationPath = public_path('drivers');
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0777, true); // Create the directory with full permissions
+                }
+            
+                $file->move($destinationPath, $fileName);
+            
                 DriverDocs::create([
                     'driver_id' => $driver->id,
                     'file_path' => $fileName
