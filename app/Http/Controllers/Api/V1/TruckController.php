@@ -97,11 +97,12 @@ class TruckController extends Controller
                 'transponder_number' => 'nullable|string|max:100',
                 'tablet_provider' => 'nullable|string|max:255',
 
-                // files
+                 // Files
                 'file' => 'nullable|array',
-                'file.*' => 'file|max:5120',
+                'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
                 'file_titles' => 'nullable|array',
                 'file_titles.*' => 'string|max:255',
+
 
                 // driver attached
                 'truck_id' => 'nullable|exists:trucks,id',
