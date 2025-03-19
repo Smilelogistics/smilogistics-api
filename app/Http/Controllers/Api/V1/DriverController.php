@@ -86,7 +86,7 @@ class DriverController extends Controller
 
             $authUser = Auth::user();
             $branchId = $authUser->branch ? $authUser->branch->id : null;
-            return $authUser;
+            //return $authUser;
             Log::info('Authenticated User Branch ID:', ['branch_id' => $branchId]);
 
             $createUser = User::create([
