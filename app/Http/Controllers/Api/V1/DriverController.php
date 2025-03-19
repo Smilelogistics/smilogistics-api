@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
@@ -133,20 +134,21 @@ class DriverController extends Controller
             if ($request->hasFile('file_path')) {
                 $file = $request->file('file_path');
                 $fileName = time() . '.' . $file->getClientOriginalExtension();
-            
-                // Ensure the directory exists
-                $destinationPath = public_path('drivers');
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0777, true); // Create the directory with full permissions
-                }
-            
-                $file->move($destinationPath, $fileName);
-            
+                $folderPath = 'public/drivers';
+
+                // Ensure the folder exists
+                Storage::makeDirectory($folderPath); // Creates if it doesn't exist
+
+                // Store file using Laravel Storage
+                $file->storeAs($folderPath, $fileName);
+
+                // Save file path in the database
                 DriverDocs::create([
                     'driver_id' => $driver->id,
                     'file_path' => $fileName
                 ]);
             }
+
 
             DB::commit();
             ///if($createUser->email) wanted to check if email is present in the request but no need since its required in validation
