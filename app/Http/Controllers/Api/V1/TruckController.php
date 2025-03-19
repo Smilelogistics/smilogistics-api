@@ -127,33 +127,30 @@ class TruckController extends Controller
             ]);
 
             if ($truck) {
-                if ($truck) {
-                    if ($request->hasFile('file_path')) {
-                        $files = $request->file('file_path');
-                        //$fileTitles = $request->input('file_titles', []);
-                
-                        foreach ($files as $index => $file) {
-                            try {
-                                $filePath = $this->uploadFile($file, 'trucks');
-                                if ($filePath) {
-                                    TruckDoc::create([
-                                        'truck_id' => $truck->id,
-                                        'file' => $filePath,
-                                        //'file_title' => $fileTitles[$index] ?? null,
-                                    ]);
-                                } else {
-                                    \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
-                                }
-                            } catch (\Exception $e) {
-                                \Log::error('Error uploading file: ' . $e->getMessage());
+                if ($request->hasFile('file_path')) {
+                    $files = $request->file('file_path');
+                    //$fileTitles = $request->input('file_titles', []);
+            
+                    foreach ($files as $index => $file) {
+                        try {
+                            $filePath = $this->uploadFile($file, 'trucks');
+                            if ($filePath) {
+                                TruckDoc::create([
+                                    'truck_id' => $truck->id,
+                                    'file' => $filePath,
+                                    //'file_title' => $fileTitles[$index] ?? null,
+                                ]);
+                            } else {
+                                \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
                             }
+                        } catch (\Exception $e) {
+                            \Log::error('Error uploading file: ' . $e->getMessage());
                         }
-                    } else {
-                        \Log::error('No files found in the request.');
                     }
                 } else {
-                    \Log::error('Truck not found.');
+                    \Log::error('No files found in the request.');
                 }
+               
 
                 if ($request->filled('driver_id')) {
                     TruckDriver::create([

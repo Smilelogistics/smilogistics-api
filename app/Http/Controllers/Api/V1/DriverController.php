@@ -9,6 +9,7 @@ use App\Models\Driver;
 use App\Models\DriverDocs;
 use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
+use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Validator;
 
 class DriverController extends Controller
 {
+    use FileUploadTrait;
     /**
      * Display a listing of the resource.
      */
@@ -73,7 +75,12 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => 'nullable|string',
                 'flash_notes_to_payroll' => 'nullable|string',
                 'internal_notes' => 'nullable|string',
-                'file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5048',
+
+                  // Files
+                'file' => 'nullable|array',
+                'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
+                // 'file_titles' => 'nullable|array',
+                // 'file_titles.*' => 'string|max:255',
                 //'file_path' => 'nullable|string|max:255',
             ]);
 
@@ -131,22 +138,29 @@ class DriverController extends Controller
                 'internal_notes' => $validateData['internal_notes'] ?? null,
             ]);
 
-            if ($request->hasFile('file')) {
-                $file = $request->file('file');
-                $fileName = time() . '.' . $file->getClientOriginalExtension();
-                $folderPath = 'public/drivers';
 
-                // Ensure the folder exists
-                Storage::makeDirectory($folderPath); // Creates if it doesn't exist
-
-                // Store file using Laravel Storage
-                $file->storeAs($folderPath, $fileName);
-
-                // Save file path in the database
-                DriverDocs::create([
-                    'driver_id' => $driver->id,
-                    'file' => $fileName
-                ]);
+            if ($request->hasFile('file_path')) {
+                $files = $request->file('file_path');
+                //$fileTitles = $request->input('file_titles', []);
+        
+                foreach ($files as $index => $file) {
+                    try {
+                        $filePath = $this->uploadFile($file, 'drivers');
+                        if ($filePath) {
+                            DriverDocs::create([
+                                'driver_id' => $driver->id,
+                                'file' => $filePath,
+                                //'file_title' => $fileTitles[$index] ?? null,
+                            ]);
+                        } else {
+                            \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Error uploading file: ' . $e->getMessage());
+                    }
+                }
+            } else {
+                \Log::error('No files found in the request.');
             }
 
 
