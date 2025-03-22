@@ -15,6 +15,7 @@ use App\Models\ShipmentCharge;
 use App\Mail\AssigneDriverMail;
 use App\Models\ShipmentExpense;
 use App\Models\ShipmentUploads;
+use App\Traits\FileUploadTrait;
 use App\Models\GoodsDescription;
 use App\Helpers\FileUploadHelper;
 use Illuminate\Support\Facades\DB;
@@ -33,10 +34,11 @@ use App\Mail\ShipmentAdditionalNotifyPartyMail;
 
 class ShipmentController extends Controller
 {
+    use FileUploadTrait;
     public function index()
     {
-        $shipments = Shipment::with(['shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])->get();
-        return response()->json($shipments);
+        $shipments = Shipment::with(['branch','shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])->get();
+        return response()->json(['shipments' => $shipments]);
     }
 
     public function show($id)
@@ -179,10 +181,8 @@ class ShipmentController extends Controller
             'goods .*.ocean_weight' => 'nullable|string|min:255',
 
             //file upload starts here
-            //'file_path' => 'nullable|file|mimes:jpg,jpeg,png,doc,docx,pdf|max:2048',
-            'file_path' => 'nullable|string|max:255',
-            'file_name' => 'nullable|string|max:255',
-            'file_type' => 'nullable|string|max:255',
+            'file_path' => 'nullable|array',
+            'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
         ]);
 
         if ($validator->fails()) {
@@ -368,26 +368,49 @@ class ShipmentController extends Controller
                     ]);
                 }
             }
-            
 
-            $uploadedPaths = FileUploadHelper::upload($request->file('files'), 'ShipmentUploads');
-
-            // Check if files are multiple or single
-            if (is_array($uploadedPaths)) {
-                foreach ($uploadedPaths as $index => $filePath) {
-                    ShipmentUploads::create([
-                        'shipment_id' => $shipment->id,
-                        'file_name' => $request->titles[$index] ?? 'Untitled',
-                        'file_path' => $filePath
-                    ]);
+            if ($request->hasFile('file_path')) {
+                $files = $request->file('file_path');
+                //$fileTitles = $request->input('file_titles', []);
+                foreach ($files as $index => $file) {
+                    try {
+                        $filePath = $this->uploadFile($file, 'shipments');
+                        if ($filePath) {
+                            ShipmentUploads::create([
+                                'shipment_id' => $truck->id,
+                                'file_path' => $filePath,
+                                //'file_title' => $fileTitles[$index] ?? null,
+                            ]);
+                        } else {
+                            \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error('Error uploading file: ' . $e->getMessage());
+                    }
                 }
             } else {
-                ShipmentUploads::create([
-                    'shipment_id' => $shipment->id,
-                    'file_name' => $request->titles[0] ?? 'Untitled',
-                    'file_path' => $uploadedPaths
-                ]);
+                \Log::error('No files found in the request.');
             }
+            
+
+           // $uploadedPaths = FileUploadHelper::upload($request->file('files'), 'ShipmentUploads');
+
+            // Check if files are multiple or single[used first before implementing traits]
+            // if (is_array($uploadedPaths)) {
+            //     foreach ($uploadedPaths as $index => $filePath) {
+            //         ShipmentUploads::create([
+            //             'shipment_id' => $shipment->id,
+            //             'file_name' => $request->titles[$index] ?? 'Untitled',
+            //             'file_path' => $filePath
+            //         ]);
+            //     }
+            // } else {
+            //     ShipmentUploads::create([
+            //         'shipment_id' => $shipment->id,
+            //         'file_name' => $request->titles[0] ?? 'Untitled',
+            //         'file_path' => $uploadedPaths
+            //     ]);
+            // }
 
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
@@ -428,12 +451,12 @@ class ShipmentController extends Controller
             Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
         }            
         //Log::info(request()->headers->all());
-        Log::info('Authorization Header:', [request()->header('Authorization')]);
+        //Log::info('Authorization Header:', [request()->header('Authorization')]);
 
 
         return response()->json([
             'success' => true,  
-            'message' => 'Shipment created successfully',
+            'message' => 'Shipment created successfully 🚚',
             'shipment' => $shipment
         ]);
     }

@@ -20,6 +20,10 @@ class Shipment extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 
     public function driver()
     {

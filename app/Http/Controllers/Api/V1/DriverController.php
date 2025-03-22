@@ -169,7 +169,7 @@ class DriverController extends Controller
             Mail::to($driver->user->email)->send(new newDriverMail($createUser));
 
             return response()->json([
-                'message' => 'Driver created successfully.',
+                'message' => 'Driver created successfully 🚀',
                 'driver' => $driver
             ], 200);
             

@@ -20,7 +20,7 @@ class TruckController extends Controller
     use FileUploadTrait;
     public function index()
     {
-        $trucks = Truck::with(['truckDocs', 'driver', 'user'])->get();
+        $trucks = Truck::with(['truckDocs', 'driver', 'user', 'customer', 'branch'])->get();
         return response()->json(['trucks' => $trucks], 200);
     }
     public function show($id)
@@ -172,7 +172,7 @@ class TruckController extends Controller
                 }
 
                 DB::commit();
-                return response()->json(['message' => 'Truck created successfully.'], 201);
+                return response()->json(['message' => 'Truck created successfully 🚀'], 201);
             }
 
         } catch (\Exception $e) {
