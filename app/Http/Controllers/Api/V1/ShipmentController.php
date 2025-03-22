@@ -170,7 +170,7 @@ class ShipmentController extends Controller
             'ocean_note' => 'nullable|string',
             'ocean_freight_charges' => 'nullable|string',
             'ocean_total_containers_in_words' => 'nullable|string',
-            'no_original_bill_of_landing' => 'nullable|integer',
+            'no_original_bill_of_landing' => 'nullable|string|max:255',
             'original_bill_of_landing_payable_at' => 'nullable|string',
             'shipped_on_board_date' => 'nullable|date',
             //'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
