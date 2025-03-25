@@ -31,7 +31,9 @@
               <!-- <h2 style="margin: 0px;padding-bottom: 25px;font-size:22px;"> Please renew your subscription</h2> -->
               <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">Hello {{$shipment['first_notify_party_name']}} your shipment has been uploaded successfully with tracking number <b> {{$shipment['shipment_tracking_number']}} </b>, you are a consignee of this shipment<br>
               Tracking Number: {{$shipment['shipment_tracking_number']}} <br> 
-              {!! $generator->getBarcode(strval($shipment['shipment_tracking_number']), $generator::TYPE_CODE_128) !!}
+              <span style="text-align:center;">
+                {!! $generator->getBarcode(strval($shipment['shipment_tracking_number']), $generator::TYPE_CODE_128) !!}
+              </span>
               </p>
               <p style=" margin: 0px 32px;padding-bottom: 25px;line-height: 2; font-size: 15px;"> Warm Regards, <br>
             {{ config('app.name') }}

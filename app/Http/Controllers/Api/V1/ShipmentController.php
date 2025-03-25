@@ -182,7 +182,7 @@ class ShipmentController extends Controller
 
             //file upload starts here
             'file_path' => 'nullable|array',
-            'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
+            'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:150', // Only allow jpeg, png, jpg, and pdf files
         ]);
 
         if ($validator->fails()) {

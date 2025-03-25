@@ -192,7 +192,8 @@ class DriverController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $driver = Driver::with(['branch', 'user', 'driverDocs'])->findOrFail($id);
+        return response()->json(['driver' => $driver], 200);
     }
 
     /**
