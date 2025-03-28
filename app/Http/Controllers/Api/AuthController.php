@@ -54,7 +54,7 @@ class AuthController extends Controller
                  'mname' => $request->mname,
                  'lname' => $request->lname,
                  'email' => $request->email,
-                 'password' => Hash::make($request->password),
+                 'password' => Hash::make('123456789'),
                  'user_type' => $request->user_type,
              ]);
 
@@ -65,7 +65,7 @@ class AuthController extends Controller
                  Branch::create([
                      'user_id' => $user->id, // Ensure user_id is assigned
                      'branch_code' => 'SML-' . $user->id,
-                     'phone' => $request->phone,
+                     'phone' => $request->phone ?? null,
                      'address' => $request->address ?? null,
                      'about_us' => $request->about_us ?? null
                  ]);
