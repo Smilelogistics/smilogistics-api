@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\UnivController;
 use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
@@ -68,7 +69,7 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('roles')->group(function () {
-            Route::get('role', [RoleController::class, 'getUserRole'])->name('roles.index');
+            Route::get('role', [UnivController::class, 'getUserRole'])->name('roles.index');
         });
         
     });
