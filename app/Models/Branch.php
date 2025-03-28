@@ -71,6 +71,10 @@ class Branch extends Model
     {
         return $this->hasMany(Shipment::class);
     }
+    public function billTo()    
+    {
+        return $this->hasMany(BillTo::class);
+    }
 
     public function agency()
     {

@@ -66,6 +66,10 @@ Route::prefix('v1')->group(function () {
             Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
             Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
         });
+
+        Route::prefix('roles')->group(function () {
+            Route::get('role', [RoleController::class, 'getUserRole'])->name('roles.index');
+        });
         
     });
 });

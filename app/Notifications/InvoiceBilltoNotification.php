@@ -10,13 +10,14 @@ use Illuminate\Notifications\Notification;
 class InvoiceBilltoNotification extends Notification
 {
     use Queueable;
+    protected $invoice;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct()
+    public function __construct($invoice)
     {
-        //
+        $this->invoice = $invoice;
     }
 
     /**
@@ -26,29 +27,36 @@ class InvoiceBilltoNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database', 'broadcast'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+            ->subject('Invoice Notification')
+            ->greeting('Hello ' . ($notifiable->name ?? ''))
+            ->line('An invoice has been generated for you.')
+            ->action('View Invoice', url('/invoices/' . $this->invoice->id))
+            ->line('Thank you for using our service!');
     }
 
+ 
     /**
      * Get the array representation of the notification.
      *
      * @return array<string, mixed>
      */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return [
-            //
+            'invoice_id' => $this->invoice->id,
+            'amount' => $this->invoice->total_amount ?? 0,
+            'message' => 'A new invoice has been issued.',
+            'url' => url('/invoices/' . $this->invoice->id),
         ];
     }
+
 }

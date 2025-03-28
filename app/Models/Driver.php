@@ -61,4 +61,13 @@ class Driver extends Model
     {
         return $this->hasMany(DriverDocs::class);
     }
+    public function billTo()    
+    {
+        return $this->hasMany(BillTo::class);
+    }
+
+    public function shipment()
+    {
+        return $this->hasMany(Shipment::class);
+    }
 }

@@ -314,7 +314,7 @@ class TruckController extends Controller
               if ($previousDriverId !== $newDriverId) {
                 $newDriver = Driver::find($newDriverId);
                 if ($newDriver && $newDriver->user) {
-                    $newDriver->user->notify(new AssignedDriverNotification($truck));
+                    $newDriver->user->notify(new DriverAssignedTruckNotification($truck));
                 }
             }
 

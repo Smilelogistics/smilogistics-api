@@ -2,15 +2,19 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Branch;
 use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\InvoiceDoc;
 use Illuminate\Http\Request;
 use App\Models\InvoiceCharge;
+use App\Mail\InvoiceCreatedMail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 use App\Models\InvoicePaymentRecieved;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreInvoiceRequest;
 use App\Notifications\InvoiceBilltoNotification;
 
 class InvoiceController extends Controller
@@ -34,110 +38,22 @@ class InvoiceController extends Controller
         return response()->json(['invoice' => $invoice], 200);
     }
 
+
     /**
      * Store a new invoice with related charges, documents, and payments.
      */
-    public function store(Request $request)
+    public function store(StoreInvoiceRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            // General shipment & invoice fields
-            'shipment_id' => 'nullable|exists:shipments,id',
-            'user_id' => 'nullable|exists:users,id',
-            'branch_id' => 'required|exists:branches,id',
-            'customer_id' => 'nullable|exists:customers,id',
-            'invoice_number' => 'nullable|string|max:255',
-            'invoice_date' => 'nullable|date',
-            'invoice_prefix' => 'nullable|string|max:255',
-            'isFactored' => 'nullable|boolean',
-            'override_default_company' => 'nullable|boolean',
-            'invoice_type' => 'nullable|string|max:255',
-            'invoice_note' => 'nullable|string',
-            'office' => 'nullable|string|max:255',
-            'bill_to' => 'nullable|string|max:255',
-            'bill_to_note' => 'nullable|string',
-            'invoice_terms' => 'nullable|string|max:255',
-            'invoice_due_date' => 'nullable|date',
-            'attention_invoice_to' => 'nullable|string|max:255',
-            'note_bill_to_party' => 'nullable|string',
-            'loads_on_invoice' => 'nullable|integer',
-            'reference_number' => 'nullable|string|max:255',
-            'po_number' => 'nullable|string|max:255',
-            'booking_number' => 'nullable|string|max:255',
-            'bill_of_landing_number' => 'nullable|string|max:255',
-            'move_date' => 'nullable|date',
-            'trailer' => 'nullable|string|max:255',
-            'container' => 'nullable|string|max:255',
-            'chasis' => 'nullable|string|max:255',
-            'load_weight' => 'nullable|numeric',
-            'commodity' => 'nullable|string|max:255',
-            'no_of_packages' => 'nullable|integer',
-            'from_address' => 'nullable|string|max:255',
-            'to_address' => 'nullable|string|max:255',
-            'stop_address' => 'nullable|string|max:255',
-            'credit_memo' => 'nullable|string',
-            'credit_amount' => 'nullable|numeric',
-            'credit_date' => 'nullable|date',
-            'credit_note' => 'nullable|string',
-        
-            // Invoice Charges (single & array support)
-            'invoice_id' => 'nullable|array',
-            'invoice_id.*' => 'exists:invoices,id',
-            'load_number' => 'nullable|array',
-            'load_number.*' => 'nullable|string|max:255',
-            'charge_type' => 'nullable|array',
-            'charge_type.*' => 'nullable|string|max:255',
-            'comment' => 'nullable|array',
-            'comment.*' => 'nullable|string',
-            'units' => 'nullable|array',
-            'units.*' => 'nullable|integer',
-            'unit_rate' => 'nullable|array',
-            'unit_rate.*' => 'nullable|numeric',
-            'amount' => 'nullable|array',
-            'amount.*' => 'nullable|numeric',
-            'discount' => 'nullable|array',
-            'discount.*' => 'nullable|numeric',
-            'internal_notes' => 'nullable|array',
-            'internal_notes.*' => 'nullable|string',
-            'general_internal_notes' => 'nullable|array',
-            'general_internal_notes.*' => 'nullable|string',
-            'tags' => 'nullable|array',
-            'tags.*' => 'nullable|string|max:255',
-            'isAccessorial' => 'nullable|array',
-            'isAccessorial.*' => 'nullable|boolean',
-            'total' => 'nullable|array',
-            'total.*' => 'nullable|numeric',
-        
-            // Invoice Documents (single & array support)
-            'file' => 'nullable|array',
-            'file.*' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
-            'file_title' => 'nullable|array',
-            'file_title.*' => 'nullable|string|max:255',
-        
-            // Invoice Payments (single & array support)
-            'payment_date' => 'nullable|array',
-            'payment_date.*' => 'nullable|date',
-            'payment_method' => 'nullable|array',
-            'payment_method.*' => 'nullable|string|max:255',
-            'check_number' => 'nullable|array',
-            'check_number.*' => 'nullable|string|max:255',
-            'amount' => 'nullable|array',
-            'amount.*' => 'nullable|numeric',
-            'processing_fee_percent' => 'nullable|array',
-            'processing_fee_percent.*' => 'nullable|numeric',
-            'processing_fee_flate_rate' => 'nullable|array',
-            'processing_fee_flate_rate.*' => 'nullable|numeric',
-            'notes' => 'nullable|array',
-            'notes.*' => 'nullable|string',
-        ]);
-        
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-        
+      
+        $validatedData = $request->validated();
+        //dd($validatedData);
         DB::beginTransaction();
         try {
 
-            $invoice = Invoice::create($validator->validated());
+            $invoice = Invoice::create([
+                'user_id' => auth()->user()->id,
+                ...$validatedData
+            ]);
 
             if ($request->charge_type) {
                 foreach ($request->charge_type as $index => $type) {
@@ -175,9 +91,14 @@ class InvoiceController extends Controller
                 }
             }
 
-            $customer = Customer::find($request->customer_id);
-            dd($customer);
+            $customer = Customer::with('branch')->find($request->customer_id);
+            //$branch = Branch::with('branch', 'customer')->find($request->branch_id);
             $customer->notify(new InvoiceBilltoNotification($invoice));
+
+            //dd($customer->user->email);
+            //we can pass the branch data later
+            Mail::to($customer->user->email)->send(new InvoiceCreatedMail($invoice));
+           
 
             DB::commit();
 

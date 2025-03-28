@@ -48,9 +48,18 @@ class Shipment extends Model
     {
         return $this->hasMany(ShipmentNote::class, 'shipment_id');
     }
+
+    public function shipmentContainers()
+    {
+        return $this->hasMany(ShipmentContainer::class, 'shipment_id');
+    }
     public function consolidatedShipment()
     {
         return $this->belongsToMany(ConsolidatedShipment::class, 'shipment_consolidations');
+    }
+    public function billTo()
+    {
+        return $this->hasMany(BillTo::class, 'shipment_id');
     }
     public static function generateTrackingNumber() {
         do {

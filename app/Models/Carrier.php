@@ -78,7 +78,10 @@ class Carrier extends Model
     {
         return $this->belongsTo(Branch::class);
     }
-
+    public function billTo()    
+    {
+        return $this->hasMany(BillTo::class);
+    }
     
     /**
      * Update the specified carrier in storage.

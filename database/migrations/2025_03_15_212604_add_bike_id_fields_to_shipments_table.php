@@ -28,6 +28,8 @@ return new class extends Migration
             $table->dropForeign(['bike_id']);
             $table->dropForeign(['carrier_id']);
             $table->dropForeign(['truck_id']);
+
+            $table->dropColumn(['bike_id', 'carrier_id', 'truck_id']);
         });
     }
 };

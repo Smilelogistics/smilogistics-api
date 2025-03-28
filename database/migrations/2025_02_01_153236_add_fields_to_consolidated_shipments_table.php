@@ -25,6 +25,8 @@ return new class extends Migration
         Schema::table('consolidated_shipments', function (Blueprint $table) {
             $table->dropForeign(['agency_id']);
             $table->dropForeign(['branch_id']);
+
+            $table->dropColumn(['agency_id', 'branch_id']);
         });
     }
 };

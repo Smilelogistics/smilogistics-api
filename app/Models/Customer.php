@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 
 class Customer extends Model
 {
+     use Notifiable;
+      
     protected $table = 'customers';
 
     protected $guarded = [];
@@ -19,4 +22,5 @@ class Customer extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
 }
