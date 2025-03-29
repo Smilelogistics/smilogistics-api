@@ -386,8 +386,11 @@ class ShipmentController extends Controller
         $validator = Validator::make($request->all(), [
             'driver_id' => 'nullable|exists:drivers,id',
             'user_id' => 'nullable|exists:users,id',
+            'carrier_id' => 'nullable|exists:carriers,id',
+            'truck_id' => 'nullable|exists:trucks,id',
+            'bike_id' => 'nullable|exists:bikes,id',
             'shipment_tracking_number' => 'nullable|string|max:255',
-            'shipment_status' => 'sometimes|required|string|max:255',
+            'shipment_status' => 'nullable|string|max:255',
             'signature' => 'nullable|string|max:255',
             'office' => 'nullable|string|max:255',
             'load_type' => 'nullable|string|max:255',
@@ -401,23 +404,90 @@ class ShipmentController extends Controller
             'shipment_weight' => 'nullable|numeric',
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
+            'pickup_number' => 'nullable|string|max:255',
+            'overweight_hazmat' => 'nullable|string|max:255',
+            'tags' => 'nullable|string|max:255',
+            'genset_number' => 'nullable|string|max:255',
+            'reefer_temp' => 'nullable|string|max:255',
+            'seal_number' => 'nullable|string|max:255',
+            'total_miles' => 'nullable|numeric',
+            'loaded_miles' => 'nullable|numeric',
+            'empty_miles' => 'nullable|numeric',
+            'dh_miles' => 'nullable|numeric',
+            'fuel_rate_per_gallon' => 'nullable|numeric',
+            'mpg' => 'nullable|numeric',
+            'total_fuel_cost' => 'nullable|numeric',
+            'broker_name' => 'nullable|string|max:255',
+            'broker_email' => 'nullable|email|max:255',
+            'broker_phone' => 'nullable|string|max:20',
+            'broker_reference_number' => 'nullable|string|max:255',
+            'broker_batch_number' => 'nullable|string|max:255',
+            'broker_seq_number' => 'nullable|string|max:255',
+            'broker_sales_rep' => 'nullable|string|max:255',
+            'broker_edi_api_shipment_number' => 'nullable|string|max:255',
+            'broker_notes' => 'nullable|string|max:1000',
     
-            // Related tables validation
-            'shipment_uploads' => 'nullable|array',
-            'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
-            'shipment_uploads.*.file_path' => 'required|string',
+            // Charge Table
+            'charges' => 'nullable|array',
+            'charges.*.charge_type' => 'nullable|string|max:255',
+            'charges.*.comment' => 'nullable|string|max:500',
+            'charges.*.units' => 'nullable|integer|min:1',
+            'charges.*.rate' => 'nullable|numeric|min:0',
+            'charges.*.amount' => 'nullable|numeric|min:0',
+            'charges.*.discount' => 'nullable|numeric|min:0|max:100',
+            'charges.*.internal_notes' => 'nullable|string|max:500',
+            'charges.*.billed' => 'nullable|boolean',
+            'charges.*.invoice_number' => 'nullable|string|unique:invoices,invoice_number|max:50',
+            'charges.*.invoice_date' => 'nullable|date',
+            'charges.*.total' => 'nullable|numeric|min:0',
+            'charges.*.net_total' => 'nullable|numeric|min:0',
     
-            'shipment_charges' => 'nullable|array',
-            'shipment_charges.*.id' => 'nullable|exists:shipmentcharges,id',
-            'shipment_charges.*.amount' => 'required|numeric',
+            // Notes
+            'notes' => 'nullable|array',
+            'notes.*.note' => 'nullable|string',
     
-            'shipment_expenses' => 'nullable|array',
-            'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
-            'shipment_expenses.*.cost' => 'required|numeric',
+            // Expenses
+            'expenses' => 'nullable|array',
+            'expenses.*.expense_type' => 'nullable|string|max:255',
+            'expenses.*.expense_unit' => 'nullable|integer|min:1',
+            'expenses.*.expense_rate' => 'nullable|numeric|min:0',
+            'expenses.*.expense_amount' => 'nullable|numeric|min:0',
+            'expenses.*.credit_reimbursement_amount' => 'nullable|numeric|min:0',
+            'expenses.*.vendor_invoice_name' => 'nullable|string|max:255',
+            'expenses.*.vendor_invoice_number' => 'nullable|string|max:100',
+            'expenses.*.payment_reference_note' => 'nullable|string|max:255',
+            'expenses.*.disputed_note' => 'nullable|string',
+            'expenses.*.billed' => 'nullable|boolean',
+            'expenses.*.paid' => 'nullable|boolean',
+            'expenses.*.expense_disputed' => 'nullable|boolean',
+            'expenses.*.disputed_amount' => 'nullable|numeric|min:0',
     
-            'shipment_docs' => 'nullable|array',
-            // 'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
-            'shipment_docs.*.document_path' => 'required|string',
+            // Container Details
+            'containers' => 'nullable|array',
+            'containers.*.container' => 'nullable|string|max:255',
+            'containers.*.container_size' => 'nullable|string|max:255',
+            'containers.*.container_type' => 'nullable|string|max:255',
+            'containers.*.container_number' => 'nullable|string|max:255',
+    
+            // Bill To
+            'bill_tos' => 'nullable|array',
+            'bill_tos.*.bill_to' => 'nullable|string|max:255',
+    
+            // Ocean Shipment
+            'shipment_type' => 'nullable|string',
+            'shipper_name' => 'nullable|string',
+            'ocean_shipper_address' => 'nullable|string',
+            'ocean_shipper_reference_number' => 'nullable|string',
+            'carrier_name' => 'nullable|string',
+            'carrier_reference_number' => 'nullable|string',
+            'ocean_bill_of_ladening_number' => 'nullable|string',
+            'consignee' => 'nullable|string',
+            'consignee_phone' => 'nullable|string',
+            'consignee_email' => 'nullable|email',
+    
+            'file_path' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:150',
+    
+            'delivery_type' => 'nullable|string',
         ]);
     
         if ($validator->fails()) {
@@ -428,25 +498,9 @@ class ShipmentController extends Controller
     
         DB::beginTransaction();
         try {
-            $shipment->update(array_merge(['branch_id' => $branchId], $request->only([
-                'driver_id',
-                'user_id',
-                'shipment_tracking_number',
-                'shipment_status',
-                'signature',
-                'office',
-                'load_type',
-                'load_type_note',
-                'brokered',
-                'shipment_image',
-                'reference_number',
-                'bill_of_laden_number',
-                'booking_number',
-                'po_number',
-                'shipment_weight',
-                'commodity',
-                'pieces'
-            ])));
+            $shipment->fill($validatedData);
+            $shipment->branch_id = $branchId;
+            $shipment->save();
     
             // ✅ Update related tables only if they exist in request
             if (isset($validatedData['shipment_uploads'])) {
