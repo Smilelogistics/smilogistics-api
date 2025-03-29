@@ -416,7 +416,7 @@ class ShipmentController extends Controller
             'shipment_expenses.*.cost' => 'required|numeric',
     
             'shipment_docs' => 'nullable|array',
-            'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
+            // 'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
             'shipment_docs.*.document_path' => 'required|string',
         ]);
     
@@ -488,7 +488,7 @@ class ShipmentController extends Controller
             DB::commit();
             return response()->json([
                 'message' => 'Shipment updated successfully',
-                'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentDocs'])
+                'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses'])
             ], 200);
     
         } catch (\Exception $e) {
