@@ -186,7 +186,7 @@ class TruckController extends Controller
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
 
-        dd($request->all());
+        return response()->json(['request' => $request->all()], 200);
 
         try {
             $validateTruck = Validator::make($request->all(), [
