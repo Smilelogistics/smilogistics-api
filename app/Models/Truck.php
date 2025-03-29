@@ -88,7 +88,7 @@ class Truck extends Model
 
     public function TruckDriver()
     {
-        return $this->hasMany(TruckDriver::class);
+        return $this->hasOne(TruckDriver::class);
     }
 
     public function truckDocs()

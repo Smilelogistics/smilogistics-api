@@ -191,6 +191,7 @@ class TruckController extends Controller
         try {
             $validateTruck = Validator::make($request->all(), [
                 'customer_id' => 'sometimes|nullable|integer|exists:customers,id',
+                'driver_id' => 'sometimes|nullable|integer|exists:drivers,id',
                 'truck_number' => 'sometimes|nullable|string|max:50',
                 'office' => 'sometimes|nullable|string|max:255',
                 'make_model' => 'sometimes|required|string|max:100',
