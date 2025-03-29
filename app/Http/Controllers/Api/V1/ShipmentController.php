@@ -379,10 +379,12 @@ class ShipmentController extends Controller
 
     public function update(Request $request, $id)
 {
+    $user = auth()->user();
+    $branchId = $user->branch ? $user->branch->id : null;
     $shipment = Shipment::findOrFail($id);
 
     $validator = Validator::make($request->all(), [
-        'branch_id' => 'required|exists:branches,id',
+        //'branch_id' => 'required|exists:branches,id',
         'driver_id' => 'nullable|exists:drivers,id',
         'user_id' => 'nullable|exists:users,id',
         'shipment_tracking_number' => 'nullable|string|max:255',
@@ -428,7 +430,10 @@ class ShipmentController extends Controller
     try {
         // Check if there are changes before updating
         //if ($shipment->isDirty($validatedData)) {
-            $shipment->update($validatedData);
+            $shipment->update([
+                'branch_id' => $branchId,
+                ...$validatedData
+            ]);
         //}
 
         // Update related tables only if there are changes
