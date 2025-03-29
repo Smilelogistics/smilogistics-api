@@ -189,14 +189,14 @@ class TruckController extends Controller
         try {
             $validateTruck = Validator::make($request->all(), [
                 'customer_id' => 'nullable|integer|exists:customers,id',
-                'truck_number' => 'required|string|max:50',
+                'truck_number' => 'nullable|string|max:50',
                 'office' => 'nullable|string|max:255',
                 'make_model' => 'required|string|max:100',
-                'make_year' => 'required|integer|min:1900|max:' . date('Y'),
+                'make_year' => 'nullable|integer|min:1900|max:' . date('Y'),
                 'engine_year' => 'nullable|integer|min:1900|max:' . date('Y'),
                 'vehicle_number' => 'nullable|string|max:50',
                 'license_plate_number' => 'required|string|max:20',
-                'license_plate_state' => 'required|string|max:2',
+                'license_plate_state' => 'nullable|string|max:2',
                 'service_start_date' => 'nullable|date',
                 'reffered_by' => 'nullable|string|max:255',
                 'tags' => 'nullable|string|max:255',
