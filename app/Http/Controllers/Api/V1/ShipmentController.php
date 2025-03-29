@@ -378,113 +378,125 @@ class ShipmentController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $user = auth()->user();
-    $branchId = $user->branch ? $user->branch->id : null;
-    $shipment = Shipment::findOrFail($id);
-
-    $validator = Validator::make($request->all(), [
-        //'branch_id' => 'required|exists:branches,id',
-        'driver_id' => 'nullable|exists:drivers,id',
-        'user_id' => 'nullable|exists:users,id',
-        'shipment_tracking_number' => 'nullable|string|max:255',
-        'shipment_status' => 'nullable|string|max:255',
-        'signature' => 'nullable|string|max:255',
-        'office' => 'nullable|string|max:255',
-        'load_type' => 'nullable|string|max:255',
-        'load_type_note' => 'nullable|string|max:255',
-        'brokered' => 'nullable|string|max:255',
-        'shipment_image' => 'nullable|string|max:255',
-        'reference_number' => 'nullable|string|max:255',
-        'bill_of_laden_number' => 'nullable|string|max:255',
-        'booking_number' => 'nullable|string|max:255',
-        'po_number' => 'nullable|string|max:255',
-        'shipment_weight' => 'nullable|numeric',
-        'commodity' => 'nullable|string|max:255',
-        'pieces' => 'nullable|integer',
-        // Add validation for related tables
-        'shipment_uploads' => 'nullable|array',
-        'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
-        'shipment_uploads.*.file_path' => 'required|string',
-        
-        'shipment_charges' => 'nullable|array',
-        'shipment_charges.*.id' => 'nullable|exists:shipmentcharges,id',
-        'shipment_charges.*.amount' => 'required|numeric',
-
-        'shipment_expenses' => 'nullable|array',
-        'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
-        'shipment_expenses.*.cost' => 'required|numeric',
-        
-        'shipment_docs' => 'nullable|array',
-        'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
-        'shipment_docs.*.document_path' => 'required|string',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
+    {
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $shipment = Shipment::findOrFail($id);
+    
+        $validator = Validator::make($request->all(), [
+            'driver_id' => 'nullable|exists:drivers,id',
+            'user_id' => 'nullable|exists:users,id',
+            'shipment_tracking_number' => 'nullable|string|max:255',
+            'shipment_status' => 'sometimes|required|string|max:255',
+            'signature' => 'nullable|string|max:255',
+            'office' => 'nullable|string|max:255',
+            'load_type' => 'nullable|string|max:255',
+            'load_type_note' => 'nullable|string|max:255',
+            'brokered' => 'nullable|string|max:255',
+            'shipment_image' => 'nullable|string|max:255',
+            'reference_number' => 'nullable|string|max:255',
+            'bill_of_laden_number' => 'nullable|string|max:255',
+            'booking_number' => 'nullable|string|max:255',
+            'po_number' => 'nullable|string|max:255',
+            'shipment_weight' => 'nullable|numeric',
+            'commodity' => 'nullable|string|max:255',
+            'pieces' => 'nullable|integer',
+    
+            // Related tables validation
+            'shipment_uploads' => 'nullable|array',
+            'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
+            'shipment_uploads.*.file_path' => 'required|string',
+    
+            'shipment_charges' => 'nullable|array',
+            'shipment_charges.*.id' => 'nullable|exists:shipmentcharges,id',
+            'shipment_charges.*.amount' => 'required|numeric',
+    
+            'shipment_expenses' => 'nullable|array',
+            'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
+            'shipment_expenses.*.cost' => 'required|numeric',
+    
+            'shipment_docs' => 'nullable|array',
+            'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
+            'shipment_docs.*.document_path' => 'required|string',
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+    
+        $validatedData = $validator->validated();
+    
+        DB::beginTransaction();
+        try {
+            $shipment->update(array_merge(['branch_id' => $branchId], $request->only([
+                'driver_id',
+                'user_id',
+                'shipment_tracking_number',
+                'shipment_status',
+                'signature',
+                'office',
+                'load_type',
+                'load_type_note',
+                'brokered',
+                'shipment_image',
+                'reference_number',
+                'bill_of_laden_number',
+                'booking_number',
+                'po_number',
+                'shipment_weight',
+                'commodity',
+                'pieces'
+            ])));
+    
+            // ✅ Update related tables only if they exist in request
+            if (isset($validatedData['shipment_uploads'])) {
+                foreach ($validatedData['shipment_uploads'] as $upload) {
+                    $shipment->shipmentUploads()->updateOrCreate(
+                        ['id' => $upload['id'] ?? null],
+                        ['file_path' => $upload['file_path']]
+                    );
+                }
+            }
+    
+            if (isset($validatedData['shipment_charges'])) {
+                foreach ($validatedData['shipment_charges'] as $charge) {
+                    $shipment->shipmentCharges()->updateOrCreate(
+                        ['id' => $charge['id'] ?? null],
+                        ['amount' => $charge['amount']]
+                    );
+                }
+            }
+    
+            if (isset($validatedData['shipment_expenses'])) {
+                foreach ($validatedData['shipment_expenses'] as $expense) {
+                    $shipment->shipmentExpenses()->updateOrCreate(
+                        ['id' => $expense['id'] ?? null],
+                        ['cost' => $expense['cost']]
+                    );
+                }
+            }
+    
+            if (isset($validatedData['shipment_docs'])) {
+                foreach ($validatedData['shipment_docs'] as $doc) {
+                    $shipment->shipmentDocs()->updateOrCreate(
+                        ['id' => $doc['id'] ?? null],
+                        ['document_path' => $doc['document_path']]
+                    );
+                }
+            }
+    
+            DB::commit();
+            return response()->json([
+                'message' => 'Shipment updated successfully',
+                'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentDocs'])
+            ], 200);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to update shipment', 'error' => $e->getMessage()], 500);
+        }
     }
-
-    $validatedData = $validator->validated();
-
-    DB::beginTransaction();
-    try {
-        // Check if there are changes before updating
-        //if ($shipment->isDirty($validatedData)) {
-            $shipment->update([
-                'branch_id' => $branchId,
-                ...$validatedData
-            ]);
-        //}
-
-        // Update related tables only if there are changes
-        if (isset($validatedData['shipment_uploads'])) {
-            foreach ($validatedData['shipment_uploads'] as $upload) {
-                if (isset($upload['id'])) {
-                    $shipment->shipmentUploads()->where('id', $upload['id'])->update(['file_path' => $upload['file_path']]);
-                } else {
-                    $shipment->shipmentUploads()->create(['file_path' => $upload['file_path']]);
-                }
-            }
-        }
-
-        if (isset($validatedData['shipment_charges'])) {
-            foreach ($validatedData['shipment_charges'] as $charge) {
-                if (isset($charge['id'])) {
-                    $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
-                } else {
-                    $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
-                }
-            }
-        }
-
-        if (isset($validatedData['shipment_expenses'])) {
-            foreach ($validatedData['shipment_expenses'] as $expense) {
-                if (isset($expense['id'])) {
-                    $shipment->shipmentExpenses()->where('id', $expense['id'])->update(['cost' => $expense['cost']]);
-                } else {
-                    $shipment->shipmentExpenses()->create(['cost' => $expense['cost']]);
-                }
-            }
-        }
-
-        if (isset($validatedData['shipment_docs'])) {
-            foreach ($validatedData['shipment_docs'] as $doc) {
-                if (isset($doc['id'])) {
-                    $shipment->shipmentUploads()->where('id', $doc['id'])->update(['file_path' => $doc['document_path']]);
-                } else {
-                    $shipment->shipmentUploads()->create(['file_path' => $doc['document_path']]);
-                }
-            }
-        }
-
-        DB::commit();
-        return response()->json(['message' => 'Shipment updated successfully', 'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentUploads'])], 200);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Failed to update shipment', 'error' => $e->getMessage()], 500);
-    }
-}
-
+    
 
 
 
