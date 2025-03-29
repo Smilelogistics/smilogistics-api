@@ -21,11 +21,6 @@ class TruckController extends Controller
     public function index()
     {
 
-        //check the logged in user role, then yhu can eager load data base on the role
-        $user = auth()->user();
-        if($user->role == 'customer'){	
-            return response()->json(['message' => 'thsis customer.'], 404);
-        }
         $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])->get();
         return response()->json(['trucks' => $trucks], 200);
     }
