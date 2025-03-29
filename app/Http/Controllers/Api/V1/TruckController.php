@@ -186,6 +186,8 @@ class TruckController extends Controller
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
 
+        dd($request->all());
+
         try {
             $validateTruck = Validator::make($request->all(), [
                 'customer_id' => 'nullable|integer|exists:customers,id',
