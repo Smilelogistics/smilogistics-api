@@ -244,7 +244,7 @@ class DriverController extends Controller
     
         $driver = Driver::findOrFail($id);
     
-        $driver->update([
+        $driver->update($request->only([
             'driver_number' => $request->driver_number,
             'driver_phone' => $request->driver_phone,
             'driver_phone_carrier' => $request->driver_phone_carrier,
@@ -275,7 +275,7 @@ class DriverController extends Controller
             'flash_notes_to_payroll' => $request->flash_notes_to_payroll,
             'internal_notes' => $request->internal_notes,
             'driver_status' => $request->driver_status
-        ]);
+        ]));
     
         // Update or create DriverDocs record
         $driverDoc = DriverDocs::updateOrCreate(
