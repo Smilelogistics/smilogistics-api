@@ -215,7 +215,7 @@ class DriverController extends Controller
             'driver_type' => 'sometimes|nullable|integer',
             'isAccessToMobileApp' => 'sometimes|nullable|boolean',
             'mobile_settings' => 'sometimes|nullable|integer',
-            'emergency_contact_info' => 'sometimes|nullable|json',
+            'emergency_contact_info' => 'sometimes|nullable|string|max:500',
             'hired_on' => 'sometimes|nullable|date',
             'terminated_on' => 'sometimes|nullable|date|after_or_equal:hired_on',
             'years_of_experience' => 'sometimes|nullable|integer|min:0|max:50',
