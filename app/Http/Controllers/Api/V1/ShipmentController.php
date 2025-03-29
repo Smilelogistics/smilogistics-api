@@ -478,7 +478,7 @@ class ShipmentController extends Controller
     
             if (isset($validatedData['shipment_docs'])) {
                 foreach ($validatedData['shipment_docs'] as $doc) {
-                    $shipment->shipmentDocs()->updateOrCreate(
+                    $shipment->shipmentUploads()->updateOrCreate(
                         ['id' => $doc['id'] ?? null],
                         ['document_path' => $doc['document_path']]
                     );
