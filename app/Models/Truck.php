@@ -86,9 +86,9 @@ class Truck extends Model
     }
 
 
-    public function driver()
+    public function TruckDriver()
     {
-        return $this->belongsTo(Driver::class, 'driver_id');
+        return $this->hasMany(TruckDriver::class);
     }
 
     public function truckDocs()

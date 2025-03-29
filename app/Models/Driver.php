@@ -70,4 +70,8 @@ class Driver extends Model
     {
         return $this->hasMany(Shipment::class);
     }
+    public function truck()
+    {
+        return $this->hasMany(Truck::class);
+    }
 }

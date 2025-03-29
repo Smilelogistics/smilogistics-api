@@ -20,13 +20,13 @@ class TruckController extends Controller
     use FileUploadTrait;
     public function index()
     {
-        $trucks = Truck::with(['truckDocs', 'driver.user', 'customer', 'branch'])->get();
+        $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'customer', 'branch'])->get();
         return response()->json(['trucks' => $trucks], 200);
     }
     public function show($id)
     {
         try {
-            $truck = Truck::with(['truckDocs', 'driver.user'])->findOrFail($id);
+            $truck = Truck::with(['truckDocs', 'TruckDriver.driver.user'])->findOrFail($id);
             return response()->json(['truck' => $truck], 200);
         } catch (\Exception $e) {
             return response()->json(['message' => 'Truck not found.'], 404);
