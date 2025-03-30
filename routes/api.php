@@ -34,7 +34,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/shipments/track', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
         Route::post('/agency', [ShipmentController::class, 'storeAgency'])->name('shipments.agency.store');
         //this route is for updating shipments, in the case of typo or something during uploads
-        Route::put('/shipments/update/{id}', [ShipmentController::class, 'update'])->name('shipments.updateAll');
+        Route::post('/shipments/update/{id}', [ShipmentController::class, 'update'])->name('shipments.updateAll');
         //Route::post('/shipments/consolidate', [ConsolidatedShipmentController::class, 'consolidateShipment'])->name('shipments.consolidate');
         Route::get('/get-consolidated-shipments', [ConsolidatedShipmentController::class, 'getConsolidatedShipment'])->name('get.consolidated.shipments');
         Route::get('/get-pending-consolidated-shipments', [ConsolidatedShipmentController::class, 'pendingConsolidatedShipment'])->name('get.pending.consolidated.shipments');
