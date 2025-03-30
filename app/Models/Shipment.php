@@ -38,7 +38,7 @@ class Shipment extends Model
     }
     public function shipmentCharges()
     {
-        return $this->hasMany(ShipmentCharge::class, 'shipment_id');
+        return $this->hasMany(ShipmentCharge::class);
     }
     public function shipmentExpenses()
     {

@@ -501,14 +501,17 @@ class ShipmentController extends Controller
             }
     
             if (isset($validatedData['shipment_charges'])) {
+                $shipment->load('shipmentCharges'); // Ensure the relation is loaded
+            
                 foreach ($validatedData['shipment_charges'] as $charge) {
-                    if (isset($charge['id'])) {
+                    if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
                         $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
                     } else {
                         $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
                     }
                 }
             }
+            
     
             if (isset($validatedData['shipment_expenses'])) {
                 foreach ($validatedData['shipment_expenses'] as $expense) {
