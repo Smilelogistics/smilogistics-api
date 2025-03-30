@@ -60,6 +60,14 @@ class InvoiceController extends Controller
       
         $validatedData = $request->validated();
         //dd($validatedData);
+        $arrayFields = ['credit_memo', 'credit_amount', 'credit_date', 'credit_note'];
+
+        foreach ($arrayFields as $field) {
+            if (isset($validatedData[$field]) && is_array($validatedData[$field])) {
+                $validatedData[$field] = implode(',', $validatedData[$field]); // Convert array to a comma-separated string
+            }
+        }
+        
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
         $invoicePrefx = $user->branch ? $user->branch->invoice_prefix : null;
