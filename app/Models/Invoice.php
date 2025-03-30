@@ -42,10 +42,7 @@ class Invoice extends Model
         'from_address',
         'to_address',
         'stop_address',
-        'credit_memo',
-        'credit_amount',
-        'credit_date',
-        'credit_note',
+      
     ];
 
     public function branch()

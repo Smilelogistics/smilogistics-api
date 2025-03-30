@@ -17,6 +17,10 @@ class InvoicePaymentRecieved extends Model
         'processing_fee_percent',
         'processing_fee_flate_rate',
         'notes',
+        'credit_memo',
+        'credit_amount',
+        'credit_date',
+        'credit_note',
     ];
 
     public function invoice()
