@@ -26,7 +26,28 @@ class InvoiceController extends Controller
      */
     public function showAll()
     {
-        $invoices = Invoice::with(['charges', 'docs', 'payments'])->get();
+        // $invoices = Invoice::with(['charges', 'docs', 'payments'])->get();
+        // return response()->json(['invoices' => $invoices], 200);
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $customerId = $user->customer ? $user->customer->id : null;
+        //dd($branchId, $customerId);
+        if ($user->hasRole('businessadministrator')) {
+            $invoices = Invoice::where('branch_id', $branchId)
+                            ->with('customer')
+                            ->latest()
+                            ->get();
+        }
+        // Check if the user is a Customer
+        elseif ($user->hasRole('customer')) {
+            $invoices = Invoice::where('customer_id', $customerId)
+                            ->with('branch')
+                            ->latest()
+                            ->get();
+        } else {
+            $invoices = collect();
+        }
+
         return response()->json(['invoices' => $invoices], 200);
     }
 
