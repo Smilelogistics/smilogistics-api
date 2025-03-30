@@ -47,7 +47,7 @@ class InvoiceController extends Controller
 
     public function getCustomer()
     {
-        $customers = Customer::with('branch')->get();
+        $customers = Customer::with('branch', 'user')->get();
         return response()->json(['customers' => $customers], 200);
     }
 
