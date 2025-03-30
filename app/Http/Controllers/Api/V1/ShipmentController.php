@@ -441,6 +441,18 @@ class ShipmentController extends Controller
             'goods.*.ocean_vin' => 'nullable|string|max:255',
             'goods.*.ocean_weight' => 'nullable|string|max:255',
 
+              //container details
+              'containers' => 'nullable|array',
+              'containers.*.container' => 'nullable|string|max:255',
+              'containers.*.container_size' => 'nullable|string|max:255',
+              'containers.*.container_type' => 'nullable|string|max:255',
+              'containers.*.container_number' => 'nullable|string|max:255',
+              'containers.*.chasis' => 'nullable|string|max:255',
+              'containers.*.chasis_size' => 'nullable|string|max:255',
+              'containers.*.chasis_type' => 'nullable|string|max:255',
+              'containers.*.chasis_vendor' => 'nullable|string|max:255',
+              'containers.*.isLoaded' => 'nullable|string|max:255',
+
 
 
             // Add validation for related tables
