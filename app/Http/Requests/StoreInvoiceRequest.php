@@ -56,10 +56,6 @@ class StoreInvoiceRequest extends FormRequest
                  'to_address' => 'nullable|string|max:255',
                  'stop_address' => 'nullable|string|max:255',
 
-                //  'credit_memo' => 'nullable|string|sometimes',
-                //  'credit_amount' => 'nullable|numeric|sometimes',
-                //  'credit_date' => 'nullable|date|sometimes',
-                //  'credit_note' => 'nullable|string|sometimes',
              
                  // Invoice Charges (single & array support)
                  'invoice_id' => 'nullable|array',
@@ -110,6 +106,15 @@ class StoreInvoiceRequest extends FormRequest
                  'processing_fee_flate_rate.*' => 'nullable|numeric',
                  'notes' => 'nullable|array',
                  'notes.*' => 'nullable|string',
+        
+                 'credit_memo' => 'nullable|array',
+                 'credit_memo.*' => 'nullable|string|sometimes',
+                 'credit_amount' => 'nullable|array',
+                 'credit_amount.*' => 'nullable|numeric|sometimes',
+                 'credit_date' => 'nullable|array',
+                 'credit_date.*' => 'nullable|date|sometimes',
+                 'credit_note' => 'nullable|array',
+                 'credit_note.*' => 'nullable|string|sometimes',
         ];
     }
 

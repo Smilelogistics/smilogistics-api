@@ -99,11 +99,14 @@ class InvoiceController extends Controller
             }
 
             // Insert into InvoicePayment
-            if ($request->payment_date) {
-                foreach ($request->payment_date as $index => $date) {
+            if ($request->credit_amount) {
+                foreach ($request->credit_amount as $index => $date) {
                     InvoicePaymentRecieved::create([
                         'invoice_id' => $invoice->id,
-                        'payment_date' => $date,
+                        'credit_memo' => $request->credit_memo[$index] ?? null,
+                        'credit_amount' => $request->credit_amount[$index] ?? null,
+                        'credit_date' => $request->credit_date[$index] ?? null,
+                        'credit_note' => $request->credit_note[$index] ?? null,
                         'payment_method' => $request->payment_method[$index] ?? null,
                         'amount' => $request->amount[$index] ?? null,
                     ]);
