@@ -55,11 +55,11 @@ class StoreInvoiceRequest extends FormRequest
                  'from_address' => 'nullable|string|max:255',
                  'to_address' => 'nullable|string|max:255',
                  'stop_address' => 'nullable|string|max:255',
-                 
-                 'credit_memo' => 'nullable|string|sometimes',
-                 'credit_amount' => 'nullable|numeric|sometimes',
-                 'credit_date' => 'nullable|date|sometimes',
-                 'credit_note' => 'nullable|string|sometimes',
+
+                //  'credit_memo' => 'nullable|string|sometimes',
+                //  'credit_amount' => 'nullable|numeric|sometimes',
+                //  'credit_date' => 'nullable|date|sometimes',
+                //  'credit_note' => 'nullable|string|sometimes',
              
                  // Invoice Charges (single & array support)
                  'invoice_id' => 'nullable|array',
