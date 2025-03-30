@@ -402,7 +402,47 @@ class ShipmentController extends Controller
             'shipment_weight' => 'nullable|numeric',
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
-            'ocean_note' => 'nullable|string|max:255',
+
+            //Ocean shipment
+            'shipment_type' => 'nullable|string',
+            'shipper_name' => 'nullable|string',
+            'ocean_shipper_address' => 'nullable|string',
+            'ocean_shipper_reference_number' => 'nullable|string',
+            'carrier_name' => 'nullable|string',
+            'carrier_reference_number' => 'nullable|string',
+            'ocean_bill_of_ladening_number' => 'nullable|string',
+            'consignee' => 'nullable|string',
+            'consignee_phone' => 'nullable|string',
+            'consignee_email' => 'nullable|email',
+            'first_notify_party_name' => 'nullable|string',
+            'first_notify_party_phone' => 'nullable|string',
+            'first_notify_party_email' => 'nullable|email',
+            'second_notify_party_name' => 'nullable|string',
+            'second_notify_party_phone' => 'nullable|string',
+            'second_notify_party_email' => 'nullable|email',
+            'pre_carrier' => 'nullable|string',
+            'vessel_aircraft_name' => 'nullable|string',
+            'voyage_number' => 'nullable|string',
+            'port_of_discharge' => 'nullable|string',
+            'place_of_delivery' => 'nullable|string',
+            'final_destination' => 'nullable|string',
+            'port_of_landing' => 'nullable|string',
+            'ocean_note' => 'nullable|string',
+            'ocean_freight_charges' => 'nullable|numeric|min:0',
+            'ocean_total_containers_in_words' => 'nullable|string',
+            'no_original_bill_of_landing' => 'nullable|integer',
+            'original_bill_of_landing_payable_at' => 'nullable|string',
+            'shipped_on_board_date' => 'nullable|date',
+            'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
+
+            'goods' => 'nullable|array',
+            'goods.*.goods_name' => 'nullable|string|max:255',
+            'goods.*.branch_id' => 'nullable|integer|exists:branches,id',
+            'goods.*.ocean_vin' => 'nullable|string|max:255',
+            'goods.*.ocean_weight' => 'nullable|string|max:255',
+
+
+
             // Add validation for related tables
             'shipment_uploads' => 'nullable|array',
             'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
@@ -416,9 +456,9 @@ class ShipmentController extends Controller
             'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
             'shipment_expenses.*.cost' => 'required|numeric',
             
-            // 'shipment_docs' => 'nullable|array',
-            // 'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
-            // 'shipment_docs.*.document_path' => 'required|string',
+            'shipment_docs' => 'nullable|array',
+            'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
+            'shipment_docs.*.document_path' => 'required|string',
         ]);
     
         if ($validator->fails()) {
