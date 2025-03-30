@@ -402,6 +402,7 @@ class ShipmentController extends Controller
             'shipment_weight' => 'nullable|numeric',
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
+            'ocean_note' => 'nullable|string|max:255',
             // Add validation for related tables
             'shipment_uploads' => 'nullable|array',
             'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
