@@ -27,7 +27,7 @@ class StoreInvoiceRequest extends FormRequest
                  // General shipment & invoice fields
                  'shipment_id' => 'nullable|exists:shipments,id',
                  //'user_id' => 'nullable|exists:users,id',
-                 'customer_id' => 'nullable|exists:customers,id',
+                 'customer_id' => 'required|exists:customers,id',
                  'invoice_date' => 'nullable|date',
                  'isFactored' => 'nullable|boolean',
                  'override_default_company' => 'nullable|boolean',
@@ -109,6 +109,17 @@ class StoreInvoiceRequest extends FormRequest
                  'processing_fee_flate_rate.*' => 'nullable|numeric',
                  'notes' => 'nullable|array',
                  'notes.*' => 'nullable|string',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'customer_id.required' => 'Please select a valid bill to.',
+            'customer_id.exists' => 'The selected bill to does not exist.',
+            'amount.required' => 'Amount is required and must be a valid number.',
+            'amount.numeric' => 'Amount must be a number.',
+            'amount.min' => 'Amount must be at least 1.',
         ];
     }
 
