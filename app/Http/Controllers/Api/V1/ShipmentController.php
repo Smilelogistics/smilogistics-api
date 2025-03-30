@@ -458,19 +458,19 @@ class ShipmentController extends Controller
             // Add validation for related tables
             'shipment_uploads' => 'nullable|array',
             'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
-            'shipment_uploads.*.file_path' => 'required|string',
+            'shipment_uploads.*.file_path' => 'nullable|string',
             
             'shipment_charges' => 'nullable|array',
             'shipment_charges.*.id' => 'nullable|exists:shipmentcharges,id',
-            'shipment_charges.*.amount' => 'required|numeric',
+            'shipment_charges.*.amount' => 'nullable|numeric',
     
             'shipment_expenses' => 'nullable|array',
             'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
-            'shipment_expenses.*.cost' => 'required|numeric',
+            'shipment_expenses.*.cost' => 'nullable|numeric',
             
             'shipment_docs' => 'nullable|array',
             'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
-            'shipment_docs.*.document_path' => 'required|string',
+            'shipment_docs.*.document_path' => 'reqnullableuired|string',
         ]);
     
         if ($validator->fails()) {
