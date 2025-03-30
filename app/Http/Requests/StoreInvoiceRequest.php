@@ -27,11 +27,8 @@ class StoreInvoiceRequest extends FormRequest
                  // General shipment & invoice fields
                  'shipment_id' => 'nullable|exists:shipments,id',
                  //'user_id' => 'nullable|exists:users,id',
-                 'branch_id' => 'required|exists:branches,id',
                  'customer_id' => 'nullable|exists:customers,id',
-                 'invoice_number' => 'nullable|string|max:255',
                  'invoice_date' => 'nullable|date',
-                 'invoice_prefix' => 'nullable|string|max:255',
                  'isFactored' => 'nullable|boolean',
                  'override_default_company' => 'nullable|boolean',
                  'invoice_type' => 'nullable|string|max:255',

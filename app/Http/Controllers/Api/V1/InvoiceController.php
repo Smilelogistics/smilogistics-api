@@ -38,6 +38,19 @@ class InvoiceController extends Controller
         return response()->json(['invoice' => $invoice], 200);
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->input('query');
+        $invoices = Invoice::where('invoice_number', 'like', '%' . $query . '%')->get();
+        return response()->json(['invoices' => $invoices], 200);
+    }
+
+    public function getCustomer()
+    {
+        $customers = Customer::with('branch')->get();
+        return response()->json(['customers' => $customers], 200);
+    }
+
 
     /**
      * Store a new invoice with related charges, documents, and payments.
@@ -47,11 +60,17 @@ class InvoiceController extends Controller
       
         $validatedData = $request->validated();
         //dd($validatedData);
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $invoicePrefx = $user->branch ? $user->branch->invoice_prefix : null;
+        $invoiceNumber = $invoicePrefx . Invoice::generateInvoiceNumber();
         DB::beginTransaction();
         try {
-
+            
             $invoice = Invoice::create([
                 'user_id' => auth()->user()->id,
+                'branch_id' => $branchId,
+                'invoice_number' => $invoiceNumber,
                 ...$validatedData
             ]);
 

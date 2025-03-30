@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
@@ -80,4 +81,5 @@ class Branch extends Model
     {
         return $this->hasMany(Agency::class);
     }
+
 }
