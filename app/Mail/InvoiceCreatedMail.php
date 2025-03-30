@@ -37,7 +37,7 @@ class InvoiceCreatedMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.new-invoice-mail',
+            view: 'mail.new-Invoice-mail',
             with: ['invoice' => $this->invoice],
         );
     }
