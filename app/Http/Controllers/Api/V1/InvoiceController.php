@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\InvoiceDoc;
+use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\InvoiceCharge;
 use App\Mail\InvoiceCreatedMail;
