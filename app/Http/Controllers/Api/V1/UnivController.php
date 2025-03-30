@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 class UnivController extends Controller
 {
@@ -13,5 +14,12 @@ class UnivController extends Controller
         return response()->json([
             'role' => $user->roles->pluck('name')->first()      
           ]);
+    }
+
+    public function getUsers()
+    {
+        $branch = Branch::with(['customer'])->get();
+
+        return response()->json(['branch' => $branch]);
     }
 }

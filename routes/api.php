@@ -71,6 +71,13 @@ Route::prefix('v1')->group(function () {
         Route::prefix('roles')->group(function () {
             Route::get('role', [UnivController::class, 'getUserRole'])->name('roles.index');
         });
+
+
+        Route::prefix('users')->group(function () {
+            Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
+            Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
+            Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
+        });
         
     });
 });
