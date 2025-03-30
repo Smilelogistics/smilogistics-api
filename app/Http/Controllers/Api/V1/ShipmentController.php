@@ -498,9 +498,27 @@ class ShipmentController extends Controller
     
         DB::beginTransaction();
         try {
-            $shipment->fill($validatedData);
-            $shipment->branch_id = $branchId;
-            $shipment->save();
+            $shipment->fill($request->only([
+                'driver_id', 'user_id', 'carrier_id', 'truck_id', 'bike_id',
+                'shipment_tracking_number', 'shipment_status', 'signature', 
+                'office', 'load_type', 'load_type_note', 'brokered', 'shipment_image', 
+                'reference_number', 'bill_of_laden_number', 'booking_number', 'po_number',
+                'shipment_weight', 'commodity', 'pieces', 'pickup_number', 'overweight_hazmat',
+                'tags', 'genset_number', 'reefer_temp', 'seal_number', 'total_miles',
+                'loaded_miles', 'empty_miles', 'dh_miles', 'fuel_rate_per_gallon', 'mpg',
+                'total_fuel_cost', 'broker_name', 'broker_email', 'broker_phone',
+                'broker_reference_number', 'broker_batch_number', 'broker_seq_number',
+                'broker_sales_rep', 'broker_edi_api_shipment_number', 'broker_notes',
+                'shipment_type', 'shipper_name', 'ocean_shipper_address', 'ocean_shipper_reference_number',
+                'carrier_name', 'carrier_reference_number', 'ocean_bill_of_ladening_number', 'consignee',
+                'consignee_phone', 'consignee_email', 'first_notify_party_name', 'first_notify_party_phone',
+                'first_notify_party_email', 'second_notify_party_name', 'second_notify_party_phone',
+                'second_notify_party_email', 'pre_carrier', 'vessel_aircraft_name', 'voyage_number',
+                'port_of_discharge', 'place_of_delivery', 'final_destination', 'port_of_landing',
+                'ocean_note', 'ocean_freight_charges', 'ocean_total_containers_in_words',
+                'no_original_bill_of_landing', 'original_bill_of_landing_payable_at',
+                'shipped_on_board_date', 'signature', 'delivery_type'
+            ]));
     
             // ✅ Update related tables only if they exist in request
             if (isset($validatedData['shipment_uploads'])) {
