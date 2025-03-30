@@ -30,7 +30,7 @@ class StoreInvoiceRequest extends FormRequest
                  'customer_id' => 'required|exists:customers,id',
                  'invoice_date' => 'nullable|date',
                  'isFactored' => 'nullable|boolean',
-                 'override_default_company' => 'nullable|boolean',
+                 'override_default_company' => 'nullable|string|max:255',
                  'invoice_type' => 'nullable|string|max:255',
                  'invoice_note' => 'nullable|string',
                  'office' => 'nullable|string|max:255',
@@ -55,7 +55,7 @@ class StoreInvoiceRequest extends FormRequest
                  'from_address' => 'nullable|string|max:255',
                  'to_address' => 'nullable|string|max:255',
                  'stop_address' => 'nullable|string|max:255',
-                 'credit_memo' => 'nullable|string',
+                 'credit_memo' => 'nullable|string|max:255',
                  'credit_amount' => 'nullable|numeric',
                  'credit_date' => 'nullable|date',
                  'credit_note' => 'nullable|string',
@@ -85,8 +85,8 @@ class StoreInvoiceRequest extends FormRequest
                  'tags.*' => 'nullable|string|max:255',
                  'isAccessorial' => 'nullable|array',
                  'isAccessorial.*' => 'nullable|boolean',
-                 'total' => 'nullable|array',
-                 'total.*' => 'nullable|numeric',
+                 'total' => 'nullable|numeric',
+                // 'total.*' => 'nullable|numeric',
              
                  // Invoice Documents (single & array support)
                  'file' => 'nullable|array',
