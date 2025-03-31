@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Invoice;
 use App\Models\Customer;
@@ -13,10 +14,12 @@ use App\Mail\InvoiceCreatedMail;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\invoiceStatusUpdateMail;
 use App\Models\InvoicePaymentRecieved;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Notifications\InvoiceBilltoNotification;
+use App\Notifications\invoiceStatusNotification;
 
 class InvoiceController extends Controller
 {
@@ -67,6 +70,38 @@ class InvoiceController extends Controller
         return response()->json(['invoices' => $invoices], 200);
     }
 
+    public function updateStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:awaiting payment,paid,unpaid,cancelled'
+        ]);
+
+        $invoice = Invoice::findOrFail($id);
+        $previousStatus = $invoice->status;
+        $invoice->status = $validated['status'];
+        $invoice->save();
+
+        // Get customer and associated user
+        //dd($invoice->customer_id);
+        $customer = Customer::find($invoice->customer_id);
+
+        // Get the authenticated user who made the update
+        $updater = auth()->user();
+
+        // Send email notification to customer
+        if ($customer) {
+            $customer->notify(new invoiceStatusNotification($invoice, $previousStatus));
+            //Mail::to($customerUser)->send(new invoiceStatusUpdateMail($invoice, $previousStatus));
+        }
+
+        // Send database notification to the updater
+        $updater->notify(new invoiceStatusNotification($invoice, $previousStatus));
+
+        return response()->json([
+            'message' => 'Invoice status updated successfully',
+            'invoice' => $invoice
+        ]);
+    }
     public function getCustomer()
     {
         $customers = Customer::with('branch', 'user')->get();

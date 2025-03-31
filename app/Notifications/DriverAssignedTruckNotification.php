@@ -13,7 +13,7 @@ class DriverAssignedTruckNotification extends Notification implements ShouldQueu
 {
     use Queueable;
 
-    protected $truck;
+    public $truck;
 
     public function __construct(Truck $truck)
     {

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->string('status')->default('Awaiting Payment');
+            $table->string('status')->after('stop_address')->default('Awaiting Payment');
         });
     }
 

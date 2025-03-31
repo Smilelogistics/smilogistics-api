@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function () {
             Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
             Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
             Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
+            Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
         });
 
         Route::prefix('roles')->group(function () {

@@ -11,7 +11,7 @@ class CarrierAccountCreated extends Notification
 {
     use Queueable;
 
-    protected $data;
+    public $data;
 
     /**
      * Create a new notification instance.

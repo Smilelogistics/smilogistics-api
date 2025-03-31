@@ -10,7 +10,7 @@ use Illuminate\Notifications\Notification;
 class InvoiceBilltoNotification extends Notification
 {
     use Queueable;
-    protected $invoice;
+    public $invoice;
 
     /**
      * Create a new notification instance.
