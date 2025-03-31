@@ -32,21 +32,21 @@ class CarrierController extends Controller
         $customerId = $user->customer ? $user->customer->id : null;
         //dd($branchId, $customerId);
         if ($user->hasRole('businessadministrator')) {
-            $invoices = Carrier::where('branch_id', $branchId)
+            $carriers = Carrier::where('branch_id', $branchId)
                             ->with('customer', 'user')
                             ->latest()
                             ->get();
         }
         elseif ($user->hasRole('customer')) {
-            $invoices = Carrier::where('customer_id', $customerId)
+            $carriers = Carrier::where('customer_id', $customerId)
                             ->with('branch', 'user')
                             ->latest()
                             ->get();
         } else {
-            $invoices = collect();
+            $carriers = collect();
         }
 
-        return response()->json(['invoices' => $invoices], 200);
+        return response()->json(['carriers' => $carriers], 200);
     }
 
     public function show($id)
