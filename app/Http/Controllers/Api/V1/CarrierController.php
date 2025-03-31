@@ -286,9 +286,9 @@ class CarrierController extends Controller
     {
         // Validate request
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'state_served' => 'nullable|string|max:255',
-            'code' => 'required|string|max:50',
+            'code' => 'nullable|string|max:50',
             'insurance_coverage' => 'nullable|string|max:255',
             'offices' => 'nullable|string|max:255',
             'carrier_number' => 'nullable|string|max:50',
@@ -340,27 +340,50 @@ class CarrierController extends Controller
             'carrier_smile_id' => 'nullable|string|max:100',
             'data_exchange_option' => 'nullable|string|max:255',
             'insurance' => 'nullable|array',
-            'insurance.*.coverage' => 'required|string|max:100',
-            'insurance.*.amount' => 'required|numeric|min:0',
-            'insurance.*.policy_number' => 'required|string|max:100',
-            'insurance.*.expires' => 'required|date',
+            'insurance.*.coverage' => 'nullable|string|max:100',
+            'insurance.*.amount' => 'nullable|numeric|min:0',
+            'insurance.*.policy_number' => 'nullable|string|max:100',
+            'insurance.*.expires' => 'nullable|date',
+
+            // File Upload
+            'file' => 'nullable|array',
+            'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'file_titles' => 'nullable|array',
+            'file_titles.*' => 'string|max:255',
         ]);
         $carrier = Carrier::findOrFail($id);
         $carrier->update($validatedData);
 
-        if ($request->has('insurance')) {
-            CarrierInsurance::where('carrier_id', $carrier->id)->delete();
+        
+        if ($request->hasFile('file')) {
+            $files = $request->file('file');
+            $fileTitles = $request->input('file_titles', []);
 
-            foreach ($request->insurance as $insurance) {
-                CarrierInsurance::create([
-                    'carrier_id' => $carrier->id,
-                    'coverage' => $insurance['coverage'],
-                    'amount' => $insurance['amount'],
-                    'policy_number' => $insurance['policy_number'],
-                    'expires' => $insurance['expires'],
-                ]);
+            foreach ($files as $index => $file) {
+                $filePath = $this->uploadFile($file, 'carrier_docs');
+                if ($filePath) {
+                    CarrierDocs::create([
+                        'carrier_id' => $truck->id,
+                        'file' => $filePath,
+                        'file_title' => $fileTitles[$index] ?? null,
+                    ]);
+                }
             }
         }
+
+        // if ($request->has('insurance')) {
+        //     CarrierInsurance::where('carrier_id', $carrier->id)->delete();
+
+        //     foreach ($request->insurance as $insurance) {
+        //         CarrierInsurance::create([
+        //             'carrier_id' => $carrier->id,
+        //             'coverage' => $insurance['coverage'],
+        //             'amount' => $insurance['amount'],
+        //             'policy_number' => $insurance['policy_number'],
+        //             'expires' => $insurance['expires'],
+        //         ]);
+        //     }
+        // }
 
         return response()->json([
             'message' => 'Carrier updated successfully',
