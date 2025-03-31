@@ -41,7 +41,6 @@ class InvoiceController extends Controller
                             ->latest()
                             ->get();
         }
-        // Check if the user is a Customer
         elseif ($user->hasRole('customer')) {
             $invoices = Invoice::where('customer_id', $customerId)
                             ->with('branch', 'user')

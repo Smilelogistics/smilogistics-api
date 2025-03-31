@@ -24,6 +24,41 @@ class CarrierController extends Controller
 {
     use FileUploadTrait;
 
+    public function index()
+    {
+        // return response()->json(['invoices' => $invoices], 200);
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $customerId = $user->customer ? $user->customer->id : null;
+        //dd($branchId, $customerId);
+        if ($user->hasRole('businessadministrator')) {
+            $invoices = Carrier::where('branch_id', $branchId)
+                            ->with('customer', 'user')
+                            ->latest()
+                            ->get();
+        }
+        elseif ($user->hasRole('customer')) {
+            $invoices = Carrier::where('customer_id', $customerId)
+                            ->with('branch', 'user')
+                            ->latest()
+                            ->get();
+        } else {
+            $invoices = collect();
+        }
+
+        return response()->json(['invoices' => $invoices], 200);
+    }
+
+    public function show($id)
+    {
+        try {
+            $carrier = Carrier::with(['branch', 'carrierDocs', 'carrierInsurance'])->findOrFail($id);
+            return response()->json(['carrier' => $carrier], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Carrier not found'], 404);
+        }
+    }
+
     public function store(Request $request)
     {
         $authUser = auth()->user();
