@@ -28,6 +28,15 @@ class CarrierController extends Controller
     {
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
+
+        $customerId = null;
+
+        if ($authUser->role == 'customer') {
+            $customerId = $authUser->customer->id;
+        }
+
+        dd($customerId);
+
     
         if (!$branchId) {
             return response()->json(['message' => 'User is not associated with a branch'], 400);
@@ -85,6 +94,7 @@ class CarrierController extends Controller
                 'no_of_drivers' => 'nullable|integer|min:0',
                 'power_units' => 'nullable|integer|min:0',
                 'other_equipments' => 'nullable|string',
+                'carrier_profile' => 'nullable|string|max:255',
                 
                 // Additional Carrier Information
                 'rating' => 'nullable|numeric|between:0,5',
@@ -135,7 +145,10 @@ class CarrierController extends Controller
                 'data_exchange_option' => 'nullable|string|max:100',
                 
                 // File Upload
-                'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'file' => 'nullable|array',
+                'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
+                'file_titles' => 'nullable|array',
+                'file_titles.*' => 'string|max:255',
 
 
                 'insurance_provider' => 'nullable|string|max:255',
@@ -173,8 +186,10 @@ class CarrierController extends Controller
                 }
     
                 // Create Carrier
+                
                 $carrier = Carrier::create([
                     'branch_id' => $branchId,
+                    'customer_id' => $customerId,
                     'user_id' => $createUser->id,
                     ...$carrierValidator->validated()
                 ]);
