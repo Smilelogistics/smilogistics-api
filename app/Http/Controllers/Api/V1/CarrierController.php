@@ -226,6 +226,7 @@ class CarrierController extends Controller
                     'branch_id' => $branchId,
                     'customer_id' => $customerId,
                     'user_id' => $createUser->id,
+                    'status' => 'active',	
                     ...$carrierValidator->validated()
                 ]);
     

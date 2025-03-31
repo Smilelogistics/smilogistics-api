@@ -219,4 +219,12 @@ class Carrier extends Model
         return $this->belongsTo(Customer::class);
     }
 
+    public function carrierDocs(){
+        return $this->hasMany(CarrierDocs::class);
+    }
+
+    public function carrierInsurance(){
+        return $this->hasMany(CarrierInsurance::class);
+    }
+
 }

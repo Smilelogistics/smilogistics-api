@@ -50,10 +50,10 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('carriers')->group(function () {
-            Route::post('create', [CarrierController::class, 'store'])->name('carriers.store');
-            Route::get('carriers', [CarrierController::class, 'index'])->name('carriers.index');
-            Route::get('carrier/{id}', [CarrierController::class, 'show'])->name('carriers.show');
-            Route::put('update/{id}', [CarrierController::class, 'update'])->name('carriers.update');
+            Route::post('/create', [CarrierController::class, 'store'])->name('carriers.store');
+            Route::get('/carriers', [CarrierController::class, 'index'])->name('carriers.index');
+            Route::get('/carrier/{id}', [CarrierController::class, 'show'])->name('carriers.show');
+            Route::put('/update/{id}', [CarrierController::class, 'update'])->name('carriers.update');
         });
 
         Route::prefix('trucks')->group(function () {

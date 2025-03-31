@@ -23,4 +23,9 @@ class Customer extends Model
         return $this->belongsTo(Branch::class);
     }
 
+    public function carrier()
+    {
+        return $this->hasMany(Carrier::class);
+    }
+
 }
