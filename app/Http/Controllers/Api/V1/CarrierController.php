@@ -168,7 +168,7 @@ class CarrierController extends Controller
                 return response()->json(['errors' => $carrierValidator->errors()], 422);
             }
     
-            return DB::transaction(function () use ($userData, $carrierData, $request, $branchId, $authUser, $carrierValidator) {
+            return DB::transaction(function () use ($userData, $carrierData, $customerId, $request, $branchId, $authUser, $carrierValidator) {
                 // Create User
                 $createUser = User::updateOrCreate(
                     ['email' => $userData['email']],
