@@ -35,7 +35,7 @@ class CarrierController extends Controller
             $customerId = $authUser->customer->id;
         }
 
-        dd($customerId);
+        //dd($customerId);
 
     
         if (!$branchId) {
