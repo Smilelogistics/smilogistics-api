@@ -24,57 +24,47 @@ class SettingsController extends Controller
         
     }
 
-    public function updateGeneral(Request $request)
-    {
-        //return response()->json($request->all());
-        $user = auth()->user();
-        $validated = Validator::make($request->all(), [
-            'phone' => 'sometimes|required|string',
-            'address' => 'sometimes|nullable|string|min:10',
-            'parcel_prefix' => 'sometimes|nullable|string|max:10',
-            'invoice_prefix' => 'sometimes|nullable|string|max:10',
-            'currency' => 'sometimes|nullable|string|max:8',
-            'copyright' => 'sometimes|nullable|string|min:5',
-        ]);
+   public function updateGeneral(Request $request)
+{
+    $user = auth()->user();
+    
+    $validated = $request->validate([
+        'phone' => 'required|string',
+        'address' => 'nullable|string|min:10',
+        'parcel_prefix' => 'nullable|string|max:10',
+        'invoice_prefix' => 'nullable|string|max:10',
+        'currency' => 'nullable|string|max:3',
+        'copyright' => 'nullable|string|min:5',
+    ]);
+
+    if ($user->hasRole('customer')) {
+        $customer = Customer::updateOrCreate(
+            ['user_id' => $user->id],
+            $validated
+        );
+    } 
+    elseif ($user->hasRole('businessadministrator')) {
+        if (!$user->branch) {
+            return response()->json(['message' => 'Branch not found'], 404);
+        }
         
-        // $request->validate([
-           
-        // ]);
-        if($validated->fails()) {
-            return response()->json($validated->errors(), 422);
+        $user->branch->update($validated);
+    }
+    elseif ($user->hasRole('superadministrator')) {
+        // Update system-wide settings
+        foreach ($validated as $key => $value) {
+            Setting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $value]
+            );
         }
-    
-        if ($user->hasRole('customer')) {
-            // Update customer record with user_id constraint
-            $customer = Customer::where('user_id', $user->id)->first();
-            
-            if (!$customer) {
-                $customer = new Customer(['user_id' => $user->id]);
-            }
-            
-            $customer->fill($validated)->save();
-        } 
-        elseif ($user->hasRole('businessadministrator')) {
-            //dd($user);
-            if (!$user->branch) {
-                return response()->json(['message' => 'Branch not found'], 404);
-            }
-            
-            $branch = Branch::where('user_id', $user->id)->first();
-            
-            if (!$branch) {
-                return response()->json(['message' => 'Branch not found'], 404);
-            }
-            
-            $branch->fill($validated)->save();
-        }
-    
-        return response()->json([
-            'message' => 'General settings updated successfully',
-            'data' => $validated
-        ]);
     }
 
+    return response()->json([
+        'message' => 'General settings updated successfully',
+        'data' => $validated
+    ]);
+}
     
     public function updatePayment(Request $request)
     {
