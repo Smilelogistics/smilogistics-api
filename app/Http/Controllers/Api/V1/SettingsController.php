@@ -29,7 +29,7 @@ class SettingsController extends Controller
     $user = auth()->user();
     
     $validated = $request->validate([
-        'phone' => 'required|string',
+        'phone' => 'nullable|string',
         'address' => 'nullable|string|min:10',
         'parcel_prefix' => 'nullable|string|max:10',
         'invoice_prefix' => 'nullable|string|max:10',
