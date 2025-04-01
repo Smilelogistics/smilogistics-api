@@ -26,45 +26,98 @@ class SettingsController extends Controller
     public function updateGeneral(Request $request)
     {
         //return response()->json($request->all());
-        $user = auth()->user();
-        $validated = $request->validate([
-            'phone' => 'sometimes|required|string',
-            'address' => 'sometimes|nullable|string|min:10',
-            'parcel_prefix' => 'sometimes|nullable|string|max:10',
-            'invoice_prefix' => 'sometimes|nullable|string|max:10',
-            'currency' => 'sometimes|nullable|string|max:8',
-            'copyright' => 'sometimes|nullable|string|min:5',
-        ]);
+        try {
+            $user = auth()->user();
+            
+            // Validate input
+            $validated = $request->validate([
+                'phone' => 'nullable|string|max:20',
+                'address' => 'nullable|string|min:10|max:255',
+                'parcel_prefix' => 'nullable|string|max:10',
+                'invoice_prefix' => 'nullable|string|max:10',
+                'currency' => 'nullable|string|size:3',
+                'copyright' => 'nullable|string|min:5|max:100',
+                'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ]);
     
-        if ($user->hasRole('customer')) {
-            // Update customer record with user_id constraint
-            $customer = Customer::where('user_id', $user->id)->first();
-            
-            if (!$customer) {
-                $customer = new Customer(['user_id' => $user->id]);
+            // Handle logo uploads
+            $logoPaths = [];
+            foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+                if ($request->hasFile($logoField)) {
+                    $path = $request->file($logoField)->store('public/logos');
+                    $logoPaths[$logoField] = str_replace('public/', 'storage/', $path);
+                }
             }
-            
-            $customer->fill($validated)->save();
-        } 
-        elseif ($user->hasRole('businessadministrator')) {
-            //dd($user);
-            if (!$user->branch) {
-                return response()->json(['message' => 'Branch not found'], 404);
+    
+            // Prepare data for update
+            $updateData = array_merge(
+                $validated,
+                $logoPaths
+            );
+    
+            // Remove null logo paths
+            $updateData = array_filter($updateData);
+    
+            if ($user->hasRole('customer')) {
+                $customer = Customer::updateOrCreate(
+                    ['user_id' => $user->id],
+                    $updateData
+                );
+    
+                // Delete old logos if new ones were uploaded
+                foreach ($logoPaths as $field => $path) {
+                    if (!empty($customer->{$field})) {
+                        Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
+                    }
+                }
+            } 
+            elseif ($user->hasRole('businessadministrator')) {
+                if (!$user->branch) {
+                    return response()->json([
+                        'message' => 'Branch not found',
+                        'hint' => 'Contact administrator to assign you to a branch'
+                    ], 404);
+                }
+    
+                $branch = $user->branch;
+                
+                // Delete old logos before updating
+                foreach ($logoPaths as $field => $path) {
+                    if (!empty($branch->{$field})) {
+                        Storage::delete(str_replace('storage/', 'public/', $branch->{$field}));
+                    }
+                }
+    
+                $branch->update($updateData);
             }
-            
-            $branch = Branch::where('user_id', $user->id)->first();
-            
-            if (!$branch) {
-                return response()->json(['message' => 'Branch not found'], 404);
+            else {
+                return response()->json([
+                    'message' => 'Unauthorized action',
+                    'hint' => 'Your role cannot update these settings'
+                ], 403);
             }
+    
+            return response()->json([
+                'message' => 'Settings updated successfully',
+                'data' => $updateData,
+                'logo_urls' => $logoPaths
+            ]);
+    
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
             
-            $branch->fill($validated)->save();
+        } catch (\Exception $e) {
+            Log::error("Settings update failed: " . $e->getMessage());
+            return response()->json([
+                'message' => 'Update failed',
+                'hint' => 'Please try again or contact support'
+            ], 500);
         }
-    
-        return response()->json([
-            'message' => 'General settings updated successfully',
-            'data' => $validated
-        ]);
     }
 
     
