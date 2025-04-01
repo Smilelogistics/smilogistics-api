@@ -6,6 +6,7 @@ use App\Models\Branch;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Validator;
 
 class SettingsController extends Controller
 {
@@ -27,7 +28,7 @@ class SettingsController extends Controller
     {
         //return response()->json($request->all());
         $user = auth()->user();
-        $validated = $request->validate([
+        $validated = Validator::make($request->all(), [
             'phone' => 'sometimes|required|string',
             'address' => 'sometimes|nullable|string|min:10',
             'parcel_prefix' => 'sometimes|nullable|string|max:10',
@@ -35,6 +36,10 @@ class SettingsController extends Controller
             'currency' => 'sometimes|nullable|string|max:8',
             'copyright' => 'sometimes|nullable|string|min:5',
         ]);
+        
+        // $request->validate([
+           
+        // ]);
     
         if ($user->hasRole('customer')) {
             // Update customer record with user_id constraint
