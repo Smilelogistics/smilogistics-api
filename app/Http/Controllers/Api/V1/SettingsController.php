@@ -43,16 +43,16 @@ class SettingsController extends Controller
                 'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ]);
-    
-            // Handle logo uploads
-            $logoPaths = [];
-            foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
-                if ($request->hasFile($logoField)) {
-                    $path = $request->file($logoField)->store('public/logos');
-                    $logoPaths[$logoField] = str_replace('public/', 'storage/', $path);
+
+            Storage::makeDirectory('public/logos');
+               $logoPaths = [];
+                foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+                    if ($request->hasFile($logoField)) {
+                        $path = $request->file($logoField)->store('public/logos');
+                        $logoPaths[$logoField] = str_replace('public/', 'storage/', $path);
+                    }
                 }
-            }
-    
+            
             // Prepare data for update
             $updateData = array_merge(
                 $validated,
