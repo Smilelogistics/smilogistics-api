@@ -40,6 +40,9 @@ class SettingsController extends Controller
         // $request->validate([
            
         // ]);
+        if($validated->fails()) {
+            return response()->json($validated->errors(), 422);
+        }
     
         if ($user->hasRole('customer')) {
             // Update customer record with user_id constraint
