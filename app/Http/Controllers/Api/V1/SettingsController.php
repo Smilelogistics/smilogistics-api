@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Branch;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
