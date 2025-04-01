@@ -16,7 +16,7 @@ class SettingsController extends Controller
 
     public function updateGeneral(Request $request)
     {
-        return response()->json($request->all());
+        //return response()->json($request->all());
         $user = auth()->user();
         $validated = $request->validate([
             'phone' => 'sometimes|required|string',
