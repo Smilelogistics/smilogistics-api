@@ -10,8 +10,17 @@ use App\Http\Controllers\Controller;
 class SettingsController extends Controller
 {
     public function index() {
-        $customers = Branch::with('customers')->get();
-        return response()->json($branches);
+        
+        $user = auth()->user();
+        if ($user->hasRole('customer')) {
+            $data = Customer::with('branch')->where('user_id', $user->id)->get();
+            return response()->json($data);
+        }
+        elseif ($user->hasRole('businessadministrator')) {
+            $data = Branch::with('customer')->where('user_id', $user->id)->get();
+            return response()->json($data);
+        }
+        
     }
 
     public function updateGeneral(Request $request)
