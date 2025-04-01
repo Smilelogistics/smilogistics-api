@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 
@@ -25,6 +26,13 @@ Route::prefix('v1')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
+
+        Route::prefix('settings')->group(function () {
+            Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
+            Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('settings.payment.update');
+            Route::post('/mailer', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
+            Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
+        });
 
         // Shipment routes
         Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');

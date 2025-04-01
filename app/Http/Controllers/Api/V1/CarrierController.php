@@ -61,6 +61,8 @@ class CarrierController extends Controller
 
     public function store(Request $request)
     {
+
+        $openAccount = false;
         $authUser = auth()->user();
         $branchId = $authUser->branch ? $authUser->branch->id : null;
 
@@ -203,8 +205,10 @@ class CarrierController extends Controller
                 return response()->json(['errors' => $carrierValidator->errors()], 422);
             }
     
-            return DB::transaction(function () use ($userData, $carrierData, $customerId, $request, $branchId, $authUser, $carrierValidator) {
+            return DB::transaction(function () use ($userData, $openAccount, $carrierData, $customerId, $request, $branchId, $authUser, $carrierValidator) {
                 // Create User
+                if($openAccount){
+                   // dd($userData['email']);
                 $createUser = User::updateOrCreate(
                     ['email' => $userData['email']],
                     [
@@ -220,8 +224,10 @@ class CarrierController extends Controller
                     $createUser->addRole('carrier');
                 }
     
-                // Create Carrier
+                }
                 
+                // Create Carrier
+                dd($carrierValidator->validated());
                 $carrier = Carrier::create([
                     'branch_id' => $branchId,
                     'customer_id' => $customerId,
@@ -255,7 +261,7 @@ class CarrierController extends Controller
                     ]);
                 }
     
-                //dd($userData);
+                dd($carrierValidator['email']);
                 try {
                     Mail::to($userData['email'])->send(new CarrierAccountCreatedMail($userData));
                     Mail::to($authUser->email)->send(new CarrierCreatedNotificationMail($userData));
