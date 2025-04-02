@@ -34,9 +34,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/mailer', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
 
-            Route::post('/customer-basic', [SettingsController::class, 'updateBasic'])->name('settings.basic.update');
-            Route::post('/customer-address', [SettingsController::class, 'updateAddress'])->name('settings.address.update');
-            Route::post('/customer-other', [SettingsController::class, 'updateOther'])->name('settings.other.update');
+            Route::post('/basic', [SettingsController::class, 'updateBasic'])->name('settings.basic.update');
+            Route::post('/address', [SettingsController::class, 'updateAddress'])->name('settings.address.update');
+            Route::post('/other', [SettingsController::class, 'updateOther'])->name('settings.other.update');
         });
 
         // Shipment routes
