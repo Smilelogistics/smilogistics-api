@@ -331,6 +331,7 @@ class SettingsController extends Controller
             } else {
                 throw new \Exception('Unauthorized role');
             }
+            
     
             DB::commit();
     
