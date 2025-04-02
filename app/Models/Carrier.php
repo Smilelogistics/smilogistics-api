@@ -16,6 +16,11 @@ class Carrier extends Model
     use FileUploadTrait;
 
     protected $table = 'carriers';
+    protected $casts = [
+        'state_served' => 'array',
+        'carries_this_cargo' => 'array',
+        'carrier_profile' => 'array',
+    ];
     protected $fillable = [
         'branch_id',
         'user_id',

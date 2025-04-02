@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Branch;
+use App\Models\Driver;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class SettingsController extends Controller
 {
@@ -67,26 +70,24 @@ class SettingsController extends Controller
             }
         }
 
-        // Merge logos with other data
         $updateData = array_merge($validated, $logoPaths);
 
-        // Remove null logo paths
         $updateData = array_filter($updateData);
 
-        if ($user->hasRole('customer')) {
-            $customer = Customer::updateOrCreate(
-                ['user_id' => $user->id],
-                $updateData
-            );
+        // if ($user->hasRole('customer')) {
+        //     $customer = Customer::updateOrCreate(
+        //         ['user_id' => $user->id],
+        //         $updateData
+        //     );
 
-            // Delete old logos if new ones were uploaded
-            foreach ($logoPaths as $field => $path) {
-                if (!empty($customer->{$field})) {
-                    Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
-                }
-            }
-        } 
-        elseif ($user->hasRole('businessadministrator')) {
+        //     foreach ($logoPaths as $field => $path) {
+        //         if (!empty($customer->{$field})) {
+        //             Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
+        //         }
+        //     }
+        // } 
+        // else
+        if ($user->hasRole('businessadministrator')) {
             if (!$user->branch) {
                 return response()->json([
                     'message' => 'Branch not found',
@@ -113,7 +114,7 @@ class SettingsController extends Controller
         }
 
         return response()->json([
-            'message' => 'Settings updated successfully',
+            'message' => 'General Settings updated successfully',
             'data' => $updateData,
             'logo_urls' => $logoPaths
         ]);
@@ -287,5 +288,161 @@ class SettingsController extends Controller
             'message' => 'Security settings updated successfully',
             'data' => $validated
         ]);
+    }
+
+    //Customer and driver methods
+    public function updateBasic(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'invoice_footer_note' => 'sometimes|nullable|string|min:5',
+            'customer_sales_rep' => 'sometimes|nullable|string|min:10',
+            'fax_no' => 'sometimes|nullable|string|max:20',
+            'toll_free' => 'sometimes|nullable|string|max:10',
+            'note' => 'sometimes|nullable|string|max:255',
+            'internal_note' => 'sometimes|nullable|string|min:5',
+            'tag' => 'sometimes|nullable|string|min:5',
+            'flash_note_for_drivers' => 'sometimes|nullable|string|min:5',
+            'flash_note_for_accounting' => 'sometimes|nullable|string|min:5',
+            'other_notes' => 'sometimes|nullable|string|min:5',
+            'start_date' => 'sometimes|nullable|string|min:5',
+            'credit_limit' => 'sometimes|nullable|string|min:5',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('customer')) {
+                $customer = Customer::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update customer mail settings');
+                }
+            } 
+            elseif ($user->hasRole('driver')) {
+                $driver = Driver::where('user_id', $user->id)->firstOrFail();
+                $driver->fill($validated);
+                
+                if (!$branch->save()) {
+                    throw new \Exception('Failed to update branch mail settings');
+                }
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Mail settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update mail settings'
+            ], 500);
+        }
+    }
+
+    public function updateAddress(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'customer_phone' => 'sometimes|nullable|string|min:5',
+            'customer_primary_address' => 'sometimes|nullable|string|min:10',
+            'customer_secondary_address' => 'sometimes|nullable|string|max:20',
+            'customer_country' => 'sometimes|nullable|string|max:10',
+            'customer_state' => 'sometimes|nullable|string|max:255',
+            'customer_zip' => 'sometimes|nullable|string|min:5',
+            'customer_office' => 'sometimes|nullable|string|min:5',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('customer')) {
+                $customer = Customer::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update customer Address settings');
+                }
+
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Address settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update address settings'
+            ], 500);
+        }
+    }
+
+    public function updateOther(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'isSubAccount' => 'sometimes|nullable|in:0,1',
+            'subAccount_of' => 'sometimes|nullable|string|min:10',
+            'isFactoredInvoice' => 'sometimes|nullable|in:0,1',
+            'factoringCompany' => 'sometimes|nullable|string|max:100',
+            'isPrepaid' => 'sometimes|nullable|in:0,1',
+            'isNonBillable' => 'sometimes|nullable|in:0,1',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('customer')) {
+                $customer = Customer::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update customer settings');
+                }
+
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update settings'
+            ], 500);
+        }
     }
 }

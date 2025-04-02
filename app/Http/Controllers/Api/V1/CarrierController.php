@@ -60,155 +60,83 @@ class CarrierController extends Controller
     }
 
     public function store(Request $request)
-    {
+{
+    $authUser = auth()->user();
+    $branchId = $authUser->branch->id ?? null;
+    $customerId = $authUser->role === 'customer' ? $authUser->customer->id : null;
+    $openAccount = false;
+    
+    if (!$branchId) {
+        return response()->json(['message' => 'User is not associated with a branch'], 400);
+    }
 
-        $openAccount = false;
-        $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
+    try {
+        $userData = $request->only(['name', 'email']);
+        $carrierData = $request->except(['name', 'email', 'files', 'insurance']);
 
-        $customerId = null;
+        // Validate user data
+        $validateUser = Validator::make($userData, [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+        ]);
 
-        if ($authUser->role == 'customer') {
-            $customerId = $authUser->customer->id;
+        if ($validateUser->fails()) {
+            return response()->json(['errors' => $validateUser->errors()], 422);
         }
 
-        //dd($customerId);
+        // Validate carrier data
+        $carrierValidator = Validator::make($carrierData, [
+            'name' => 'nullable|string|max:255',
+            'state_served' => 'nullable',
+            'carries_this_cargo' => 'nullable',
+            'carrier_profile' => 'nullable',
+            'code' => 'nullable|string|max:50',
+            'type' => 'nullable|string|max:100',
+            
+            // Carrier Identifiers
+            'usdot_number' => 'nullable|string|max:50',
+            'mc_number' => 'nullable|string|max:50',
+            'scac' => 'nullable|string|max:50',
+            'tax_id' => 'nullable|string|max:50',
+            'carrier_number' => 'nullable|string|max:50',
 
-    
-        if (!$branchId) {
-            return response()->json(['message' => 'User is not associated with a branch'], 400);
+            // Contact Information
+            'contact_name' => 'nullable|string|max:255',
+            'email' => 'nullable|email|max:255',
+            'cell_phone' => 'nullable|string|max:20',
+            'office_phone' => 'nullable|string|max:20',
+
+            // Address Information
+            'primary_address' => 'nullable|string|max:255',
+            'city' => 'nullable|string|max:100',
+            'state' => 'nullable|string|max:50',
+            'zip' => 'nullable|string|max:20',
+            'country' => 'nullable|string|max:50',
+
+            // Insurance Details
+            'insurance' => 'nullable|array',
+            'insurance.*.coverage' => 'nullable|string|max:255',
+            'insurance.*.amount' => 'nullable|numeric',
+            'insurance.*.policy_number' => 'nullable|string|max:255',
+            'insurance.*.expires' => 'nullable|date',
+
+            // File Uploads
+            'file' => 'nullable|array',
+            'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
+
+            'carrier_docs' => 'nullable|array',
+            'carrier_docs.*' => 'file|max:5120',
+        ]);
+
+        if ($carrierValidator->fails()) {
+            return response()->json(['errors' => $carrierValidator->errors()], 422);
         }
-    
-        try {
-            $userData = $request->only(['name', 'email']);
-            $carrierData = $request->except(['name', 'email', 'files', 'insurance']);
-    
-            // Validate user data
-            $validateUser = Validator::make($userData, [
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:users,email',
-            ]);
-    
-            if ($validateUser->fails()) {
-                return response()->json(['errors' => $validateUser->errors()], 422);
-            }
-    
-            // Validate carrier data
-            $carrierValidator = Validator::make($carrierData, [
-                'name' => 'nullable|string|max:255',
-                'state_served' => 'nullable|string|max:255',
-                'code' => 'nullable|string|max:50',
-                'type' => 'nullable|string|max:100',
-                
-                // Carrier Identifiers
-                'usdot_number' => 'nullable|string|max:50',
-                'mc_number' => 'nullable|string|max:50',
-                'scac' => 'nullable|string|max:50',
-                'tax_id' => 'nullable|string|max:50',
-                'carrier_number' => 'nullable|string|max:50',
-                
-                // Contact Information
-                'contact_name' => 'nullable|string|max:255',
-                'email' => 'nullable|email|max:255',
-                'cell_phone' => 'nullable|string|max:20',
-                'cell_carrier' => 'nullable|string|max:100',
-                'office_phone' => 'nullable|string|max:20',
-                'toll_free_number' => 'nullable|string|max:20',
-                'fax_no' => 'nullable|string|max:20',
-                
-                // Address Information
-                'primary_address' => 'nullable|string|max:255',
-                'secondary_address' => 'nullable|string|max:255',
-                'city' => 'nullable|string|max:100',
-                'state' => 'nullable|string|max:50',
-                'zip' => 'nullable|string|max:20',
-                'country' => 'nullable|string|max:50',
-                
-                // Operational Details
-                'offices' => 'nullable|string|max:255',
-                'carrier_access' => 'nullable|boolean',
-                'show_payment_in_mobile_app' => 'nullable|boolean',
-                'no_of_drivers' => 'nullable|integer|min:0',
-                'power_units' => 'nullable|integer|min:0',
-                'other_equipments' => 'nullable|string',
-                'carrier_profile' => 'nullable|string|max:255',
-                
-                // Additional Carrier Information
-                'rating' => 'nullable|numeric|between:0,5',
-                'carries_this_cargo' => 'nullable|string',
-                'note_about_choices' => 'nullable|string',
-                'start_date' => 'nullable|date',
-                'tag' => 'nullable|string|max:100',
-                
-                // Flash Notes
-                'flash_note_to_riders_about_this_carrier' => 'nullable|string',
-                'flash_note_to_payroll_about_this_carrier' => 'nullable|string',
-                'internal_note' => 'nullable|string',
-                'notes' => 'nullable|string',
-                
-                // Insurance Details
-                'insurance_provider' => 'nullable|string|max:255',
-                'insurance_expire' => 'nullable|date',
-                'note_about_coverage' => 'nullable|string',
-                'insurance_provider' => 'nullable|string|max:255',
-                'insurance_expire' => 'nullable|date',
-                'note_about_coverage' => 'nullable|string',
-                'insurance' => 'nullable|array',
-                'insurance.*.coverage' => 'nullable|string|max:255',
-                'insurance.*.amount' => 'nullable|numeric',
-                'insurance.*.policy_number' => 'nullable|string|max:255',
-                'insurance.*.expires' => 'nullable|date',
 
-                'insurance_provider' => 'nullable|string|max:255',
-                'insurance_expire' => 'nullable|date',
-                'note_about_coverage' => 'nullable|string',
-                'insurance' => 'nullable|array',
-                'insurance.*.coverage' => 'nullable|string|max:255',
-                'insurance.*.amount' => 'nullable|numeric',
-                'insurance.*.policy_number' => 'nullable|string|max:255',
-                'insurance.*.expires' => 'nullable|date',
-                
-                // Payment Information
-                'payment_terms' => 'nullable|string|max:255',
-                'paid_via' => 'nullable|string|max:100',
-                'account_number' => 'nullable|string|max:50',
-                'routing_number' => 'nullable|string|max:50',
-                'settlement_email_address' => 'nullable|email|max:255',
-                'payment_mailling_address' => 'nullable|string|max:255',
-                'payment_contact' => 'nullable|string|max:255',
-                'payment_related_notes' => 'nullable|string',
-                'payment_method' => 'nullable|string|max:100',
-                'carrier_smile_id' => 'nullable|string|max:50',
-                'data_exchange_option' => 'nullable|string|max:100',
-                
-                // File Upload
-                'file' => 'nullable|array',
-                'file.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120',
-                'file_titles' => 'nullable|array',
-                'file_titles.*' => 'string|max:255',
+        return DB::transaction(function () use ($userData, $carrierData, $customerId, $request, $branchId, $authUser, $openAccount, $carrierValidator) {
+            $createUser = null;
 
-
-                'insurance_provider' => 'nullable|string|max:255',
-                'insurance_expire' => 'nullable|date',
-                'note_about_coverage' => 'nullable|string',
-                'carrier_docs' => 'nullable|array',
-                'carrier_docs.*' => 'file|max:5120', // Max 5MB for each file
-                'carrier_docs_titles' => 'nullable|array',
-                'carrier_docs_titles.*' => 'string|max:255',
-                'insurance_coverage' => 'nullable|string|max:255',
-                'insurance_amount' => 'nullable|numeric',
-                'insurance_policy_number' => 'nullable|string|max:255',
-                'insurance_expires' => 'nullable|date',
-            ]);
-    
-            if ($carrierValidator->fails()) {
-                return response()->json(['errors' => $carrierValidator->errors()], 422);
-            }
-    
-            return DB::transaction(function () use ($userData, $openAccount, $carrierData, $customerId, $request, $branchId, $authUser, $carrierValidator) {
-                // Create User
-                if($openAccount){
-                   // dd($userData['email']);
+            // Create User if needed
+            if ($openAccount) {
                 $createUser = User::updateOrCreate(
                     ['email' => $userData['email']],
                     [
@@ -219,66 +147,87 @@ class CarrierController extends Controller
                         'password' => Hash::make('12345678'),
                     ]
                 );
-    
+
                 if ($createUser) {
                     $createUser->addRole('carrier');
                 }
-    
-                }
-                
-                // Create Carrier
-                dd($carrierValidator->validated());
-                $carrier = Carrier::create([
-                    'branch_id' => $branchId,
-                    'customer_id' => $customerId,
-                    'user_id' => $createUser->id,
-                    'status' => 'active',	
-                    ...$carrierValidator->validated()
-                ]);
-    
-                // Store CarrierDocs (File Uploads)
-                if ($request->hasFile('files')) {
-                    foreach ($request->file('files') as $file) {
-                        $path = $file->store('carrier_docs', 'public');
-                        CarrierDocs::create([
-                            'branch_id' => $branchId,
-                            'carrier_id' => $carrier->id,
-                            'file' => $path,
-                            'file_title' => $file->getClientOriginalName(),
-                        ]);
-                    }
-                }
-    
-                $insuranceData = $request->input('insurance') ?? [];
-                //dd($insuranceData);
-                foreach ($insuranceData as $insurance) {
-                    CarrierInsurance::create([
+            }
+
+            // Encode JSON fields if necessary
+            $carrierData['state_served'] = is_array($request->state_served) ? json_encode($request->state_served) : json_encode([$request->state_served]);
+
+            $stateServed = is_array($request->state_served) ? $request->state_served : [$request->state_served];
+        $carrierData['state_served'] = json_encode($stateServed);
+
+
+         // Handle array fields properly
+        $validatedData = $carrierValidator->validated();
+
+        // Convert array fields to JSON
+        $validatedData['state_served'] = isset($validatedData['state_served']) 
+            ? json_encode((array)$validatedData['state_served'])
+            : null;
+
+        $validatedData['carries_this_cargo'] = isset($validatedData['carries_this_cargo']) 
+            ? json_encode((array)$validatedData['carries_this_cargo'])
+            : null;
+
+        $validatedData['carrier_profile'] = isset($validatedData['carrier_profile']) 
+            ? json_encode((array)$validatedData['carrier_profile'])
+            : null;
+
+            // Create Carrier
+            $carrier = Carrier::create([
+                'branch_id' => $branchId,
+                'customer_id' => $customerId,
+                'user_id' => $createUser ? $createUser->id : null,
+                'status' => 'active',
+                ...$validatedData
+            ]);
+
+            // Store CarrierDocs (File Uploads)
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $file) {
+                    $path = $file->store('carrier_docs', 'public');
+                    CarrierDocs::create([
+                        'branch_id' => $branchId,
                         'carrier_id' => $carrier->id,
-                        'coverage' => $insurance['coverage'] ?? null,
-                        'amount' => $insurance['amount'] ?? null,
-                        'policy_number' => $insurance['policy_number'] ?? null,
-                        'expires' => $insurance['expires'] ?? null,
+                        'file' => $path,
+                        'file_title' => $file->getClientOriginalName(),
                     ]);
                 }
-    
-                dd($carrierValidator['email']);
-                try {
-                    Mail::to($userData['email'])->send(new CarrierAccountCreatedMail($userData));
-                    Mail::to($authUser->email)->send(new CarrierCreatedNotificationMail($userData));
-                    $authUser->notify(new CarrierCreatedForAdmin($userData));
-                } catch (\Exception $e) {
-                    \Log::error('Notification error: ' . $e->getMessage());
-                }
-    
-                return response()->json([
-                    'message' => 'Carrier created successfully',
-                    'carrier' => $carrier
-                ], 201);
-            });
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
-        }
+            }
+
+            // Store Insurance Data
+            foreach ($request->input('insurance', []) as $insurance) {
+                CarrierInsurance::create([
+                    'carrier_id' => $carrier->id,
+                    'coverage' => $insurance['coverage'] ?? null,
+                    'amount' => $insurance['amount'] ?? null,
+                    'policy_number' => $insurance['policy_number'] ?? null,
+                    'expires' => $insurance['expires'] ?? null,
+                ]);
+            }
+
+            // Send notifications
+            try {
+                Mail::to($userData['email'])->send(new CarrierAccountCreatedMail($userData));
+                Mail::to($authUser->email)->send(new CarrierCreatedNotificationMail($userData));
+                $authUser->notify(new CarrierCreatedForAdmin($userData));
+            } catch (\Exception $e) {
+                \Log::error('Notification error: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'message' => 'Carrier created successfully',
+                'carrier' => $carrier
+            ], 201);
+        });
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], 500);
     }
+}
+
     
 
     /**
@@ -323,7 +272,7 @@ class CarrierController extends Controller
             'power_units' => 'nullable|integer',
             'other_equipments' => 'nullable|string|max:255',
             'rating' => 'nullable|numeric|min:0|max:5',
-            'carries_this_cargo' => 'nullable|string|max:255',
+            'carries_this_cargo' => 'nullable|array|string',
             'note_about_choices' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'tag' => 'nullable|string|max:255',
