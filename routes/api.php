@@ -37,6 +37,10 @@ Route::prefix('v1')->group(function () {
             Route::post('/basic', [SettingsController::class, 'updateBasic'])->name('settings.basic.update');
             Route::post('/address', [SettingsController::class, 'updateAddress'])->name('settings.address.update');
             Route::post('/other', [SettingsController::class, 'updateOther'])->name('settings.other.update');
+
+            Route::post('/Dbasic', [SettingsController::class, 'updateDriverBasic'])->name('settings.driver.basic.update');
+            Route::post('/Daddress', [SettingsController::class, 'updateDriverAddress'])->name('settings.driver.address.update');
+            Route::post('/Dother', [SettingsController::class, 'updateDriverOther'])->name('settings.driver.other.update');
         });
 
         // Shipment routes

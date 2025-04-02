@@ -290,14 +290,14 @@ class SettingsController extends Controller
         ]);
     }
 
-    //Customer and driver methods
+    //Customer methods
     public function updateBasic(Request $request)
     {
         $user = auth()->user();
         
         $validated = $request->validate([
             'invoice_footer_note' => 'sometimes|nullable|string|min:5',
-            'customer_sales_rep' => 'sometimes|nullable|string|min:10',
+            'customer_sales_rep' => 'sometimes|nullable|string|min:3',
             'fax_no' => 'sometimes|nullable|string|max:20',
             'toll_free' => 'sometimes|nullable|string|max:10',
             'note' => 'sometimes|nullable|string|max:255',
@@ -307,7 +307,7 @@ class SettingsController extends Controller
             'flash_note_for_accounting' => 'sometimes|nullable|string|min:5',
             'other_notes' => 'sometimes|nullable|string|min:5',
             'start_date' => 'sometimes|nullable|string|min:5',
-            'credit_limit' => 'sometimes|nullable|string|min:5',
+            'credit_limit' => 'sometimes|nullable|string|min:1',
         ]);
     
         DB::beginTransaction();
@@ -331,13 +331,13 @@ class SettingsController extends Controller
             } else {
                 throw new \Exception('Unauthorized role');
             }
-            
+
     
             DB::commit();
     
             return response()->json([
                 'success' => true,
-                'message' => 'Mail settings updated successfully',
+                'message' => 'Basic settings updated successfully',
                 'data' => $validated
             ]);
     
@@ -347,7 +347,7 @@ class SettingsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'error' => 'Failed to update mail settings'
+                'error' => 'Failed to update basic settings'
             ], 500);
         }
     }
@@ -358,8 +358,8 @@ class SettingsController extends Controller
         
         $validated = $request->validate([
             'customer_phone' => 'sometimes|nullable|string|min:5',
-            'customer_primary_address' => 'sometimes|nullable|string|min:10',
-            'customer_secondary_address' => 'sometimes|nullable|string|max:20',
+            'customer_primary_address' => 'sometimes|nullable|string|min:8',
+            'customer_secondary_address' => 'sometimes|nullable|string|min:8',
             'customer_country' => 'sometimes|nullable|string|max:10',
             'customer_state' => 'sometimes|nullable|string|max:255',
             'customer_zip' => 'sometimes|nullable|string|min:5',
@@ -443,6 +443,159 @@ class SettingsController extends Controller
                 'success' => false,
                 'message' => $e->getMessage(),
                 'error' => 'Failed to update settings'
+            ], 500);
+        }
+    }
+
+    //Driver methods
+    public function updateDriverBasic(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'driver_type' => 'sometimes|nullable|string',
+            'emergency_contact_info' => 'sometimes|nullable|string',
+            'hired_on' => 'sometimes|nullable|date',
+            'terminated_on' => 'sometimes|nullable|date',
+            'years_of_experience' => 'sometimes|nullable|integer',
+            'endorsements' => 'sometimes|nullable|string',
+            'tags' => 'sometimes|nullable|string|min:5',
+            'rating' => 'sometimes|nullable|string',
+            'notes_about_the_choices_made' => 'sometimes|nullable|string|min:5',
+            'pay_via' => 'sometimes|nullable|string|min:5',
+            'company_name_paid_to' => 'sometimes|nullable|string|min:3',
+            'employer_identification_number' => 'sometimes|nullable|string|min:1',
+            'send_settlements_mail' => 'sometimes|nullable|string|min:6',
+            'print_settlements_under_this_company' => 'sometimes|nullable|string|min:3',
+            'flash_notes_to_dispatch' => 'sometimes|nullable|string|min:10',
+            'flash_notes_to_payroll' => 'sometimes|nullable|string|min:10',
+            'internal_notes' => 'sometimes|nullable|string|min:10',
+            'driver_status' => 'sometimes|nullable|string|min:10',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('driver')) {
+                $customer = Driver::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update driver Basic settings');
+                }
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Basic settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update basic settings'
+            ], 500);
+        }
+    }
+
+    public function updateDriverAddress(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'driver_phone' => 'sometimes|nullable|string',
+            'driver_phone_carrier' => 'sometimes|nullable|string',
+            'driver_primary_address' => 'sometimes|nullable|string|min:8',
+            'driver_secondary_address' => 'sometimes|nullable|string|min:8',
+            'driver_country' => 'sometimes|nullable|string',
+            'driver_state' => 'sometimes|nullable|string',
+            'driver_city' => 'sometimes|nullable|string|min:3',
+            'driver_zip' => 'sometimes|nullable|integer',
+            'office' => 'sometimes|nullable|string|min:1',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('driver')) {
+                $customer = Driver::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update driver Basic settings');
+                }
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Address settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update address settings'
+            ], 500);
+        }
+    }
+
+    public function updateDriverOther(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'isAccessToMobileApp' => 'sometimes|nullable|integer',
+            'mobile_settings' => 'sometimes|nullable|integer',
+        ]);
+    
+        DB::beginTransaction();
+    
+        try {
+            if ($user->hasRole('driver')) {
+                $customer = Driver::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update driver Basic settings');
+                }
+            } else {
+                throw new \Exception('Unauthorized role');
+            }
+
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Address settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update address settings'
             ], 500);
         }
     }
