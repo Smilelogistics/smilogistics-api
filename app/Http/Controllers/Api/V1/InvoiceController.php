@@ -58,7 +58,26 @@ class InvoiceController extends Controller
      */
     public function show($id)
     {
-        $invoice = Invoice::with(['charges', 'docs', 'payments'])->findOrFail($id);
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $customerId = $user->customer ? $user->customer->id : null;
+
+        if ($user->hasRole('businessadministrator')) {
+            $invoices = Invoice::where('branch_id', $branchId)
+                            ->with('customer', 'user')
+                            ->latest()
+                            ->get();
+        }
+        elseif ($user->hasRole('customer')) {
+            $invoices = Invoice::where('customer_id', $customerId)
+                            ->with('branch', 'user')
+                            ->latest()
+                            ->get();
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        // $invoice = Invoice::with(['charges', 'docs', 'payments'])->findOrFail($id);
         return response()->json(['invoice' => $invoice], 200);
     }
 
