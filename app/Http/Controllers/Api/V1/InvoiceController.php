@@ -66,13 +66,13 @@ class InvoiceController extends Controller
             $invoice = Invoice::where('branch_id', $branchId)
                             ->with('customer', 'user')
                             ->latest()
-                            ->get();
+                            ->findOrFail($id);
         }
         elseif ($user->hasRole('customer')) {
             $invoice = Invoice::where('customer_id', $customerId)
                             ->with('branch', 'user')
                             ->latest()
-                            ->get();
+                            ->findOrFail($id);
         } else {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
