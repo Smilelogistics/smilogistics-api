@@ -185,7 +185,6 @@ class InvoiceController extends Controller
 
             // Insert into InvoicePayment
             if ($request->credit_amount) {
-                return $request->all();
                 foreach ($request->credit_amount as $index => $date) {
                     InvoicePaymentRecieved::create([
                         'invoice_id' => $invoice->id,
@@ -257,16 +256,35 @@ class InvoiceController extends Controller
             }
 
             // Update InvoicePayment (remove old and add new)
-            if ($request->payment_date) {
-                InvoicePayment::where('invoice_id', $id)->delete();
-                foreach ($request->payment_date as $index => $date) {
-                    InvoicePaymentRecieved::create([
+             // Handle payments
+            if ($request->credit_memo) {
+                foreach ($request->credit_memo as $index => $creditMemo) {
+                    $paymentData = [
                         'invoice_id' => $id,
-                        'payment_date' => $date,
-                        'payment_method' => $request->payment_method[$index] ?? null,
-                        'amount' => $request->amount[$index] ?? null,
-                    ]);
+                        'credit_memo' => $request->credit_memo[$index],
+                        'credit_amount' => $request->credit_amount[$index],
+                        'credit_date' => $request->credit_date[$index],
+                        'credit_note' => $request->credit_note[$index],
+                        'payment_method' => $request->payment_method[$index],
+                        'balance_before_credit' => $request->balance_before_credit[$index],
+                        'processing_fee_flate_rate' => $request->processing_fee_flate_rate[$index],
+                        'processing_fee_percent' => $request->processing_fee_percent[$index],
+                    ];
+
+                    // Check if payment ID exists (update) or not (create)
+                    if (!empty($request->payment_ids[$index])) {
+                        InvoicePaymentRecieved::where('id', $request->payment_ids[$index])
+                            ->update($paymentData);
+                    } else {
+                        InvoicePaymentRecieved::create($paymentData);
+                    }
                 }
+            }
+
+            // Handle deleted payments if needed
+            if ($request->has('deleted_payments')) {
+                InvoicePaymentRecieved::whereIn('id', $request->deleted_payments)
+                    ->delete();
             }
 
             DB::commit();
