@@ -84,6 +84,15 @@ class CarrierController extends Controller
             return response()->json(['errors' => $validateUser->errors()], 422);
         }
 
+        foreach (['state_served', 'carries_this_cargo', 'carrier_profile'] as $field) {
+            if ($request->has($field) && !is_array($request->input($field))) {
+                $request->merge([
+                    $field => [$request->input($field)],
+                ]);
+            }
+        }
+        
+
         // Validate carrier data
         $carrierValidator = Validator::make($carrierData, [
             'name' => 'nullable|string|max:255',
