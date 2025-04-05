@@ -298,49 +298,59 @@ protected function handleDocuments(Request $request, $invoiceId)
 
 protected function handlePayments(Request $request, $invoiceId)
 {
-    if (!$request->has('credit_memo')) return;
-
-    // Convert single payment to array
-    $payments = [
-        'payment_ids' => is_array($request->payment_ids ?? []) ? $request->payment_ids : [$request->payment_ids],
-        'credit_memo' => is_array($request->credit_memo) ? $request->credit_memo : [$request->credit_memo],
-        'credit_amount' => is_array($request->credit_amount) ? $request->credit_amount : [$request->credit_amount],
-        'credit_date' => is_array($request->credit_date) ? $request->credit_date : [$request->credit_date],
-        'credit_note' => is_array($request->credit_note ?? []) ? $request->credit_note : [$request->credit_note],
-        'payment_method' => is_array($request->payment_method ?? []) ? $request->payment_method : [$request->payment_method],
-        'balance_before_credit' => is_array($request->balance_before_credit ?? []) ? $request->balance_before_credit : [$request->balance_before_credit],
-        'processing_fee_flate_rate' => is_array($request->processing_fee_flate_rate ?? []) ? $request->processing_fee_flate_rate : [$request->processing_fee_flate_rate],
-        'processing_fee_percent' => is_array($request->processing_fee_percent ?? []) ? $request->processing_fee_percent : [$request->processing_fee_percent],
-    ];
-
-    // Handle deleted payments
-    if ($request->has('deleted_payments')) {
-        $deleted = is_array($request->deleted_payments) ? $request->deleted_payments : [$request->deleted_payments];
-        InvoicePaymentRecieved::where('invoice_id', $invoiceId)
-            ->whereIn('id', $deleted)
-            ->delete();
+    if (!$request->has('invoicepayments')) {
+        return;
     }
 
-    // Process payments
-    foreach ($payments['credit_memo'] as $index => $creditMemo) {
+    // Get all payments data
+    $payments = $request->invoicepayments;
+    
+    // If we get a single payment (not in array format), convert to array
+    if (isset($payments['credit_memo'])) {
+        $payments = [$payments];
+    }
+
+    // Process each payment
+    foreach ($payments as $index => $payment) {
+        // Skip if essential data is missing
+        if (empty($payment['credit_memo'])) {
+            continue;
+        }
+
         $paymentData = [
             'invoice_id' => $invoiceId,
-            'credit_memo' => $creditMemo,
-            'credit_amount' => $payments['credit_amount'][$index] ?? 0,
-            'credit_date' => $payments['credit_date'][$index],
-            'credit_note' => $payments['credit_note'][$index] ?? null,
-            'payment_method' => $payments['payment_method'][$index] ?? null,
-            'balance_before_credit' => $payments['balance_before_credit'][$index] ?? 0,
-            'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index] ?? 0,
-            'processing_fee_percent' => $payments['processing_fee_percent'][$index] ?? 0,
+            'credit_memo' => $payment['credit_memo'] ?? null,
+            'credit_amount' => $payment['credit_amount'] ?? 0,
+            'credit_note' => $payment['credit_note'] ?? null,
+            'credit_date' => !empty($payment['credit_date']) 
+                ? Carbon::createFromFormat('m/d/Y', $payment['credit_date'])->format('Y-m-d')
+                : null,
+            'check_number' => $payment['check_number'] ?? null,
+            'notes' => $payment['notes'] ?? null,
+            'payment_date' => $payment['payment_date'] ?? null,
+            'payment_method' => $payment['payment_method'] ?? null,
+            'processing_fee_flate_rate' => $payment['processing_fee_flate_rate'] ?? 0,
+            'processing_fee_percent' => $payment['processing_fee_percent'] ?? 0,
         ];
 
-        if (!empty($payments['payment_ids'][$index])) {
-            InvoicePaymentRecieved::where('id', $payments['payment_ids'][$index])
+        // Update existing or create new
+        if (!empty($payment['id'])) {
+            InvoicePaymentRecieved::where('id', $payment['id'])
                 ->update($paymentData);
         } else {
             InvoicePaymentRecieved::create($paymentData);
         }
+    }
+
+    // Handle deleted payments
+    if ($request->has('deleted_payment_ids')) {
+        $deletedIds = is_array($request->deleted_payment_ids) 
+            ? $request->deleted_payment_ids 
+            : explode(',', $request->deleted_payment_ids);
+            
+        InvoicePaymentRecieved::where('invoice_id', $invoiceId)
+            ->whereIn('id', $deletedIds)
+            ->delete();
     }
 }
 }
