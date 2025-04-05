@@ -84,15 +84,6 @@ class CarrierController extends Controller
             return response()->json(['errors' => $validateUser->errors()], 422);
         }
 
-        foreach (['state_served', 'carries_this_cargo', 'carrier_profile'] as $field) {
-            if ($request->has($field) && !is_array($request->input($field))) {
-                $request->merge([
-                    $field => [$request->input($field)],
-                ]);
-            }
-        }
-        
-
         // Validate carrier data
         $carrierValidator = Validator::make($carrierData, [
             'name' => 'nullable|string|max:255',
@@ -166,28 +157,18 @@ class CarrierController extends Controller
                 }
             }
 
-            // Encode JSON fields if necessary
-            $carrierData['state_served'] = is_array($request->state_served) ? json_encode($request->state_served) : json_encode([$request->state_served]);
+            $arrayFields = [
+                'state_served' => $request->input('state_served', []),
+                'carrier_profile' => $request->input('carrier_profile', []),
+                'carries_this_cargo' => $request->input('carries_this_cargo', [])
+            ];
 
-            $stateServed = is_array($request->state_served) ? $request->state_served : [$request->state_served];
-        $carrierData['state_served'] = json_encode($stateServed);
-
-
-         // Handle array fields properly
-        $validatedData = $carrierValidator->validated();
-
-        // Convert array fields to JSON
-        $validatedData['state_served'] = isset($validatedData['state_served']) 
-            ? json_encode((array)$validatedData['state_served'])
-            : null;
-
-        $validatedData['carries_this_cargo'] = isset($validatedData['carries_this_cargo']) 
-            ? json_encode((array)$validatedData['carries_this_cargo'])
-            : null;
-
-        $validatedData['carrier_profile'] = isset($validatedData['carrier_profile']) 
-            ? json_encode((array)$validatedData['carrier_profile'])
-            : null;
+            // Convert single values to arrays if needed
+            foreach ($arrayFields as $field => $value) {
+                if (!is_array($value)) {
+                    $arrayFields[$field] = [$value];
+                }
+            }
 
             // Create Carrier
             $carrier = Carrier::create([
@@ -195,7 +176,26 @@ class CarrierController extends Controller
                 'customer_id' => $customerId,
                 'user_id' => $createUser ? $createUser->id : null,
                 'status' => 'active',
-                ...$validatedData
+                
+                'state_served' => !empty($arrayFields['state_served']) ? json_encode($arrayFields['state_served']) : null,
+                'carrier_profile' => !empty($arrayFields['carrier_profile']) ? json_encode($arrayFields['carrier_profile']) : null,
+                'carries_this_cargo' => !empty($arrayFields['carries_this_cargo']) ? json_encode($arrayFields['carries_this_cargo']) : null,
+                'name' => $request->input('name'),
+                'code' => $request->input('code'),
+                'type' => $request->input('type'),
+                'usdot_number' => $request->input('usdot_number'),
+                'mc_number' => $request->input('mc_number'),
+                'scac' => $request->input('scac'),
+                'tax_id' => $request->input('tax_id'),
+                'contact_name' => $request->input('contact_name'),
+                'email' => $request->input('email'),
+                'cell_phone' => $request->input('cell_phone'),
+                'office_phone' => $request->input('office_phone'),
+                'primary_address' => $request->input('primary_address'),
+                'city' => $request->input('city'),
+                'state' => $request->input('state'),
+                'zip' => $request->input('zip'),
+                'country' => $request->input('country'),
             ]);
 
             // Store CarrierDocs (File Uploads)
