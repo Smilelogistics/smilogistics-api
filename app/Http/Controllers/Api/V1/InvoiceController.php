@@ -185,6 +185,7 @@ class InvoiceController extends Controller
 
             // Insert into InvoicePayment
             if ($request->credit_amount) {
+                return $request->all();
                 foreach ($request->credit_amount as $index => $date) {
                     InvoicePaymentRecieved::create([
                         'invoice_id' => $invoice->id,
