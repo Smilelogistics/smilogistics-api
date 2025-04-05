@@ -220,80 +220,128 @@ class InvoiceController extends Controller
     /**
      * Update an existing invoice and its related models.
      */
-    public function update(Request $request, $id)
-    {
-        $invoice = Invoice::findOrFail($id);
 
-        DB::beginTransaction();
-        try {
-            $invoice->update($request->all());
+     public function update(Request $request, $id)
+{
+    $invoice = Invoice::findOrFail($id);
 
-            // Update related InvoiceCharge records
-            if ($request->charge_type) {
-                InvoiceCharge::where('invoice_id', $id)->delete();
-                foreach ($request->charge_type as $index => $type) {
-                    InvoiceCharge::create([
-                        'invoice_id' => $id,
-                        'charge_type' => $type,
-                        'units' => $request->units[$index] ?? null,
-                        'unit_rate' => $request->unit_rate[$index] ?? null,
-                        'amount' => $request->amount[$index] ?? null,
-                    ]);
-                }
-            }
+    DB::beginTransaction();
+    try {
+        $invoice->update($request->all());
 
-            // Update InvoiceDoc (remove old and add new)
-            if ($request->hasFile('file')) {
-                InvoiceDoc::where('invoice_id', $id)->delete();
-                foreach ($request->file('file') as $index => $file) {
-                    $filename = $file->store('invoices', 'public');
-                    InvoiceDoc::create([
-                        'invoice_id' => $id,
-                        'file' => $filename,
-                        'file_title' => $request->file_title[$index] ?? null,
-                    ]);
-                }
-            }
+        // Handle Charges (single or array)
+        $this->handleCharges($request, $id);
 
-            // Update InvoicePayment (remove old and add new)
-             // Handle payments
-            if ($request->credit_memo) {
-                foreach ($request->credit_memo as $index => $creditMemo) {
-                    $paymentData = [
-                        'invoice_id' => $id,
-                        'credit_memo' => $request->credit_memo[$index],
-                        'credit_amount' => $request->credit_amount[$index],
-                        'credit_date' => $request->credit_date[$index],
-                        'credit_note' => $request->credit_note[$index],
-                        'payment_method' => $request->payment_method[$index],
-                        'balance_before_credit' => $request->balance_before_credit[$index],
-                        'processing_fee_flate_rate' => $request->processing_fee_flate_rate[$index],
-                        'processing_fee_percent' => $request->processing_fee_percent[$index],
-                    ];
+        // Handle Documents (single or array)
+        $this->handleDocuments($request, $id);
 
-                    // Check if payment ID exists (update) or not (create)
-                    if (!empty($request->payment_ids[$index])) {
-                        InvoicePaymentRecieved::where('id', $request->payment_ids[$index])
-                            ->update($paymentData);
-                    } else {
-                        InvoicePaymentRecieved::create($paymentData);
-                    }
-                }
-            }
+        // Handle Payments (single or array)
+        $this->handlePayments($request, $id);
 
-            // Handle deleted payments if needed
-            if ($request->has('deleted_payments')) {
-                InvoicePaymentRecieved::whereIn('id', $request->deleted_payments)
-                    ->delete();
-            }
+        DB::commit();
+        return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
 
-            DB::commit();
-            return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
+    }
+}
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
-        }
+protected function handleCharges(Request $request, $invoiceId)
+{
+    if (!$request->has('charge_type')) return;
+
+    // Convert single item to array for consistent processing
+    $charges = [
+        'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
+        'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
+        'unit_rate' => is_array($request->unit_rate ?? []) ? $request->unit_rate : [$request->unit_rate],
+        'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+    ];
+
+    InvoiceCharge::where('invoice_id', $invoiceId)->delete();
+
+    foreach ($charges['charge_type'] as $index => $type) {
+        InvoiceCharge::create([
+            'invoice_id' => $invoiceId,
+            'charge_type' => $type,
+            'units' => $charges['units'][$index] ?? null,
+            'unit_rate' => $charges['unit_rate'][$index] ?? null,
+            'amount' => $charges['amount'][$index] ?? null,
+        ]);
+    }
+}
+
+protected function handleDocuments(Request $request, $invoiceId)
+{
+    if (!$request->hasFile('file')) return;
+
+    // Handle both single file and multiple files
+    $files = $request->file('file');
+    if (!is_array($files)) {
+        $files = [$files];
     }
 
+    $fileTitles = is_array($request->file_title ?? []) ? $request->file_title : [$request->file_title];
+
+    InvoiceDoc::where('invoice_id', $invoiceId)->delete();
+
+    foreach ($files as $index => $file) {
+        $filename = $file->store('invoices', 'public');
+        InvoiceDoc::create([
+            'invoice_id' => $invoiceId,
+            'file' => $filename,
+            'file_title' => $fileTitles[$index] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+        ]);
+    }
 }
+
+protected function handlePayments(Request $request, $invoiceId)
+{
+    if (!$request->has('credit_memo')) return;
+
+    // Convert single payment to array
+    $payments = [
+        'payment_ids' => is_array($request->payment_ids ?? []) ? $request->payment_ids : [$request->payment_ids],
+        'credit_memo' => is_array($request->credit_memo) ? $request->credit_memo : [$request->credit_memo],
+        'credit_amount' => is_array($request->credit_amount) ? $request->credit_amount : [$request->credit_amount],
+        'credit_date' => is_array($request->credit_date) ? $request->credit_date : [$request->credit_date],
+        'credit_note' => is_array($request->credit_note ?? []) ? $request->credit_note : [$request->credit_note],
+        'payment_method' => is_array($request->payment_method ?? []) ? $request->payment_method : [$request->payment_method],
+        'balance_before_credit' => is_array($request->balance_before_credit ?? []) ? $request->balance_before_credit : [$request->balance_before_credit],
+        'processing_fee_flate_rate' => is_array($request->processing_fee_flate_rate ?? []) ? $request->processing_fee_flate_rate : [$request->processing_fee_flate_rate],
+        'processing_fee_percent' => is_array($request->processing_fee_percent ?? []) ? $request->processing_fee_percent : [$request->processing_fee_percent],
+    ];
+
+    // Handle deleted payments
+    if ($request->has('deleted_payments')) {
+        $deleted = is_array($request->deleted_payments) ? $request->deleted_payments : [$request->deleted_payments];
+        InvoicePaymentRecieved::where('invoice_id', $invoiceId)
+            ->whereIn('id', $deleted)
+            ->delete();
+    }
+
+    // Process payments
+    foreach ($payments['credit_memo'] as $index => $creditMemo) {
+        $paymentData = [
+            'invoice_id' => $invoiceId,
+            'credit_memo' => $creditMemo,
+            'credit_amount' => $payments['credit_amount'][$index] ?? 0,
+            'credit_date' => $payments['credit_date'][$index],
+            'credit_note' => $payments['credit_note'][$index] ?? null,
+            'payment_method' => $payments['payment_method'][$index] ?? null,
+            'balance_before_credit' => $payments['balance_before_credit'][$index] ?? 0,
+            'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index] ?? 0,
+            'processing_fee_percent' => $payments['processing_fee_percent'][$index] ?? 0,
+        ];
+
+        if (!empty($payments['payment_ids'][$index])) {
+            InvoicePaymentRecieved::where('id', $payments['payment_ids'][$index])
+                ->update($paymentData);
+        } else {
+            InvoicePaymentRecieved::create($paymentData);
+        }
+    }
+}
+}
+
