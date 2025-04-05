@@ -87,15 +87,19 @@ class CarrierController extends Controller
         // Validate carrier data
         $carrierValidator = Validator::make($carrierData, [
             'name' => 'nullable|string|max:255',
-            'state_served' => 'nullable',
-            'carries_this_cargo' => 'nullable',
-            'carrier_profile' => 'nullable',
+
+            'state_served' => 'nullable|array',
+            'state_served.*' => 'nullable|string|max:50',
+            'carries_this_cargo' => 'nullable|array',
+            'carries_this_cargo.*' => 'nullable|string|max:255',
+            'carrier_profile' => 'nullable|array',
+            'carrier_profile.*' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:50',
             'type' => 'nullable|string|max:100',
             
             // Carrier Identifiers
             'usdot_number' => 'nullable|string|max:50',
-            'mc_number' => 'nullable|string|max:50',
+            'mc_number' => 'required|string|max:50',
             'scac' => 'nullable|string|max:50',
             'tax_id' => 'nullable|string|max:50',
             'carrier_number' => 'nullable|string|max:50',
