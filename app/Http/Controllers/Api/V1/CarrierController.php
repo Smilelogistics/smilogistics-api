@@ -177,9 +177,15 @@ class CarrierController extends Controller
                 'user_id' => $createUser ? $createUser->id : null,
                 'status' => 'active',
                 
-                'state_served' => !empty($arrayFields['state_served']) ? json_encode($arrayFields['state_served']) : null,
-                'carrier_profile' => !empty($arrayFields['carrier_profile']) ? json_encode($arrayFields['carrier_profile']) : null,
-                'carries_this_cargo' => !empty($arrayFields['carries_this_cargo']) ? json_encode($arrayFields['carries_this_cargo']) : null,
+                'state_served' => !empty($carrierData['state_served']) 
+                ? json_encode(array_filter($carrierData['state_served'])) 
+                : null,
+            'carrier_profile' => !empty($carrierData['carrier_profile']) 
+                ? json_encode(array_filter($carrierData['carrier_profile'])) 
+                : null,
+            'carries_this_cargo' => !empty($carrierData['carries_this_cargo']) 
+                ? json_encode(array_filter($carrierData['carries_this_cargo'])) 
+                : null,
                 'name' => $request->input('name'),
                 'code' => $request->input('code'),
                 'type' => $request->input('type'),
