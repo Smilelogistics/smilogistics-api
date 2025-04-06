@@ -116,6 +116,14 @@ class CarrierController extends Controller
             'state' => 'nullable|string|max:50',
             'zip' => 'nullable|string|max:20',
             'country' => 'nullable|string|max:50',
+            'fax_no' => 'nullable|string|max:20',
+            'toll_free' => 'nullable|string|max:20',
+            'other_contact_info' => 'nullable|string|max:255',
+            'no_of_drivers' => 'nullable|integer',
+            'power_units' => 'nullable|integer',
+            'other_equipments' => 'nullable|string|max:255',
+            'rating' => 'nullable|string|max:255',
+            'note_about_choices' => 'nullable|string|max:255',
 
             // Insurance Details
             'insurance' => 'nullable|array',
@@ -176,7 +184,6 @@ class CarrierController extends Controller
                 'customer_id' => $customerId,
                 'user_id' => $createUser ? $createUser->id : null,
                 'status' => 'active',
-                
                 'state_served' => !empty($carrierData['state_served']) 
                 ? json_encode(array_filter($carrierData['state_served'])) 
                 : null,
@@ -202,6 +209,15 @@ class CarrierController extends Controller
                 'state' => $request->input('state'),
                 'zip' => $request->input('zip'),
                 'country' => $request->input('country'),
+                'fax_no' => $request->input('fax_no'),
+                'toll_free_number' => $request->input('toll_free_number'),
+                'other_contact_info' => $request->input('other_contact_info'),
+                'rating' => $request->input('rating'),
+                'note_about_choices' => $request->input('note_about_choices'),
+                'other_equipments' => $request->input('other_equipments'),
+                'no_of_drivers' => $request->input('no_of_drivers'),
+                'power_units' => $request->input('power_units'),
+
             ]);
 
             // Store CarrierDocs (File Uploads)
@@ -260,8 +276,14 @@ class CarrierController extends Controller
     {
         // Validate request
         $validatedData = $request->validate([
+            'state_served' => 'nullable|array',
+            'state_served.*' => 'nullable|string|max:50',
+            'carries_this_cargo' => 'nullable|array',
+            'carries_this_cargo.*' => 'nullable|string|max:255',
+            'carrier_profile' => 'nullable|array',
+            'carrier_profile.*' => 'nullable|string|max:255',
+
             'name' => 'nullable|string|max:255',
-            'state_served' => 'nullable|string|max:255',
             'code' => 'nullable|string|max:50',
             'insurance_coverage' => 'nullable|string|max:255',
             'offices' => 'nullable|string|max:255',
@@ -291,7 +313,6 @@ class CarrierController extends Controller
             'power_units' => 'nullable|integer',
             'other_equipments' => 'nullable|string|max:255',
             'rating' => 'nullable|numeric|min:0|max:5',
-            'carries_this_cargo' => 'nullable|array|string',
             'note_about_choices' => 'nullable|string|max:255',
             'start_date' => 'nullable|date',
             'tag' => 'nullable|string|max:255',
@@ -363,5 +384,12 @@ class CarrierController extends Controller
             'message' => 'Carrier updated successfully',
             'carrier' => $carrier
         ], 200);
+    }
+
+    public function destroy($id)
+    {
+        $carrier = Carrier::findOrFail($id);
+        $carrier->delete();
+        return response()->json(['message' => 'Carrier deleted successfully'], 200);
     }
 }

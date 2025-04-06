@@ -71,6 +71,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/carriers', [CarrierController::class, 'index'])->name('carriers.index');
             Route::get('/carrier/{id}', [CarrierController::class, 'show'])->name('carriers.show');
             Route::put('/update/{id}', [CarrierController::class, 'update'])->name('carriers.update');
+            Route::delete('/delete/{id}', [CarrierController::class, 'destroy'])->name('carriers.destroy');	
         });
 
         Route::prefix('trucks')->group(function () {
