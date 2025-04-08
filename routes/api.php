@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\V1\BikeController;
 use App\Http\Controllers\Api\V1\UnivController;
 use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
@@ -89,6 +90,14 @@ Route::prefix('v1')->group(function () {
             Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
             Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
             Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
+        });
+
+        Route::prefix('bikes')->group(function () {
+            Route::post('create', [BikeController::class, 'store'])->name('bikes.store');
+            Route::put('update/{id}', [BikeController::class, 'update'])->name('bikes.update');
+            Route::get('bikes', [BikeController::class, 'index'])->name('bikes.index');
+            Route::get('bike/{id}', [BikeController::class, 'show'])->name('bikes.show');
+            Route::delete('delete/{id}', [BikeController::class, 'destroy'])->name('bikes.destroy');
         });
 
         Route::prefix('roles')->group(function () {

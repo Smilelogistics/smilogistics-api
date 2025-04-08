@@ -18,3 +18,5 @@ This is a [Laravel](https://laravel.com/) starter app that connects to a Railway
 - PHP
 - Laravel
 - Postgres
+
+<p>I have to create different models for consolidated shipments due to lack of understanding, at the moment i'm using ConsolidateShipment and ConsolidateShipmentDoc model</p>
