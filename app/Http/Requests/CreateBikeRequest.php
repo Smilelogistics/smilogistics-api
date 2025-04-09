@@ -26,8 +26,6 @@ class CreateBikeRequest extends FormRequest
     {
         return [
             //'customer_id' => 'nullable|exists:customers,id',
-            'user_id' => 'nullable|exists:users,id',
-            'branch_id' => 'nullable|exists:branches,id',
             'driver_id' => 'nullable|exists:drivers,id',
             'bike_type' => 'nullable|string|max:255',
             'bike_number' => 'nullable|numeric',
