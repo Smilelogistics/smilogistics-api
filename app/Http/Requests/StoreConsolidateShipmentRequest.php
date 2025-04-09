@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreConsolidateShipmentRequest extends FormRequest
 {
@@ -34,10 +36,12 @@ class StoreConsolidateShipmentRequest extends FormRequest
 
             // Customer & Receiver Info
             'consolidated_for' => 'nullable|string|max:255',
-            'customer_contact' => 'nullable|string|max:255',
+            'customer_email' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:255',
             'receiver_name' => 'nullable|string|max:255',
             'receiver_address' => 'nullable|string',
-            'receiver_contact' => 'nullable|string|max:255',
+            'receiver_phone' => 'nullable|string|max:255',
+            'receiver_email' => 'nullable|string|max:255',
 
             // Logistics & Routing
             'origin_warehouse' => 'nullable|string|max:255',

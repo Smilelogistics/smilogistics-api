@@ -25,7 +25,7 @@ class CreateBikeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => 'nullable|exists:customers,id',
+            //'customer_id' => 'nullable|exists:customers,id',
             'user_id' => 'nullable|exists:users,id',
             'branch_id' => 'nullable|exists:branches,id',
             'driver_id' => 'nullable|exists:drivers,id',

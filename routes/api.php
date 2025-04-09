@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
+use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 
 // Route::get('/user', function (Request $request) {
@@ -67,6 +68,7 @@ Route::prefix('v1')->group(function () {
             Route::resource('driver', DriverController::class);
         });
 
+
         Route::prefix('carriers')->group(function () {
             Route::post('/create', [CarrierController::class, 'store'])->name('carriers.store');
             Route::get('/carriers', [CarrierController::class, 'index'])->name('carriers.index');
@@ -109,6 +111,15 @@ Route::prefix('v1')->group(function () {
             Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
             Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
             Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
+        });
+
+        
+        Route::prefix('consolidate')->group(function () {
+            Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
+           Route::put('/update/{id}', [ConsolidateShipmentController::class, 'update'])->name('console.shipments.update');
+            Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
+            Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
+            Route::delete('/delete/{id}', [ConsolidateShipmentController::class, 'destroy'])->name('console.shipments.destroy');
         });
         
     });

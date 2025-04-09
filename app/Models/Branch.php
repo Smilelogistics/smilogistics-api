@@ -67,6 +67,10 @@ class Branch extends Model
     {
         return $this->hasMany(Driver::class);
     }
+    public function consolidatedShipment()
+    {
+        return $this->hasMany(ConsolidateShipment::class);
+    }
 
     public function shipment()
     {

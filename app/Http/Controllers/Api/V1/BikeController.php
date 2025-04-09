@@ -38,7 +38,7 @@ class BikeController extends Controller
             $bike = Bike::create([
                 'branch_id' => $branchId,
                 'driver_id' => $validatedData['driver_id'],
-                'customer_id' => $validatedData['customer_id'],
+                //'customer_id' => $validatedData['customer_id'],
                 'bike_type' => $validatedData['bike_type'],
                 'bike_number' => $validatedData['bike_number'],
                 'bike_office' => $validatedData['bike_office'],

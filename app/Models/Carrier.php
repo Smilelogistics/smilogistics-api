@@ -87,6 +87,11 @@ class Carrier extends Model
     {
         return $this->hasMany(BillTo::class);
     }
+
+    public function consolidatedShipment()
+    {
+        return $this->hasMany(ConsolidateShipment::class);
+    }
     
     /**
      * Update the specified carrier in storage.

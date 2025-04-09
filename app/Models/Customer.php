@@ -18,6 +18,11 @@ class Customer extends Model
         return $this->belongsTo(User::class);
     }   
 
+    public function consolidatedShipment()
+    {
+        return $this->hasMany(ConsolidateShipment::class);
+    }
+    
     public function branch()
     {
         return $this->belongsTo(Branch::class);

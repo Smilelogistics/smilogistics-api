@@ -2,9 +2,14 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ConsolidateShipmentCustomerMail;
+use App\Mail\ConsolidateShipmentRecieverMail;
+use App\Http\Requests\StoreConsolidateShipmentRequest;
 
 class ConsolidateShipmentController extends Controller
 {
@@ -24,8 +29,14 @@ class ConsolidateShipmentController extends Controller
     }
     public function store(StoreConsolidateShipmentRequest $request)
     {
+       // dd($request->all());
         $validatedData = $request->validated();
         $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $branch = $user->branch()->with('user')->first();
+
+        $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
+        $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
 
         $consolidateShipment = ConsolidateShipment::create([
@@ -34,12 +45,15 @@ class ConsolidateShipmentController extends Controller
             'customer_id' => $validatedData['customer_id'],
             'carrier_id' => $validatedData['carrier_id'],
             'driver_id' => $validatedData['driver_id'],
+            'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
             'consolidation_type' => $validatedData['consolidation_type'],
             'consolidated_for' => $validatedData['consolidated_for'],
-            'customer_contact' => $validatedData['customer_contact'],
+            'customer_email' => $validatedData['customer_email'],
+            'customer_phone' => $validatedData['customer_phone'],
             'receiver_name' => $validatedData['receiver_name'],
             'receiver_address' => $validatedData['receiver_address'],
-            'receiver_contact' => $validatedData['receiver_contact'],
+            'receiver_email' => $validatedData['receiver_email'],
+            'receiver_phone' => $validatedData['receiver_phone'],
             'origin_warehouse' => $validatedData['origin_warehouse'],
             'destination_warehouse' => $validatedData['destination_warehouse'],
             'expected_departure_date' => $validatedData['expected_departure_date'],
@@ -51,6 +65,9 @@ class ConsolidateShipmentController extends Controller
             'accepted_status' => $validatedData['accepted_status'],
             'status' => $validatedData['status'],
         ]);
+
+        Mail::to($consolidateShipment->customer_email)->send(new ConsolidateShipmentCustomerMail($consolidateShipment, $branch));
+        Mail::to($consolidateShipment->receiver_email)->send(new ConsolidateShipmentRecieverMail($consolidateShipment, $branch));
 
         return response()->json([
             'success' => true,

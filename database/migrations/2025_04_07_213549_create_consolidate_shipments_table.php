@@ -18,14 +18,17 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('carrier_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
+            $table->string('consolidate_tracking_number')->unique();
             $table->enum('consolidation_type', ['Personal', 'Commercial', 'Bulk Order'])->default('Personal');
 
             // Customer & Receiver Info
             $table->string('consolidated_for')->nullable(); // Customer Name
-            $table->string('customer_contact')->nullable(); // Phone/Email
+            $table->string('customer_email')->nullable(); // /Email
+            $table->string('customer_phone')->nullable(); // Phone
             $table->string('receiver_name')->nullable();
             $table->text('receiver_address')->nullable();
-            $table->string('receiver_contact')->nullable();
+            $table->string('receiver_email')->nullable();
+            $table->string('receiver_phone')->nullable();
 
             // Logistics & Routing
             $table->string('origin_warehouse')->nullable();
@@ -63,7 +66,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('consolidate_shipments');
+        Schema::enableForeignKeyConstraints();
         Schema::dropIfExists('consolidate_shipment_docs');
     }
 };
