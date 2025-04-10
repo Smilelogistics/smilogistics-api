@@ -39,12 +39,13 @@ class ConsolidateShipmentController extends Controller
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
+        $customerId = $user->customer ? $user->customer->id : null;
 
         $consolidateShipment = ConsolidateShipment::create([
             'user_id' => $user->id,
             'branch_id' => $branchId,
-            'customer_id' => $validatedData['customer_id'],
-            'carrier_id' => $validatedData['carrier_id'],
+            'customer_id' => $customerId,
+            //'carrier_id' => $validatedData['carrier_id'],
             'driver_id' => $validatedData['driver_id'],
             'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
             'consolidation_type' => $validatedData['consolidation_type'],
