@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ConsolidateShipmentCustomerMail;
 use App\Mail\ConsolidateShipmentRecieverMail;
 use App\Http\Requests\StoreConsolidateShipmentRequest;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ConsolidateShipmentController extends Controller
 {
@@ -62,9 +63,52 @@ class ConsolidateShipmentController extends Controller
             'total_shipping_cost' => $validatedData['total_shipping_cost'],
             'payment_status' => $validatedData['payment_status'],
             'payment_method' => $validatedData['payment_method'],
-            'accepted_status' => $validatedData['accepted_status'],
-            'status' => $validatedData['status'],
         ]);
+
+        if($request->hasFile('proof_of_delivery_path')){
+            $file = $request->file('proof_of_delivery_path');
+            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'consolidate_shipment'
+            ]);
+
+            $consolidateShipment->consolidateShipmentDocs()->create([
+                'proof_of_delivery_path' => $uploadedFile->getSecurePath(),
+                'public_id' => $uploadedFile->getPublicId()
+            ]);
+        }
+
+        if($request->hasFile('invoice_path')){
+            $file = $request->file('invoice_path');
+            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                'folder' => 'consolidate_shipment'
+            ]);
+
+            $consolidateShipment->consolidateShipmentDocs()->create([
+                'invoice_path' => $uploadedFile->getSecurePath(),
+                'public_id' => $uploadedFile->getPublicId()
+            ]);
+        }
+
+        if ($request->hasFile('file_path')) {
+            //dd($request->file('file_path'));
+            $files = $request->file('file_path');
+        
+            // Normalize to array (even if it's one file)
+            $files = is_array($files) ? $files : [$files];
+        
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'consolidate_shipment'
+                    ]);
+        
+                    $consolidateShipment->consolidateShipmentDocs()->create([
+                        'file_path' => $uploadedFile->getSecurePath(),
+                        'public_id' => $uploadedFile->getPublicId()
+                    ]);
+                }
+            }
+        }
 
         Mail::to($consolidateShipment->customer_email)->send(new ConsolidateShipmentCustomerMail($consolidateShipment, $branch));
         Mail::to($consolidateShipment->receiver_email)->send(new ConsolidateShipmentRecieverMail($consolidateShipment, $branch));

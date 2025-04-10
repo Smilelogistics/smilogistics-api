@@ -44,18 +44,18 @@ return new class extends Migration
             $table->enum('payment_method', ['Cash', 'Card', 'Wallet', 'Transfer', 'Other'])->nullable();
             $table->enum('accepted_status', ['Accepted', 'Rejected', 'Pending'])->default('Pending');
             $table->string('status', 100)->default('Pending');
-
+            $table->text('internal_notes')->nullable();
             $table->timestamps();
         });
 
 
         Schema::create('consolidate_shipment_docs', function (Blueprint $table) {
             $table->id();
+            $table->string('file_path')->nullable();
+            $table->string('public_id')->nullable();
             $table->foreignId('consolidate_shipment_id')->constrained()->onDelete('cascade');
              $table->string('invoice_path')->nullable(); // File path for invoice/manifest
-             $table->text('internal_notes')->nullable();
              $table->string('proof_of_delivery_path')->nullable(); // Signature/image path
-             $table->string('file_path')->nullable();
             $table->timestamps();
         });
         

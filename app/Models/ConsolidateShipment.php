@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
+use App\Models\ConsolidateShipmentDoc;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -30,6 +31,10 @@ class ConsolidateShipment extends Model
     }
     public function branch() {
         return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    public function consolidateShipmentDocs() {
+        return $this->hasMany(ConsolidateShipmentDoc::class);
     }
 
     public static function generateTrackingNumber() {
