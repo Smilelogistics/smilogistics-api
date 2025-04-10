@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('carrier_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('consolidate_tracking_number')->unique();
+            $table->string('consolidate_tracking_number')->nullable()->unique();
             $table->enum('consolidation_type', ['Personal', 'Commercial', 'Bulk Order'])->default('Personal');
 
             // Customer & Receiver Info
