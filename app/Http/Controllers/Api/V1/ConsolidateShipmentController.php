@@ -47,7 +47,7 @@ class ConsolidateShipmentController extends Controller
             'customer_id' => $customerId,
             //'carrier_id' => $validatedData['carrier_id'],
             'driver_id' => $validatedData['driver_id'],
-            'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
+            //'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
             'consolidation_type' => $validatedData['consolidation_type'],
             'consolidated_for' => $validatedData['consolidated_for'],
             'customer_email' => $validatedData['customer_email'],
