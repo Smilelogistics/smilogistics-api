@@ -15,7 +15,7 @@ class BikeController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver')->latest()->get();
+        $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->latest()->get();
         return response()->json(['bikes' => $bikes], 200);
     }
 
@@ -23,7 +23,7 @@ class BikeController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $bike = Bike::where('branch_id', $branchId)->with('customer', 'driver')->findOrFail($id);
+        $bike = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->findOrFail($id);
         return response()->json(['bike' => $bike], 200);
     }
     public function store(CreateBikeRequest $request)

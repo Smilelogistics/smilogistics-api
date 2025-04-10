@@ -25,9 +25,6 @@ class StoreConsolidateShipmentRequest extends FormRequest
     {
         return [
             // Foreign Keys
-            'user_id' => 'nullable|exists:users,id',
-            'branch_id' => 'nullable|exists:branches,id',
-            'customer_id' => 'nullable|exists:customers,id',
             'carrier_id' => 'nullable|exists:carriers,id',
             'driver_id' => 'nullable|exists:drivers,id',
 
@@ -55,8 +52,8 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'handling_fee' => 'nullable|numeric|min:0',
             'payment_status' => 'required|in:Paid,Pending,Partially Paid',
             'payment_method' => 'nullable|in:Cash,Card,Wallet,Transfer,Other',
-            'accepted_status' => 'required|in:Accepted,Rejected,Pending',
-            'status' => 'required|string|max:100',
+            // 'accepted_status' => 'required|in:Accepted,Rejected,Pending',
+            // 'status' => 'required|string|max:100',
 
             // Documents
             'file_path.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
