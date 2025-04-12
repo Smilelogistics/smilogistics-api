@@ -88,7 +88,7 @@ class ConsolidateShipmentController extends Controller
                 'folder' => 'consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->create([
+            $consolidateShipment->documents()->updateOrCreate([
                 'type' => 'proof_of_delivery',
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
@@ -99,7 +99,7 @@ class ConsolidateShipmentController extends Controller
                 'folder' => 'consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->create([
+            $consolidateShipment->documents()->updateOrCreate([
                 'type' => 'invoice_path',
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
@@ -118,7 +118,7 @@ class ConsolidateShipmentController extends Controller
                         'folder' => 'consolidate_shipment'
                     ]);
         
-                    $consolidateShipment->consolidateShipmentDocs()->create([
+                    $consolidateShipment->documents()->crupdateOrCreateeate([
                         'file_path' => $uploadedFile->getSecurePath(),
                         //'public_id' => $uploadedFile->getPublicId()
                     ]);
