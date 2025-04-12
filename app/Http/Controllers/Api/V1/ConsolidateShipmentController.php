@@ -209,13 +209,24 @@ class ConsolidateShipmentController extends Controller
             }
     
             if ($request->hasFile('file_path')) {
-                $uploadedFile = Cloudinary::upload($request->file('file_path')->getRealPath(), [
-                    'folder' => 'consolidate_shipment'
-                ]);
-                $consolidateShipment->documents()->updateOrCreate(
-                    ['type' => 'file_path'],
-                    ['file_path' => $uploadedFile->getSecurePath()]
-                );
+                //dd($request->file('file_path'));
+                $files = $request->file('file_path');
+            
+                // Normalize to array (even if it's one file)
+                $files = is_array($files) ? $files : [$files];
+            
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'product_images'
+                        ]);
+            
+                        $product->productImages()->create([
+                            'file_path' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
+                        ]);
+                    }
+                }
             }
     
             DB::commit();
