@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Validator;
+use Illuminate\Support\Facades\Validator;
 use App\Mail\ConsolidateShipmentCustomerMail;
 use App\Mail\ConsolidateShipmentRecieverMail;
 use App\Http\Requests\StoreConsolidateShipmentRequest;
