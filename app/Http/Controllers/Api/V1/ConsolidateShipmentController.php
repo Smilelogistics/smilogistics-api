@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Validator;
 use App\Mail\ConsolidateShipmentCustomerMail;
 use App\Mail\ConsolidateShipmentRecieverMail;
 use App\Http\Requests\StoreConsolidateShipmentRequest;
@@ -135,91 +137,90 @@ class ConsolidateShipmentController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $validated = $request->validate([
-        'consolidation_type' => 'sometimes|string',
-        'consolidated_for' => 'sometimes|string',
-        'total_weight' => 'sometimes|numeric',
-        'receiver_phone' => 'sometimes|string',
-        'receiver_email' => 'sometimes|email',
-        'origin_warehouse' => 'sometimes|string',
-        'destination_warehouse' => 'sometimes|string',
-        'expected_departure_date' => 'sometimes|date_format:Y-m-d',
-        'expected_arrival_date' => 'sometimes|date_format:Y-m-d',
-        'total_shipping_cost' => 'sometimes|numeric',
-        'payment_status' => 'sometimes|string',
-        'payment_method' => 'sometimes|string',
+    {
+        $authUser = auth()->user();
+        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        try{
+            $validatedData = Validator::make($request->all(), [
+                'consolidation_type' => 'sometimes|string',
+                'consolidated_for' => 'sometimes|string',
+                'total_weight' => 'sometimes|numeric',
+                'receiver_phone' => 'sometimes|string',
+                'receiver_email' => 'sometimes|email',
+                'origin_warehouse' => 'sometimes|string',
+                'destination_warehouse' => 'sometimes|string',
+                'expected_departure_date' => 'sometimes|date_format:Y-m-d',
+                'expected_arrival_date' => 'sometimes|date_format:Y-m-d',
+                'total_shipping_cost' => 'sometimes|numeric',
+                'payment_status' => 'sometimes|string',
+                'payment_method' => 'sometimes|string',
 
-        'proof_of_delivery_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
-        'invoice_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
-        'file_path' => 'sometimes|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:5120',
-    ]);
+                'proof_of_delivery_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
+                'invoice_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
+                'file_path' => 'sometimes|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:5120',
+            ]);
 
-    $consolidateShipment = ConsolidateShipment::findOrFail($id);
+            if($validatedData->fails()){
+                return response()->json([
+                    'success' => false,
+                    'message' => $validatedData->errors(),
+                ]);
+            }
 
-    $fields = [
-        'consolidation_type',
-        'consolidated_for',
-        'total_weight',
-        'receiver_phone',
-        'receiver_email',
-        'origin_warehouse',
-        'destination_warehouse',
-        'expected_departure_date',
-        'expected_arrival_date',
-        'total_shipping_cost',
-        'payment_status',
-        'payment_method'
-    ];
+            DB::beginTransaction();
+            $validatedShipment = $validatedData->validated();
 
-    $updates = [];
+            $consolidateShipment = ConsolidateShipment::findOrFail($id);
 
-    foreach ($fields as $field) {
-        if ($request->has($field) && $request->$field !== $consolidateShipment->$field) {
-            $updates[$field] = $request->$field;
+            $consolidateShipment->update($validatedShipment);
+
+            if ($request->hasFile('proof_of_delivery_path')) {
+                $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [
+                    'folder' => 'consolidate_shipment'
+                ]);
+                $consolidateShipment->documents()->updateOrCreate(
+                    ['type' => 'proof_of_delivery'],
+                    ['file_path' => $uploadedFile->getSecurePath()]
+                );
+            }
+    
+            if ($request->hasFile('invoice_path')) {
+                $uploadedFile = Cloudinary::upload($request->file('invoice_path')->getRealPath(), [
+                    'folder' => 'consolidate_shipment'
+                ]);
+                $consolidateShipment->documents()->updateOrCreate(
+                    ['type' => 'invoice_path'],
+                    ['file_path' => $uploadedFile->getSecurePath()]
+                );
+            }
+    
+            if ($request->hasFile('file_path')) {
+                $uploadedFile = Cloudinary::upload($request->file('file_path')->getRealPath(), [
+                    'folder' => 'consolidate_shipment'
+                ]);
+                $consolidateShipment->documents()->updateOrCreate(
+                    ['type' => 'file_path'],
+                    ['file_path' => $uploadedFile->getSecurePath()]
+                );
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Consolidate Shipment updated successfully',
+                'data' => $consolidateShipment
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ]);
         }
+     
     }
-
-    if (!empty($updates)) {
-        $consolidateShipment->update($updates);
-    }
-
-    if ($request->hasFile('proof_of_delivery_path')) {
-        $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [
-            'folder' => 'consolidate_shipment'
-        ]);
-        $consolidateShipment->documents()->updateOrCreate(
-            ['type' => 'proof_of_delivery'],
-            ['file_path' => $uploadedFile->getSecurePath()]
-        );
-    }
-
-    if ($request->hasFile('invoice_path')) {
-        $uploadedFile = Cloudinary::upload($request->file('invoice_path')->getRealPath(), [
-            'folder' => 'consolidate_shipment'
-        ]);
-        $consolidateShipment->documents()->updateOrCreate(
-            ['type' => 'invoice_path'],
-            ['file_path' => $uploadedFile->getSecurePath()]
-        );
-    }
-
-    if ($request->hasFile('file_path')) {
-        $uploadedFile = Cloudinary::upload($request->file('file_path')->getRealPath(), [
-            'folder' => 'consolidate_shipment'
-        ]);
-        $consolidateShipment->documents()->updateOrCreate(
-            ['type' => 'file_path'],
-            ['file_path' => $uploadedFile->getSecurePath()]
-        );
-    }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Consolidate Shipment updated successfully',
-        'data' => $consolidateShipment
-    ]);
-}
 
     
     public function destroy($id)
