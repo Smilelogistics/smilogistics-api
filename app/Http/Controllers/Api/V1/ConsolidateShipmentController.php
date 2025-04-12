@@ -157,7 +157,7 @@ class ConsolidateShipmentController extends Controller
 
                 'proof_of_delivery_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
                 'invoice_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
-                'file_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:5120',
+                'file_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',
             ]);
 
             if($validatedData->fails()){
@@ -214,10 +214,7 @@ class ConsolidateShipmentController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage(),
-            ]);
+            return response()->json(['message' => $e->getMessage()], 500);
         }
      
     }
