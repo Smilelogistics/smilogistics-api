@@ -301,8 +301,10 @@ class DriverController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy($id)
     {
-        
+        $driver = Driver::findOrFail($id);
+        $driver->delete();
+        return response()->json(['message' => 'Driver deleted successfully']);
     }
 }

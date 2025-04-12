@@ -86,4 +86,9 @@ class Branch extends Model
         return $this->hasMany(Agency::class);
     }
 
+    public function consolidateShipment()
+    {
+        return $this->hasMany(ConsolidateShipment::class);
+    }
+
 }
