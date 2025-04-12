@@ -142,22 +142,22 @@ class ConsolidateShipmentController extends Controller
         $branchId = $authUser->branch ? $authUser->branch->id : null;
         try{
             $validatedData = Validator::make($request->all(), [
-                'consolidation_type' => 'sometimes|string',
-                'consolidated_for' => 'sometimes|string',
-                'total_weight' => 'sometimes|numeric',
-                'receiver_phone' => 'sometimes|string',
-                'receiver_email' => 'sometimes|email',
-                'origin_warehouse' => 'sometimes|string',
-                'destination_warehouse' => 'sometimes|string',
-                'expected_departure_date' => 'sometimes|date_format:Y-m-d',
-                'expected_arrival_date' => 'sometimes|date_format:Y-m-d',
-                'total_shipping_cost' => 'sometimes|numeric',
-                'payment_status' => 'sometimes|string',
-                'payment_method' => 'sometimes|string',
+                'consolidation_type' => 'sometimes|string|nullable',
+                'consolidated_for' => 'sometimes|string|nullable',
+                'total_weight' => 'sometimes|numeric|nullable',
+                'receiver_phone' => 'sometimes|string|nullable',
+                'receiver_email' => 'sometimes|email|nullable',
+                'origin_warehouse' => 'sometimes|string|nullable',
+                'destination_warehouse' => 'sometimes|string|nullable',
+                'expected_departure_date' => 'sometimes|date_format:Y-m-d|nullable',
+                'expected_arrival_date' => 'sometimes|date_format:Y-m-d|nullable',
+                'total_shipping_cost' => 'sometimes|numeric|nullable',
+                'payment_status' => 'sometimes|string|nullable',
+                'payment_method' => 'sometimes|string|nullable',
 
-                'proof_of_delivery_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
-                'invoice_path' => 'sometimes|file|mimes:pdf,jpg,png|max:2048',
-                'file_path' => 'sometimes|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:5120',
+                'proof_of_delivery_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
+                'invoice_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
+                'file_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:5120',
             ]);
 
             if($validatedData->fails()){
