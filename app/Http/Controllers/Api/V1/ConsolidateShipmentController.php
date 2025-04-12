@@ -218,10 +218,10 @@ class ConsolidateShipmentController extends Controller
                 foreach ($files as $file) {
                     if ($file->isValid()) {
                         $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'product_images'
+                            'folder' => 'consolidate_shipment'
                         ]);
             
-                        $product->productImages()->create([
+                        $consolidateShipment->documents()->create([
                             'file_path' => $uploadedFile->getSecurePath(),
                             'public_id' => $uploadedFile->getPublicId()
                         ]);
