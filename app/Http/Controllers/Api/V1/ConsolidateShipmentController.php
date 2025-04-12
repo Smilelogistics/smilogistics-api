@@ -88,7 +88,7 @@ class ConsolidateShipmentController extends Controller
                 'folder' => 'consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->updateOrCreate([
+            $consolidateShipment->documents()->create([
                 'type' => 'proof_of_delivery',
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
@@ -99,7 +99,7 @@ class ConsolidateShipmentController extends Controller
                 'folder' => 'consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->updateOrCreate([
+            $consolidateShipment->documents()->create([
                 'type' => 'invoice_path',
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
@@ -118,7 +118,7 @@ class ConsolidateShipmentController extends Controller
                         'folder' => 'consolidate_shipment'
                     ]);
         
-                    $consolidateShipment->documents()->crupdateOrCreateeate([
+                    $consolidateShipment->documents()->create([
                         'file_path' => $uploadedFile->getSecurePath(),
                         //'public_id' => $uploadedFile->getPublicId()
                     ]);
@@ -173,7 +173,20 @@ class ConsolidateShipmentController extends Controller
 
             $consolidateShipment = ConsolidateShipment::findOrFail($id);
 
-            $consolidateShipment->update($validatedShipment);
+            $consolidateShipment->update([
+                'consolidation_type' => $validatedShipment['consolidation_type'],
+                'consolidated_for' => $validatedShipment['consolidated_for'],
+                'total_weight' => $validatedShipment['total_weight'],
+                'receiver_phone' => $validatedShipment['receiver_phone'],
+                'receiver_email' => $validatedShipment['receiver_email'],
+                'origin_warehouse' => $validatedShipment['origin_warehouse'],
+                'destination_warehouse' => $validatedShipment['destination_warehouse'],
+                'expected_departure_date' => $validatedShipment['expected_departure_date'],
+                'expected_arrival_date' => $validatedShipment['expected_arrival_date'],
+                'total_shipping_cost' => $validatedShipment['total_shipping_cost'],
+                'payment_status' => $validatedShipment['payment_status'],
+                'payment_method' => $validatedShipment['payment_method'],
+            ]);
 
             if ($request->hasFile('proof_of_delivery_path')) {
                 $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [
