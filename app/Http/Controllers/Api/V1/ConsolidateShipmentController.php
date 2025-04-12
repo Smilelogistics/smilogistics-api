@@ -18,7 +18,7 @@ class ConsolidateShipmentController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)->with('customer', 'carrier', 'driver')->latest()->get();
+        $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)->with('customer.user', 'carrier', 'driver.user')->latest()->get();
         return response()->json(['consolidateShipments' => $consolidateShipments], 200);
     }
     public function show($id)
@@ -40,14 +40,15 @@ class ConsolidateShipmentController extends Controller
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
         $customerId = $user->customer ? $user->customer->id : null;
-
+        
+    	//dd(ConsolidateShipment::generateTrackingNumber());
         $consolidateShipment = ConsolidateShipment::create([
             'user_id' => $user->id,
             'branch_id' => $branchId,
             'customer_id' => $customerId,
             //'carrier_id' => $validatedData['carrier_id'],
             'driver_id' => $validatedData['driver_id'],
-            //'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
+            'consolidate_tracking_number' => $shipment_prefix . ConsolidateShipment::generateTrackingNumber() ?? null,
             'consolidation_type' => $validatedData['consolidation_type'],
             'consolidated_for' => $validatedData['consolidated_for'],
             'customer_email' => $validatedData['customer_email'],
@@ -65,6 +66,8 @@ class ConsolidateShipmentController extends Controller
             'payment_status' => $validatedData['payment_status'],
             'payment_method' => $validatedData['payment_method'],
         ]);
+
+       // dd($consolidateShipment);
 
         if($request->hasFile('proof_of_delivery_path')){
             $file = $request->file('proof_of_delivery_path');
@@ -110,7 +113,7 @@ class ConsolidateShipmentController extends Controller
                 }
             }
         }
-
+    //dd($consolidateShipment->receiver_email);
         Mail::to($consolidateShipment->customer_email)->send(new ConsolidateShipmentCustomerMail($consolidateShipment, $branch));
         Mail::to($consolidateShipment->receiver_email)->send(new ConsolidateShipmentRecieverMail($consolidateShipment, $branch));
 
