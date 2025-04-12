@@ -157,7 +157,8 @@ class ConsolidateShipmentController extends Controller
 
                 'proof_of_delivery_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
                 'invoice_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png|max:2048',
-                'file_path' => 'sometimes|nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',
+                'file_path.*' => 'nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',
+                'file_path' => 'sometimes|array',
             ]);
 
             if($validatedData->fails()){
