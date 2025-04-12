@@ -18,17 +18,12 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('carrier_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('consolidate_tracking_number')->nullable()->unique();
             $table->enum('consolidation_type', ['Personal', 'Commercial', 'Bulk Order'])->default('Personal');
 
             // Customer & Receiver Info
             $table->string('consolidated_for')->nullable(); // Customer Name
-            $table->string('customer_email')->nullable(); // /Email
-            $table->string('customer_phone')->nullable(); // Phone
             $table->string('receiver_name')->nullable();
             $table->text('receiver_address')->nullable();
-            $table->string('receiver_email')->nullable();
-            $table->string('receiver_phone')->nullable();
 
             // Logistics & Routing
             $table->string('origin_warehouse')->nullable();
@@ -44,7 +39,6 @@ return new class extends Migration
             $table->enum('payment_method', ['Cash', 'Card', 'Wallet', 'Transfer', 'Other'])->nullable();
             $table->enum('accepted_status', ['Accepted', 'Rejected', 'Pending'])->default('Pending');
             $table->string('status', 100)->default('Pending');
-            $table->text('internal_notes')->nullable();
             $table->timestamps();
         });
 
