@@ -295,11 +295,7 @@ class ConsolidateShipmentController extends Controller
         $user = auth()->user();
         $payments = ConsolidateShipment::with('branch','user')->where('payment_status', 'paid')->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Consolidate Shipments fetched successfully',
-            'data' => $payments
-        ]);
+        return response()->json($payments);
     }
 
     public function showPayment($id)
