@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Pusher\Pusher;
 use App\Models\Bike;
 use App\Models\BikeDoc;
 use Illuminate\Http\Request;
@@ -104,6 +105,42 @@ class BikeController extends Controller
                 'details' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function updateLocation(Request $request, $id)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' =>'required|numeric',
+        ]);
+
+        try{
+            $bike = Bike::findOrFail($id);
+            $bike->update([
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+            ]);
+            $pusher = new Pusher(
+                config('broadcasting.connections.pusher.key'),
+                config('broadcasting.connections.pusher.secret'),
+                config('broadcasting.connections.pusher.app_id'),
+                config('broadcasting.connections.pusher.options')
+            );
+            $pusher->trigger('bike-location', 'location-updated', [
+                'id' => $bike->id,
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                
+            ]);
+            return response()->json(['message' => 'Location updated successfully',
+            'latitude' => $bike->latitude,
+            'longitude' => $bike->longitude,
+        ], 200);
+        }catch(\Exception $e){
+            return response()->json(['error' => 'Failed to update location', 'details' => $e->getMessage()], 500);
+        }
+
+       
     }
 
     public function destroy($id)

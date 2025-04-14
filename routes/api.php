@@ -99,6 +99,7 @@ Route::prefix('v1')->group(function () {
             Route::put('update/{id}', [BikeController::class, 'update'])->name('bikes.update');
             Route::get('bikes', [BikeController::class, 'index'])->name('bikes.index');
             Route::get('bike/{id}', [BikeController::class, 'show'])->name('bikes.show');
+            Route::post('update-location/{id}', [BikeController::class, 'updateLocation'])->name('bikes.updateLocation');
             Route::delete('delete/{id}', [BikeController::class, 'destroy'])->name('bikes.destroy');
         });
 
@@ -119,7 +120,21 @@ Route::prefix('v1')->group(function () {
            Route::put('/update/{id}', [ConsolidateShipmentController::class, 'update'])->name('console.shipments.update');
             Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
             Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
+            Route::get('payments', [ConsolidateShipmentController::class, 'getPayments'])->name('console.shipments.payments');
+            Route::get('show-payment/{id}', [ConsolidateShipmentController::class, 'showPayment'])->name('console.shipments.show.payment');
+            Route::put('accept/{id}', [ConsolidateShipmentController::class,'acceptConsolidatedDelivery'])->name('console.accept');
+            Route::get('get-accepted-consolidated', [ConsolidateShipmentController::class, 'getAcceptedConslidatedDelivery'])->name('console.my.consolidate');
+            Route::get('get-pending', [ConsolidateShipmentController::class, 'getPendingConslidatedDelivery']);
+
             Route::delete('/delete/{id}', [ConsolidateShipmentController::class, 'destroy'])->name('console.shipments.destroy');
+            
+
+        });
+
+        Route::prefix('delivery')->group(function () {
+            
+            Route::get('/driver-shipments/{driver}', [DeliveryController::class, 'getShipments']);
+            Route::post('/update-shipment-status/{shipment}', [DeliveryController::class, 'updateStatus']);
         });
         
     });

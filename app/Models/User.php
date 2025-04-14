@@ -94,4 +94,7 @@ class User extends Authenticatable
     public function consolidateShipment() {
         return $this->hasOne(ConsolidateShipment::class);
     }
+    public function delivery() {
+        return $this->hasOne(Delivery::class);
+    }
 }

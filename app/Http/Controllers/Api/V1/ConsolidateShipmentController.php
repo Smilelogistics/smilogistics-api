@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\User;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,7 @@ use App\Mail\ConsolidateShipmentCustomerMail;
 use App\Mail\ConsolidateShipmentRecieverMail;
 use App\Http\Requests\StoreConsolidateShipmentRequest;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 
 class ConsolidateShipmentController extends Controller
 {
@@ -242,6 +244,73 @@ class ConsolidateShipmentController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
      
+    }
+
+    public function getPendingConslidatedDelivery()
+    {
+        $user = auth()->user();
+        $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'pending')->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consolidate Shipment fetched successfully',
+            'data' => $consolidateShipment
+        ]);
+    }
+
+    public function getAcceptedConslidatedDelivery()
+    {
+        $user = auth()->user();
+        $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'accepted')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consolidate Shipment fetched successfully',
+            'data' => $consolidateShipment
+        ]);
+    }
+
+    public function acceptConsolidatedDelivery($id)
+    {
+        $driver = auth()->user();
+        $consolidateShipment = ConsolidateShipment::with(['user'])->where('id', $id)->first();
+        $consolidateShipment->update(['accepted_status' => 'accepted']);
+    
+        // Get the user who created the shipment
+        if ($consolidateShipment->user_id) {
+            $userToNotify = User::find($consolidateShipment->user_id);
+            $userToNotify->notify(new DriverAcceptConsolidationDeliveryNotification($consolidateShipment, $driver));
+        }
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Consolidate Shipment accepted successfully',
+            'data' => $consolidateShipment
+        ]);
+    }
+
+
+    public function getPayments()
+    {
+        $user = auth()->user();
+        $payments = ConsolidateShipment::with('branch','user')->where('payment_status', 'paid')->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consolidate Shipments fetched successfully',
+            'data' => $payments
+        ]);
+    }
+
+    public function showPayment($id)
+    {
+        $payment = ConsolidateShipment::with('branch','user')->where('id', $id)->first();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Consolidate Shipment fetched successfully',
+            'data' => $payment
+        ]);
     }
 
     

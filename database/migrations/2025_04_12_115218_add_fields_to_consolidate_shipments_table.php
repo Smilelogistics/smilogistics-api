@@ -28,7 +28,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('consolidate_shipments', function (Blueprint $table) {
-            //
+            $table->dropColumn(['consolidate_tracking_number', 'customer_email', 'customer_phone', 'receiver_email', 'receiver_phone', 'internal_notes']);
         });
     }
 };
