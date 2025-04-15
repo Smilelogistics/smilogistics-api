@@ -140,7 +140,7 @@ Route::prefix('v1')->group(function () {
         
         Route::prefix('notification')->group(function () {
             Route::get('/notifications', [NotificationController::class, 'index']);
-            Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead']);
+            Route::post('/notifications/read/{id}', [NotificationController::class, 'viewNotification']);
         });
     });
 });

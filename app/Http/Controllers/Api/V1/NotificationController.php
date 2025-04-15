@@ -9,22 +9,35 @@ class NotificationController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user();
-
-        $notifications = $user->notifications()->paginate(10);
+        $user = auth()->user();
 
         return response()->json([
             'status' => true,
-            'notifications' => $notifications,
+            'message' => 'Notifications fetched successfully',
+            'data' => [
+                'unread' => $user->unreadNotifications,
+                'read' => $user->readNotifications,
+            ]
         ]);
     }
 
-    public function markAsRead($id)
+    public function viewNotification($id)
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
-        $notification->markAsRead();
+        $user = auth()->user();
 
-        return response()->json(['status' => true, 'message' => 'Marked as read']);
+        $notification = $user->notifications()->where('id', $id)->firstOrFail();
+
+        // Mark as read if not already
+        if (is_null($notification->read_at)) {
+            $notification->markAsRead();
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Notification retrieved successfully',
+            'data' => $notification
+        ]);
     }
+
 
 }
