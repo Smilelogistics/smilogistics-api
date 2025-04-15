@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
+use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 
@@ -137,5 +138,9 @@ Route::prefix('v1')->group(function () {
             Route::post('/update-shipment-status/{shipment}', [DeliveryController::class, 'updateStatus']);
         });
         
+        Route::prefix('notification')->group(function () {
+            Route::get('/notifications', [NotificationController::class, 'index']);
+            Route::post('/notifications/read/{id}', [NotificationController::class, 'markAsRead']);
+        });
     });
 });
