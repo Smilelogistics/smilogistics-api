@@ -97,4 +97,8 @@ class User extends Authenticatable
     public function delivery() {
         return $this->hasOne(Delivery::class);
     }
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }
