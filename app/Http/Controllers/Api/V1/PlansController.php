@@ -58,6 +58,10 @@ class PlansController extends Controller
         
         $validatedData = $validatedData->validated();
 
+        if (isset($validatedData['features'])) {
+            $validatedData['features'] = json_encode($validatedData['features']);
+        }
+    
         $plan = Plan::create($validatedData);
 
         return response()->json([
