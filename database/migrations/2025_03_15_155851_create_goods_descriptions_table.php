@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('shipment_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('goods_name')->nullable();
-            $table->string('ocean_vin')->nullable();
-            $table->string('ocean_weight')->nullable();
+            $table->string('goods_name', 100)->nullable();
+            $table->string('ocean_vin', 50)->nullable();
+            $table->string('ocean_weight', 20)->nullable();
             $table->timestamps();
         });
     }

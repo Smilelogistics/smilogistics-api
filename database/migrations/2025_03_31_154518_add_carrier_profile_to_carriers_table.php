@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('carriers', function (Blueprint $table) {
-            $table->string('carrier_profile')->after('name')->nullable();
-            $table->string('status')->after('data_exchange_option')->nullable();
+            $table->string('carrier_profile', 80)->after('name')->nullable();
+            $table->string('status', 20)->after('data_exchange_option')->nullable();
             $table->foreignId('customer_id')->after('branch_id')->nullable()->constrained()->nullOnDelete();
         });
     }

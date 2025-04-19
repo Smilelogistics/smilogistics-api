@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
             $table->foreignId('shipment_id')->constrained()->onDelete('cascade');
-            $table->string('note')->nullable();
+            $table->text('note')->nullable();
             $table->timestamps();
         });
     }

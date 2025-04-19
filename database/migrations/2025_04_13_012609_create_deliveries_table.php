@@ -84,9 +84,9 @@ return new class extends Migration
             $table->string('public_id')->after('id')->nullable();
         });
         
-        Schema::table('consolidate_shipment_docs', function (Blueprint $table) {
-            $table->string('public_id')->after('id')->nullable();
-        });
+        // Schema::table('consolidate_shipment_docs', function (Blueprint $table) {
+        //     $table->string('public_id')->after('id')->nullable();
+        // });
         
         Schema::table('truck_docs', function (Blueprint $table) {
             $table->string('public_id')->after('id')->nullable();

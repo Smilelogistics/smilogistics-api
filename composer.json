@@ -7,7 +7,7 @@
     "require": {
         "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "2.2",
-        "flutterwavedev/flutterwave-v3": "*",
+        "flutterwavedev/flutterwave-v3": "^1.1",
         "laravel/fortify": "*",
         "laravel/framework": "^11.9",
         "laravel/jetstream": "*",

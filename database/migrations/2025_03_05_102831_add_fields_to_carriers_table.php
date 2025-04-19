@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('carriers', function (Blueprint $table) {
-            $table->string('payment_method')->after('payment_terms')->nullable();	
+            $table->string('payment_method', 20)->after('payment_terms')->nullable();	
         });
     }
 

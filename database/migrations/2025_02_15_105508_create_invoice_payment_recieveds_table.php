@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('invoice_payment_recieveds', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
-            $table->string('payment_date')->nullable();
-            $table->string('payment_method')->nullable();
-            $table->string('check_number')->nullable()->comment('CHECK NUMBER IF PAID VIA CHECK OR REFERENCE NUMBER IF PAID VIA CASH OR ONLINE PAYMENT');
-            $table->string('amount')->nullable();
-            $table->string('processing_fee_percent')->nullable();
-            $table->string('processing_fee_flate_rate')->nullable();
-            $table->string('notes')->nullable();
+            $table->string('payment_date', 30)->nullable();
+            $table->string('payment_method', 30)->nullable();
+            $table->string('check_number', 50)->nullable()->comment('CHECK NUMBER IF PAID VIA CHECK OR REFERENCE NUMBER IF PAID VIA CASH OR ONLINE PAYMENT');
+            $table->decimal('amount', 20, 2)->nullable();
+            $table->string('processing_fee_percent', 10)->nullable();
+            $table->string('processing_fee_flate_rate', 20)->nullable();
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }

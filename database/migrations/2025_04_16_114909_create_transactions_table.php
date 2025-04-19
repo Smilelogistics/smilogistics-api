@@ -16,19 +16,19 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->decimal('amount', 15, 2);
             $table->string('currency', 10)->default('USD');
-            $table->string('payment_method'); // paystack, stripe, paypal, flutterwave
+            $table->string('payment_method', 20); // paystack, stripe, paypal, flutterwave
             $table->string('payment_gateway_ref')->unique();
             $table->string('status')->default('pending'); // pending, success, failed, refunded
-            $table->string('description')->nullable();
-            $table->string('channel')->nullable();
-            $table->string('payment_type')->nullable(); // one-time, recurring
+            $table->text('description')->nullable();
+            $table->string('channel', 20)->nullable();
+            $table->string('payment_type', 20)->nullable(); // one-time, recurring
             $table->json('meta')->nullable(); // store raw response
             $table->timestamp('paid_at')->nullable();
             $table->string('ip_address')->nullable();
-            $table->string('device')->nullable();
+            $table->string('device', 100)->nullable();
             $table->string('location')->nullable();
             $table->boolean('is_verified')->default(false);
-            $table->string('customer_email')->nullable();
+            $table->string('customer_email', 80)->nullable();
             $table->string('auth_token')->nullable();
             $table->timestamps();
         });
@@ -38,8 +38,8 @@ return new class extends Migration
         });
 
         Schema::table('invoices', function (Blueprint $table) {
-            $table->string('total_discount')->after('credit_memo')->nullable();
-            $table->string('net_total')->after('credit_memo')->nullable();
+            $table->integer('total_discount')->nullable();
+            $table->decimal('net_total', 20, 2)->nullable();
         });
     }
 

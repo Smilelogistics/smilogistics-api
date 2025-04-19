@@ -16,10 +16,10 @@ return new class extends Migration
             $table->unsignedBigInteger('recipient_id');
             $table->foreign('recipient_id')->references('id')->on('recipients')->onDelete('cascade');
             $table->string('address')->nullable();
-            $table->string('city')->nullable();
-            $table->string('state')->nullable();
-            $table->string('country')->nullable();
-            $table->string('zip')->nullable();
+            $table->string('city', 20)->nullable();
+            $table->string('state', 20)->nullable();
+            $table->string('country', 30)->nullable();
+            $table->string('zip', 20)->nullable();
             $table->timestamps();
         });
     }

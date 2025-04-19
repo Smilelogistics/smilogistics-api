@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
-            $table->string('agency_phone')->nullable();
+            $table->string('agency_phone', 20)->nullable();
             $table->string('agency_address')->nullable();
-            $table->string('agency_country')->nullable();
-            $table->string('agency_state')->nullable();
-            $table->string('agency_city')->nullable();
-            $table->string('agency_zip')->nullable();
-            $table->string('agency_status')->default('active');
+            $table->string('agency_country', 20)->nullable();
+            $table->string('agency_state', 20)->nullable();
+            $table->string('agency_city', 20)->nullable();
+            $table->string('agency_zip', 20)->nullable();
+            $table->string('agency_status', 15)->default('active');
             $table->timestamps();
         });
     }

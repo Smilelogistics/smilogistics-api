@@ -16,13 +16,13 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('branch_id')->constrained()->onDelete('cascade');
-            $table->string('fname')->nullable();
-            $table->string('lname')->nullable();
-            $table->string('mname')->nullable();
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->string('alt_phone')->nullable();
-            $table->string('status')->default('active');
+            $table->string('fname', 30)->nullable();
+            $table->string('lname', 30)->nullable();
+            $table->string('mname', 30)->nullable();
+            $table->string('email', 80)->nullable();
+            $table->string('phone', 20)->nullable();
+            $table->string('alt_phone', 20)->nullable();
+            $table->string('status', 15)->default('active');
             $table->timestamps();
         });
     }

@@ -17,11 +17,11 @@ return new class extends Migration
             $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('bike_type')->nullable();
-            $table->string('bike_number')->nullable();
-            $table->string('bike_office')->nullable();
-            $table->string('make_model')->nullable();
-            $table->string('license_plate_number')->nullable();
+            $table->string('bike_type', 30)->nullable();
+            $table->string('bike_number', 50)->nullable();
+            $table->string('bike_office', 50)->nullable();
+            $table->string('make_model', 50)->nullable();
+            $table->string('license_plate_number', 50)->nullable();
             $table->timestamps();
         });
     }

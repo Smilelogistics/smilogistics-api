@@ -15,7 +15,7 @@ return new class extends Migration
             $table->decimal('latitude', 10, 7)->after('license_plate_number')->nullable(); // e.g., 40.712776
             $table->decimal('longitude', 10, 7)->after('license_plate_number')->nullable(); // e.g., -74.005974
             $table->boolean('available')->after('license_plate_number')->default(true);
-            $table->string('status')->after('license_plate_number')->default('active')->nullable();
+            $table->string('status', 30)->after('license_plate_number')->default('active')->nullable();
             $table->index('available');
             $table->index(['latitude', 'longitude']);
         });

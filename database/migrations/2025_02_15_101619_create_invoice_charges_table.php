@@ -14,18 +14,18 @@ return new class extends Migration
         Schema::create('invoice_charges', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->constrained()->onDelete('cascade');
-            $table->string('load_number')->nullable();
-            $table->string('charge_type')->nullable();
-            $table->string('comment')->nullable()->comment('WILL APPEAR ON THE INVOICE');
-            $table->string('units')->nullable();
-            $table->string('unit_rate')->nullable();
-            $table->string('amount')->nullable();
-            $table->string('discount')->nullable();
+            $table->string('load_number', 80)->nullable();
+            $table->string('charge_type', 30)->nullable();
+            $table->text('comment')->nullable()->comment('WILL APPEAR ON THE INVOICE');
+            $table->integer('units')->nullable();
+            $table->integer('unit_rate')->nullable();
+            $table->decimal('amount', 20, 2)->nullable();
+            $table->integer('discount')->nullable();
             $table->text('internal_notes')->nullable();
             $table->text('general_internal_notes')->nullable();
             $table->string('tags')->nullable();
             $table->boolean('isAccessorial')->default(false)->comment('IF THE CHARGE IS ACCESSORIAL');
-            $table->string('total')->nullable();
+            $table->decimal('total', 20, 2)->nullable();
             $table->timestamps();
         });
     }

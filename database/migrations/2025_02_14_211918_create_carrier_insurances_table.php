@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('carrier_insurances', function (Blueprint $table) {
             $table->id();
             $table->foreignId('carrier_id')->constrained()->onDelete('cascade');
-            $table->string('coverage')->nullable();
-            $table->string('amount')->nullable();
-            $table->string('policy_number')->nullable();
-            $table->string('expires')->nullable();
+            $table->string('coverage', 150)->nullable();
+            $table->decimal('amount', 20, 2)->nullable();
+            $table->string('policy_number', 60)->nullable();
+            $table->string('expires', 50)->nullable();
             $table->timestamps();
         });
     }

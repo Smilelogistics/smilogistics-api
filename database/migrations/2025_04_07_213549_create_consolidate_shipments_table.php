@@ -21,8 +21,8 @@ return new class extends Migration
             $table->enum('consolidation_type', ['Personal', 'Commercial', 'Bulk Order'])->default('Personal');
 
             // Customer & Receiver Info
-            $table->string('consolidated_for')->nullable(); // Customer Name
-            $table->string('receiver_name')->nullable();
+            $table->string('consolidated_for', 100)->nullable(); // Customer Name
+            $table->string('receiver_name', 100)->nullable();
             $table->text('receiver_address')->nullable();
 
             // Logistics & Routing
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->enum('payment_status', ['Paid', 'Pending', 'Partially Paid'])->default('Pending');
             $table->enum('payment_method', ['Cash', 'Card', 'Wallet', 'Transfer', 'Other'])->nullable();
             $table->enum('accepted_status', ['Accepted', 'Rejected', 'Pending'])->default('Pending');
-            $table->string('status', 100)->default('Pending');
+            $table->string('status', 20)->default('Pending');
             $table->timestamps();
         });
 

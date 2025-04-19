@@ -13,37 +13,37 @@ return new class extends Migration
     {
         Schema::table('shipments', function (Blueprint $table) {
             
-            $table->string('shipment_type')->nullable()->after('shipment_tracking_number');
-            $table->string('shipper_name')->nullable()->after('shipment_tracking_number');
+            $table->string('shipment_type', 20)->nullable()->after('shipment_tracking_number');
+            $table->string('shipper_name', 100)->nullable()->after('shipment_tracking_number');
             $table->text('ocean_shipper_address')->nullable()->after('shipment_tracking_number');
-            $table->string('ocean_shipper_reference_number')->nullable()->after('shipment_tracking_number');
-            $table->string('carrier_name')->nullable()->after('shipment_tracking_number');
-            $table->string('carrier_reference_number')->nullable()->after('shipment_tracking_number');
-            $table->string('ocean_bill_of_ladening_number')->nullable()->after('shipment_tracking_number');
-            $table->string('consignee')->nullable()->after('shipment_tracking_number');
-            $table->string('consignee_phone')->nullable()->after('shipment_tracking_number');
-            $table->string('consignee_email')->nullable()->after('shipment_tracking_number');
-            $table->string('first_notify_party_name')->nullable()->after('shipment_tracking_number');
-            $table->string('first_notify_party_phone')->nullable()->after('shipment_tracking_number');
-            $table->string('first_notify_party_email')->nullable()->after('shipment_tracking_number');
-            $table->string('second_notify_party_name')->nullable()->after('shipment_tracking_number');
-            $table->string('second_notify_party_phone')->nullable()->after('shipment_tracking_number');
-            $table->string('second_notify_party_email')->nullable()->after('shipment_tracking_number');
-            $table->string('pre_carrier')->nullable()->after('shipment_tracking_number');
-            $table->string('vessel_aircraft_name')->nullable()->after('shipment_tracking_number');
-            $table->string('voyage_number')->nullable()->after('shipment_tracking_number');
-            $table->string('port_of_discharge')->nullable()->after('shipment_tracking_number');
+            $table->string('ocean_shipper_reference_number', 60)->nullable()->after('shipment_tracking_number');
+            $table->string('carrier_name', 100)->nullable()->after('shipment_tracking_number');
+            $table->string('carrier_reference_number', 60)->nullable()->after('shipment_tracking_number');
+            $table->string('ocean_bill_of_ladening_number', 60)->nullable()->after('shipment_tracking_number');
+            $table->string('consignee', 150)->nullable()->after('shipment_tracking_number');
+            $table->string('consignee_phone', 20)->nullable()->after('shipment_tracking_number');
+            $table->string('consignee_email', 80)->nullable()->after('shipment_tracking_number');
+            $table->string('first_notify_party_name', 100)->nullable()->after('shipment_tracking_number');
+            $table->string('first_notify_party_phone', 20)->nullable()->after('shipment_tracking_number');
+            $table->string('first_notify_party_email', 80)->nullable()->after('shipment_tracking_number');
+            $table->string('second_notify_party_name', 100)->nullable()->after('shipment_tracking_number');
+            $table->string('second_notify_party_phone', 20)->nullable()->after('shipment_tracking_number');
+            $table->string('second_notify_party_email', 80)->nullable()->after('shipment_tracking_number');
+            $table->string('pre_carrier', 100)->nullable()->after('shipment_tracking_number');
+            $table->string('vessel_aircraft_name', 150)->nullable()->after('shipment_tracking_number');
+            $table->string('voyage_number', 50)->nullable()->after('shipment_tracking_number');
+            $table->string('port_of_discharge', 80)->nullable()->after('shipment_tracking_number');
             $table->string('place_of_delivery')->nullable()->after('shipment_tracking_number');
             $table->string('final_destination')->nullable()->after('shipment_tracking_number');
             $table->string('port_of_landing')->nullable()->after('shipment_tracking_number');
             $table->text('ocean_note')->nullable()->after('shipment_tracking_number');
             $table->decimal('ocean_freight_charges', 10, 2)->nullable()->after('shipment_tracking_number');
             $table->text('ocean_total_containers_in_words')->nullable()->after('shipment_tracking_number');
-            $table->string('no_original_bill_of_landing')->nullable()->after('shipment_tracking_number');
-            $table->string('original_bill_of_landing_payable_at')->nullable()->after('shipment_tracking_number');
+            $table->string('no_original_bill_of_landing', 50)->nullable()->after('shipment_tracking_number');
+            $table->string('original_bill_of_landing_payable_at', 50)->nullable()->after('shipment_tracking_number');
             $table->date('shipped_on_board_date')->nullable()->after('shipment_tracking_number');
-            $table->string('ocean_consignment_total')->nullable()->after('shipment_tracking_number');
-            $table->string('ocean_total')->nullable()->after('shipment_tracking_number');
+            $table->string('ocean_consignment_total', 50)->nullable()->after('shipment_tracking_number');
+            $table->decimal('ocean_total', 20, 2)->nullable()->after('shipment_tracking_number');
         });
     }
 

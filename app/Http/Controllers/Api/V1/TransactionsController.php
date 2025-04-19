@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+use App\Models\Plan;
+use App\Models\User;
 use App\Models\Transaction;
+use Illuminate\Support\Str;
 use Flutterwave\Flutterwave;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,17 +17,20 @@ use Illuminate\Support\Facades\Validator;
 class TransactionsController extends Controller
 {
     protected $paystackSecretKey;
+    protected $flutterwaveSecretKey;
 
     public function __construct()
     {
         $this->paystackSecretKey = env('PAYSTACK_SECRET_KEY');
+        $this->flutterwaveSecretKey = env('FLUTTERWAVE_SECRET_KEY');
     }
     public function initiatePaystackPayment(Request $request)
     {
         $user = auth()->user();
+        //dd($this->paystackSecretKey);
         $validatedData = Validator::make($request->all(), [
             'amount' => 'required|numeric',
-            'payment_type' => 'nullable|string',
+            'plan_name' => 'required|string',
         ]);
 
         if ($validatedData->fails()) {
@@ -33,18 +39,22 @@ class TransactionsController extends Controller
 
         try{
 
-            $plans = Plans::where('plan_name', $request->payment_type)->first();
+            $plans = Plan::where('name', $request->plan_name)->first();
 
             if (!$plans) {
                 throw new Exception("Plan not found.");
             }
+            elseif($plans->price != $request->amount){
+                throw new Exception("Plan price mismatch.");
+            }
+            else{
 
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->paystackSecretKey,
                 'Content-Type' => 'application/json',
             ])->post('https://api.paystack.co/transaction/initialize', [
                 'email' => $user->email,
-                'amount' => $amount * 100,
+                'amount' => $request->amount * 100,
                 'metadata' => [
                     'user_id' => $user->id,
                 ],
@@ -55,27 +65,27 @@ class TransactionsController extends Controller
             if (!$response->successful() || !$responseData['status']) {
                 throw new Exception("Failed to initialize payment: " . ($responseData['message'] ?? 'Unknown error'));
             }
+            //dd($responseData);
             
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'amount' => $request->amount,
-                'email' => $request->email,
                 'payment_gateway_ref' => $responseData['data']['reference'],
                 'payment_method' => 'paystack',
-                'currency' => $responseData['data']['currency'],
                 'payment_type' => $request->payment_type,
-                'auth_token' => $responseData['data']['authorization']['authorization_code'],
-                'channel' => $responseData['data']['channel'],
-                'customer_email' => $responseData['data']['customer']['email'],
-                'ip_address' => $responseData['data']['customer']['ip_address'],
-                'device' => $responseData['data']['customer']['user_agent'],
-                'location' => $responseData['data']['customer']['geoip'],
                 'status' => 'pending',
+            ]);
+        }
+            
+            return response()->json([
+                'status' => 'success',
+                'redirect_url' => $responseData['data']['authorization_url'],
+                'reference' => $responseData['data']['reference'],
             ]);
 
 
         } catch (\Throwable $th) {
-            //throw $th;
+            return response()->json(['message' => $th->getMessage()], 500);
         }
     }
 
@@ -98,10 +108,25 @@ class TransactionsController extends Controller
                     throw new Exception("Failed to verify payment: " . ($responseData['message'] ?? 'Unknown error'));
                 }
 
+                $auth_code = $responseData['data']['authorization']['authorization_code'];
+                $currency = $responseData['data']['currency'];
+
                 DB::beginTransaction();
 
                 $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
-                $transaction->update(['status' => 'success']);
+                $transaction->update([
+                    'status' => 'success',
+                    'payment_gateway_ref' => $responseData['data']['reference'],
+                    'payment_type' => $transaction->payment_type,
+                    'currency' => $responseData['data']['currency'],
+                    'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
+                    'channel' => $responseData['data']['channel'] ?? null,
+                    'customer_email' => $responseData['data']['customer']['email'] ?? null,
+                    'ip_address' => $responseData['data']['ip_address'] ?? null,
+                    'device' => $responseData['data']['user_agent'] ?? null,
+                    'location' => $responseData['data']['log']['geolocation'] ?? null,
+                    //'paid_at' => $responseData['data']['paid_at'] ?? null
+                ]);
 
                 $updateUser = User::where('id', $transaction->user_id)->first();
 
@@ -121,7 +146,7 @@ class TransactionsController extends Controller
             }
             
         }catch (Exception $e) {
-            Transaction::where('reference', $reference)->update(['status' => 'failed']);
+            Transaction::where('payment_gateway_ref', $reference)->update(['status' => 'failed']);
             return response()->json(['error' => $e->getMessage()], 400);
         }
     }
@@ -131,75 +156,110 @@ class TransactionsController extends Controller
     public function initializePaymentFlutterwave(Request $request)
     {
         $user = auth()->user();
+        //dd($user);
 
         $validated = $request->validate([
-            'email' => 'required|email',
             'amount' => 'required|numeric|min:1',
-            'name' => 'required|string|max:255',
+            'plan_name' => 'required|string|max:255',
         ]);
 
-        $reference = Flutterwave::generateReference();
-        if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
-            throw new Exception("Transaction already processed.");
-        }
-        else{
+        //$reference = Flutterwave::generateReference();
+        
+        $reference = $this->generateUniqueFlutterwaveReference();
+
+        //dd($reference);
+
+        $plans = Plan::where('name', $request->plan_name)->first();
+
+            if (!$plans) {
+                throw new Exception("Plan not found.");
+            }
+            elseif($plans->price != $request->amount){
+                throw new Exception("Plan price mismatch.");
+            }
+            else{
+
+            if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
+                throw new Exception("Transaction already processed.");
+            }
+            else{
+              
+                $data = [
+                    'amount' => $validated['amount'],
+                    'tx_ref' => $reference,
+                    'currency' => 'NGN',
+                    'redirect_url' => config('app.url') . '/api/V1/payments/callback-flutterwave',
+                    'customer' => [
+                        'email' => $user->email,
+                        'name' => $user->fname . ' ' . $user->lname,
+                    ],
+                    'customizations' => [
+                        'title' => 'Smile Logistics Subscription',
+                        'description' => 'Payment via API',
+                    ],
+                ];
+
+                //dd($data);
+
+                $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . config('services.flutterwave.secret_key'),
+                    'Content-Type' => 'application/json',
+                ])->post('https://api.flutterwave.com/v3/payments', $data);
+                
+            dd($response->status(), $response->body(), config('services.flutterwave.secret_key'));
+
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'amount' => $validated['amount'],
-                'email' => $validated['email'],
+                'customer_email' => $user->email,
                 'payment_gateway_ref' => $reference,
                 'payment_method' => 'flutterwave',
                 'currency' => 'NGN',
                 'status' => 'pending',
             ]);
-       
-            $data = [
-                'payment_options' => 'card,banktransfer',
-                'amount' => $validated['amount'],
-                'email' => $validated['email'],
-                'tx_ref' => $reference,
-                'currency' => 'USD',
-                'redirect_url' => config('app.url') . '/api/payment/callback',
-                'customer' => [
-                    'email' => $validated['email'],
-                    'name' => $validated['name'],
-                ],
-                'customizations' => [
-                    'title' => 'Flutterwave API Payment',
-                    'description' => 'Payment via API',
-                ],
-            ];
+    
 
-            $payment = Flutterwave::initializePayment($data);
+                if ($response['status'] !== 'success') {
+                    return response()->json([
+                        'message' => 'Failed to initialize payment',
+                        'error' => $response,
+                    ], 500);
+                }
 
-            if ($payment['status'] !== 'success') {
                 return response()->json([
-                    'message' => 'Failed to initialize payment',
-                    'error' => $payment,
-                ], 500);
+                    'message' => 'Payment initialized',
+                    'payment_link' => $response['data']['link'],
+                    'reference' => $response,
+                ]);
             }
-
-            return response()->json([
-                'message' => 'Payment initialized',
-                'payment_link' => $payment['data']['link'],
-                'reference' => $reference,
-            ]);
         }
 
     }
 
-    public function callback(Request $request)
+    public function callbackFlutterwave(Request $request)
     {
         $status = $request->query('status');
         $txid = $request->query('transaction_id');
 
         if ($status === 'success' && $txid) {
-            $transaction = Flutterwave::verifyTransaction($txid);
+            $responseData = Flutterwave::verifyTransaction($txid);
 
             DB::beginTransaction();
 
             $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
-            $transaction->update(['status' => 'success']);
+                $transaction->update([
+                    'status' => 'success',
+                    'payment_gateway_ref' => $responseData['data']['reference'],
+                    'payment_type' => $transaction->payment_type,
+                    'currency' => $responseData['data']['currency'],
+                    'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
+                    'channel' => $responseData['data']['channel'] ?? null,
+                    'customer_email' => $responseData['data']['customer']['email'] ?? null,
+                    'ip_address' => $responseData['data']['ip_address'] ?? null,
+                    'device' => $responseData['data']['user_agent'] ?? null,
+                    'location' => $responseData['data']['log']['geolocation'] ?? null,
+                    //'paid_at' => $responseData['data']['paid_at'] ?? null
+                ]);
 
             $updateUser = User::where('id', $transaction->user_id)->first();
 
@@ -215,13 +275,22 @@ class TransactionsController extends Controller
 
             return response()->json([
                 'message' => 'Payment verified successfully',
-                'data' => $transaction,
+                'data' => $responseData,
             ]);
         }
 
         return response()->json([
             'message' => 'Payment failed or cancelled',
         ], 400);
+    }
+
+    private function generateUniqueFlutterwaveReference()
+    {
+        do {
+            $reference = 'FLW-' . strtoupper(Str::random(10));
+        } while (Transaction::where('payment_gateway_ref', $reference)->exists());
+
+        return $reference;
     }
 
 }

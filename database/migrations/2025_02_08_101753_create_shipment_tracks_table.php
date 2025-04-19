@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('shipment_id')->constrained()->onDelete('cascade');
-            $table->string('tracking_number')->nullable();
-            $table->string('status')->nullable();
+            $table->string('tracking_number', 100)->nullable();
+            $table->string('status', 50)->nullable();
             $table->string('location')->nullable();
             $table->timestamps();
         });

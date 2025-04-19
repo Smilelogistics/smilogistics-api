@@ -5,13 +5,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\BikeController;
 use App\Http\Controllers\Api\V1\UnivController;
+use App\Http\Controllers\Api\V1\PlansController;
 use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\TransactionsController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 
@@ -24,11 +27,17 @@ Route::prefix('v1')->group(function () {
     Route::post('/send-reset-link', [AuthController::class, 'sendResetLink']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
+    Route::post('/register', [AuthController::class, 'register']);
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
+
+        Route::prefix('dashboard')->group(function () {
+            Route::get('/branches', [DashboardController::class, 'countBranches'])->name('dashboard.countBranches');
+            Route::get('/monthly-income', [DashboardController::class, 'monthlyIncome'])->name('dashboard.monthlyIncome');
+
+        });
 
         Route::prefix('settings')->group(function () {
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
@@ -142,6 +151,19 @@ Route::prefix('v1')->group(function () {
             Route::get('/notifications', [NotificationController::class, 'index']);
             Route::get('/notifications/{id}', [NotificationController::class, 'show']);
             Route::post('/notifications/read/{id}', [NotificationController::class, 'viewNotification']);
+        });
+
+        Route::prefix('payments')->group(function () {
+            Route::post('/initialize-paystack', [TransactionsController::class, 'initiatePaystackPayment']);
+            Route::get('/verify-paystack/{reference}', [TransactionsController::class, 'verifyPaysatckPayment']);
+            Route::post('/initialize-flutterwave', [TransactionsController::class, 'initializePaymentFlutterwave']);
+            Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
+        });
+
+        Route::prefix('plans')->group(function () {
+            Route::get('/plans', [PlansController::class, 'index']);
+            Route::get('/plan/{id}', [PlansController::class, 'show']);
+            Route::post('/create-plan', [PlansController::class, 'store']);
         });
     });
 });
