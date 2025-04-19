@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\Plan;
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Customer;
 use App\Models\Transaction;
@@ -11,10 +13,32 @@ use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
 {
-    public function countBusinesses()
+    public function dashboardStats()
     {
-        $user = auth()->user();
+        if(!auth()->user()->hasRole('superadministrator')) {
+            $totalincome = Transaction::where('status', 'success')->sum('amount');
+            $userCount = User::count();
+            $recentTransactions = Transaction::latest()->take(5)->get();
+            $plans = Plan::count();
+            $branches = Branch::count();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Dashboard data retrieved successfully',
+                'data' => [
+                    'totalincome' => NumberFormatter::formatCount($totalincome),
+                    'userCount' => $userCount,
+                    'recentTransactions' => $recentTransactions,
+                    'plans' => $plans
+                ]
+            ]);
+        }
+        else{
+
+        }
+        
     }
+
 
     public function countBranches()
     {

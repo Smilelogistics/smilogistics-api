@@ -10,7 +10,13 @@ use Illuminate\Support\Facades\Validator;
 class PlansController extends Controller
 {
     public  function index(){
-       $plans = Plans::all();
+       $plans = Plan::all();
+
+       return response()->json([
+           'status' => 'success',
+           'message' => 'Plans retrieved successfully',
+           'plans' => $plans
+       ]);
     }
 
     public function show($id){

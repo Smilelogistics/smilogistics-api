@@ -36,6 +36,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('dashboard')->group(function () {
             Route::get('/branches', [DashboardController::class, 'countBranches'])->name('dashboard.countBranches');
             Route::get('/monthly-income', [DashboardController::class, 'monthlyIncome'])->name('dashboard.monthlyIncome');
+            Route::get('/dashboardstats', [DashboardController::class, 'dashboardStats'])->name('dashboard.dashboardStats');
 
         });
 
