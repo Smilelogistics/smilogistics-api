@@ -36,6 +36,7 @@ class PlansController extends Controller
             'currency' => 'nullable|string|size:3',
             'sort_order' => 'nullable|integer',
             'features' => 'nullable|array',
+            'features.*' => 'string|max:255',
             'max_users' => 'nullable|integer|min:0',
             'storage_limit' => 'nullable|integer|min:0',
             'plan_code' => 'nullable|string|max:255|unique:plans,plan_code',
