@@ -141,7 +141,7 @@ class DashboardController extends Controller
         $startDate = $currentDate->copy()->subMonths(11)->startOfMonth();
 
         // PostgreSQL-compatible query
-        $monthlyData = Transaction::where('status', 'success')
+        $monthlyData = Transaction::where('status', 'pending')
             ->where('created_at', '>=', $startDate)
             ->selectRaw('
                 EXTRACT(YEAR FROM created_at) as year,
