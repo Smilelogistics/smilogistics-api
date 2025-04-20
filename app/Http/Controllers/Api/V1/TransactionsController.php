@@ -212,8 +212,8 @@ class TransactionsController extends Controller
                 DB::commit();
 
 
-                //return redirect()->to('/index.html');
-                return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
+                return redirect()->to('/index.html');
+                //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
             }
             
         }catch (Exception $e) {
