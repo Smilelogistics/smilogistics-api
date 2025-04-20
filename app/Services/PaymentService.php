@@ -43,7 +43,10 @@ class PaymentService
             'amount' => $plan->price * 100, // Paystack uses kobo
             'reference' => $transaction->payment_gateway_ref,
             //'callback_url' => config('app.url') . '/api/v1/verify-paystack',
-            'callback_url' => config('app.url') . '/api/v1/verify-paystack' . $transaction->reference . '/' . $transaction->reference,
+            'callback_url' => route('verify.paystack', [
+                'trxref' => $transaction->reference,
+                'reference' => $transaction->reference
+            ]),
             'metadata' => [
                 'user_id' => $user->id,
             ]
