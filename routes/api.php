@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\DashboardController;
