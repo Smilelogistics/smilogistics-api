@@ -156,6 +156,11 @@ class TransactionsController extends Controller
     {
         //  $trxref = $request->query('trxref');
         // $reference = $request->query('reference');
+        // $signature = $request->header('x-paystack-signature');
+        // if (!$this->validPaystackSignature($signature, $request->getContent())) {
+        //     abort(401);
+        // }
+
         $user = auth()->user();
         try{
             if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
