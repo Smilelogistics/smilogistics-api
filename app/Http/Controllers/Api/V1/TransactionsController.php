@@ -152,7 +152,7 @@ class TransactionsController extends Controller
     //     }
     // }
 
-    public function verifyPaysatck(Request $request)
+    public function verifyPaysatckPayment(Request $request)
     {
         $trxref = $request->query('trxref');
         $reference = $request->query('reference');
@@ -161,7 +161,8 @@ class TransactionsController extends Controller
         //     abort(401);
         // }
 
-        $user = auth()->user();
+        //$user = auth()->user();
+        //dd($trxref);
         try{
             if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
                 throw new Exception("Transaction already processed.");
@@ -211,8 +212,8 @@ class TransactionsController extends Controller
                 DB::commit();
 
 
-                return redirect()->to('/index.html');
-                //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
+                //return redirect()->to('/index.html');
+                return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
             }
             
         }catch (Exception $e) {

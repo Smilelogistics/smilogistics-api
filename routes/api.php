@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
-use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -18,6 +17,7 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\TransactionsController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
+use App\Http\Controllers\Api\V1\DeliveryController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -27,7 +27,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/send-reset-link', [AuthController::class, 'sendResetLink']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
-
+    Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     Route::post('/register', [AuthController::class, 'register']);
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
@@ -158,7 +158,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::post('/initialize', [TransactionsController::class, 'initialize']);
             //Route::post('/initialize-paystack', [TransactionsController::class, 'initiatePaystackPayment']);
-            Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatck'])->name('verify.paystack');
+            // Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment'])->withoutMiddleware(['auth:api']);
             Route::post('/initialize-flutterwave', [TransactionsController::class, 'initializePaymentFlutterwave']);
             Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
         });
