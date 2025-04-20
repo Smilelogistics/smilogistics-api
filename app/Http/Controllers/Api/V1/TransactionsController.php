@@ -212,7 +212,7 @@ class TransactionsController extends Controller
                 DB::commit();
 
 
-                return redirect()->to('/index.html');
+                return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
                 //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
             }
             
