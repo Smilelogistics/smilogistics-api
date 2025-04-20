@@ -34,9 +34,39 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
         
+
+        'paystack' => [
+            'secret_key' => env('PAYSTACK_SECRET_KEY'),
+        ],
+
         'flutterwave' => [
-            'public_key' => env('FLUTTERWAVE_PUBLIC_KEY'),
             'secret_key' => env('FLUTTERWAVE_SECRET_KEY'),
+            'public_key' => env('FLUTTERWAVE_PUBLIC_KEY'),
+        ],
+
+        'stripe' => [
+            'secret_key' => env('STRIPE_SECRET_KEY'),
+            'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        ],
+
+        'paypal' => [
+            'client_id' => env('PAYPAL_CLIENT_ID'),
+            'secret' => env('PAYPAL_SECRET'),
+            'base_url' => env('PAYPAL_BASE_URL'),
+        ],
+
+        'bank_transfer' => [
+            'account_number' => env('BANK_TRANSFER_ACCOUNT_NUMBER'),
+            'account_name' => env('BANK_TRANSFER_ACCOUNT_NAME'),
+            'bank_name' => env('BANK_TRANSFER_BANK_NAME'),
+        ],
+
+        'crypto' => [
+            'wallet_address' => env('CRYPTO_WALLET_ADDRESS'),
+        ],
+
+        'app' =>[
+            'url' => env('APP_URL'),
         ],
     ],
 
