@@ -154,9 +154,8 @@ class TransactionsController extends Controller
 
     public function verifyPaysatckPayment(Request $request)
     {
-        $trxref = $request->query('trxref');
+         $trxref = $request->query('trxref');
         $reference = $request->query('reference');
-
         $user = auth()->user();
         try{
             if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
