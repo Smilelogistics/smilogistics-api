@@ -212,66 +212,83 @@ class DashboardController extends Controller
 
 
     public function monthlyIncome()
-{
-    // Get current date and calculate start date (12 months ago)
-    $currentDate = now();
-    $startDate = $currentDate->copy()->subMonths(11)->startOfMonth(); // 11 months + current month = 12
-    
-    // PostgreSQL-compatible query
-    $monthlyData = Transaction::where('status', 'success')
-        ->where('created_at', '>=', $startDate)
-        ->selectRaw('
-            EXTRACT(YEAR FROM created_at) as year,
-            EXTRACT(MONTH FROM created_at) as month,
-            SUM(amount) as total_amount,
-            COUNT(*) as transaction_count
-        ')
-        ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
-        ->orderBy('year', 'asc')
-        ->orderBy('month', 'asc')
-        ->get();
-    
-    // Initialize arrays with default values (0) for all 12 months
-    $sales = array_fill(0, 12, 0);
-    $revenue = array_fill(0, 12, 0);
-    $monthNames = [];
-    
-    // Fill the data for existing months
-    foreach ($monthlyData as $data) {
-        $monthIndex = (int)$data->month - 1; // Convert to 0-based index
-        $sales[$monthIndex] = (int)$data->transaction_count;
-        $revenue[$monthIndex] = (float)$data->total_amount;
-    }
-    
-    // Generate month names (short format)
-    for ($i = 0; $i < 12; $i++) {
-        $monthNames[] = $startDate->copy()->addMonths($i)->format('M');
-    }
-    
-    // Calculate totals
-    $totalSales = array_sum($sales);
-    $totalRevenue = array_sum($revenue);
-    
-    return response()->json([
-        'status' => 'success',
-        'data' => [
-            'series' => [
-                [
-                    'name' => 'Sales',
-                    'data' => $sales
+    {
+        // Get current date and calculate start date (12 months ago)
+        $currentDate = now();
+        $startDate = $currentDate->copy()->subMonths(11)->startOfMonth(); // 11 months + current month = 12
+        
+        // PostgreSQL-compatible query
+        $monthlyData = Transaction::where('status', 'success')
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('
+                EXTRACT(YEAR FROM created_at) as year,
+                EXTRACT(MONTH FROM created_at) as month,
+                SUM(amount) as total_amount,
+                COUNT(*) as transaction_count
+            ')
+            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get();
+        
+        // Initialize arrays with default values (0) for all 12 months
+        $result = [];
+        
+        // Create all 12 months first with zero values
+        for ($i = 0; $i < 12; $i++) {
+            $date = $startDate->copy()->addMonths($i);
+            $year = $date->year;
+            $month = $date->month;
+            
+            $result[$year.'-'.$month] = [
+                'year' => $year,
+                'month' => $month,
+                'month_name' => $date->format('M'),
+                'sales' => 0,
+                'revenue' => 0,
+            ];
+        }
+        
+        // Fill the data for existing months
+        foreach ($monthlyData as $data) {
+            $key = $data->year.'-'.$data->month;
+            if (isset($result[$key])) {
+                $result[$key]['sales'] = (int)$data->transaction_count;
+                $result[$key]['revenue'] = (float)$data->total_amount;
+            }
+        }
+        
+        // Extract the ordered values for response
+        $orderedResult = array_values($result);
+        $sales = array_column($orderedResult, 'sales');
+        $revenue = array_column($orderedResult, 'revenue');
+        $monthNames = array_column($orderedResult, 'month_name');
+        
+        // Calculate totals
+        $totalSales = array_sum($sales);
+        $totalRevenue = array_sum($revenue);
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'series' => [
+                    [
+                        'name' => 'Sales',
+                        'data' => $sales
+                    ],
+                    [
+                        'name' => 'Revenue',
+                        'data' => $revenue
+                    ]
                 ],
-                [
-                    'name' => 'Revenue',
-                    'data' => $revenue
-                ]
-            ],
-            'categories' => $monthNames,
-            'totals' => [
-                'sales' => $totalSales,
-                'revenue' => $totalRevenue,
-                'formatted_revenue' => NumberFormatter::formatCount($totalRevenue)
+                'categories' => $monthNames,
+                'totals' => [
+                    'sales' => $totalSales,
+                    'revenue' => $totalRevenue,
+                    'formatted_revenue' => NumberFormatter::formatCount($totalRevenue)
+                ],
+                'detailed_data' => $orderedResult // Optional: include detailed data for debugging
             ]
-        ]
-    ]);
-}
+        ]);
+    }
 }
