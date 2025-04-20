@@ -152,10 +152,10 @@ class TransactionsController extends Controller
     //     }
     // }
 
-    public function verifyPaysatckPayment($trxref, $reference)
+    public function verifyPaysatckPayment(Request $request)
     {
-        //  $trxref = $request->query('trxref');
-        // $reference = $request->query('reference');
+        $trxref = $request->query('trxref');
+        $reference = $request->query('reference');
         // $signature = $request->header('x-paystack-signature');
         // if (!$this->validPaystackSignature($signature, $request->getContent())) {
         //     abort(401);
