@@ -152,7 +152,7 @@ class TransactionsController extends Controller
     //     }
     // }
 
-    public function verifyPaysatckPayment(Request $request)
+    public function verifyPaysatck(Request $request)
     {
         $trxref = $request->query('trxref');
         $reference = $request->query('reference');

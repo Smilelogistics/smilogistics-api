@@ -157,7 +157,7 @@ Route::prefix('v1')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::post('/initialize', [TransactionsController::class, 'initialize']);
             //Route::post('/initialize-paystack', [TransactionsController::class, 'initiatePaystackPayment']);
-            Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment'])->name('verify.paystack');
+            Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatck'])->name('verify.paystack');
             Route::post('/initialize-flutterwave', [TransactionsController::class, 'initializePaymentFlutterwave']);
             Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
         });
