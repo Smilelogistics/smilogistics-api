@@ -41,10 +41,8 @@ class TransactionsController extends Controller
             'payment_method' => 'required|in:paystack,flutterwave,stripe,paypal,bank_transfer,crypto,wallet',
         ]);
 
-        // Get the plan
         $plan = Plan::findOrFail($validated['plan_id']);
 
-        // Verify plan price matches
         if ($plan->price != $validated['amount']) {
             return response()->json([
                 'error' => 'Plan price mismatch',
