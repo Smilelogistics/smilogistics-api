@@ -330,4 +330,10 @@ class TruckController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
+
+    public function destroy($id) {
+        $truck = Truck::findOrFail($id);
+        $truck->delete();
+        return response()->json(['message' => 'Truck deleted successfully'], 200);
+    }
 }

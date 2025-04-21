@@ -94,6 +94,7 @@ Route::prefix('v1')->group(function () {
             Route::put('update/{id}', [TruckController::class, 'update'])->name('trucks.update');
             Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');
             Route::get('trucks', [TruckController::class, 'index'])->name('trucks.index');
+            Route::delete('delete/{id}', [TruckController::class, 'destroy'])->name('trucks.destroy');
         });
 
         Route::prefix('invoices')->group(function () {
