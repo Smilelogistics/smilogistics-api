@@ -15,10 +15,11 @@ class DashboardController extends Controller
 {
     public function dashboardStats()
     {
-        if(!auth()->user()->hasRole('superadministrator')) {
+        $user = auth()->user();
+        if($user->hasRole('superadministrator')) {
             $totalincome = Transaction::where('status', 'success')->sum('amount');
             $userCount = User::count();
-            $recentTransactions = Transaction::latest()->take(5)->get();
+            $recentTransactions = Transaction::latest()->take(10)->get();
             $plans = Plan::count();
             $branches = Branch::count();
 
@@ -33,8 +34,32 @@ class DashboardController extends Controller
                 ]
             ]);
         }
-        else{
+        elseif($user->hasRole('businessadministrator')) {
 
+            $branch = $user->branch;
+
+            // Ensure the branch exists before calling relationships
+            if ($branch) {
+                $totalCustomers = $branch->customer()->count();
+                $totalDrivers = $branch->driver()->count();
+                $userCount = $totalCustomers + $totalDrivers;
+            } else {
+                $totalCustomers = 0;
+                $totalDrivers = 0;
+                $userCount = 0;
+            }
+            $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
+            $plans = Plan::count();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Dashboard data retrieved successfully',
+                'data' => [
+                    'userCount' => $userCount,
+                    'recentTransactions' => $recentTransactions,
+                    'plans' => $plans
+                ]
+            ]);
         }
         
     }
@@ -83,133 +108,6 @@ class DashboardController extends Controller
             ]);
         }
     }
-
-    public function totalIncome()
-    {
-        $totalincome = Transaction::where('status', 'success')->sum('amount');
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Total income retrieved successfully',
-            'totalincome' => NumberFormatter::formatCount($totalincome),
-        ]);
-    }
-
-
-
-    // public function monthlyIncome()
-    // {
-    //     // Get current date and calculate start date (12 months ago)
-    //     $currentDate = now();
-    //     $startDate = $currentDate->copy()->subMonths(11)->startOfMonth(); // 11 months + current month = 12
-        
-    //     // Query to get monthly sums
-    //     $monthlyData = Transaction::where('status', 'success')
-    //         ->where('created_at', '>=', $startDate)
-    //         ->selectRaw('
-    //             YEAR(created_at) as year,
-    //             MONTH(created_at) as month,
-    //             SUM(amount) as total_amount,
-    //             COUNT(*) as transaction_count
-    //         ')
-    //         ->groupBy('year', 'month')
-    //         ->orderBy('year', 'asc')
-    //         ->orderBy('month', 'asc')
-    //         ->get();
-        
-    //     // Format the data with month names and ensure all 12 months are represented
-    //     $result = [];
-    //     $currentYear = $currentDate->year;
-    //     $currentMonth = $currentDate->month;
-        
-    //     for ($i = 0; $i < 12; $i++) {
-    //         $date = $startDate->copy()->addMonths($i);
-    //         $year = $date->year;
-    //         $month = $date->month;
-    //         $monthName = $date->format('F Y');
-            
-    //         $monthRecord = $monthlyData->firstWhere(function ($item) use ($year, $month) {
-    //             return $item->year == $year && $item->month == $month;
-    //         });
-            
-    //         $result[] = [
-    //             'year' => $year,
-    //             'month' => $month,
-    //             'month_name' => $monthName,
-    //             'total_amount' => $monthRecord ? $monthRecord->total_amount : 0,
-    //             'transaction_count' => $monthRecord ? $monthRecord->transaction_count : 0,
-    //             'formatted_amount' => NumberFormatter::formatCount($monthRecord->total_amount ?? 0),
-    //         ];
-    //     }
-        
-    //     // Calculate overall total
-    //     $totalAmount = $monthlyData->sum('total_amount');
-        
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'message' => 'Monthly income retrieved successfully',
-    //         'data' => $result,
-    //         'total_amount' => $totalAmount,
-    //         'formatted_total_amount' => NumberFormatter::formatCount($totalAmount),
-    //     ]);
-    // }
-
-
-
-
-
-
-    // public function monthlyIncome()
-    // {
-    //     $currentDate = now();
-    //     $startDate = $currentDate->copy()->subMonths(11)->startOfMonth();
-
-    //     // PostgreSQL-compatible query
-    //     $monthlyData = Transaction::where('status', 'pending')
-    //         ->where('created_at', '>=', $startDate)
-    //         ->selectRaw('
-    //             EXTRACT(YEAR FROM created_at) as year,
-    //             EXTRACT(MONTH FROM created_at) as month,
-    //             SUM(amount) as total_amount,
-    //             COUNT(*) as transaction_count
-    //         ')
-    //         ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
-    //         ->orderBy('year', 'asc')
-    //         ->orderBy('month', 'asc')
-    //         ->get();
-
-    //     // Format the data (same as before)
-    //     $result = [];
-    //     for ($i = 0; $i < 12; $i++) {
-    //         $date = $startDate->copy()->addMonths($i);
-    //         $year = $date->year;
-    //         $month = $date->month;
-            
-    //         $monthRecord = $monthlyData->firstWhere(function ($item) use ($year, $month) {
-    //             return $item->year == $year && $item->month == $month;
-    //         });
-            
-    //         $result[] = [
-    //             'year' => $year,
-    //             'month' => $month,
-    //             'month_name' => $date->format('F Y'),
-    //             'total_amount' => $monthRecord ? $monthRecord->total_amount : 0,
-    //             'transaction_count' => $monthRecord ? $monthRecord->transaction_count : 0,
-    //             'formatted_amount' => NumberFormatter::formatCount($monthRecord->total_amount ?? 0),
-    //         ];
-    //     }
-
-    //     $totalAmount = $monthlyData->sum('total_amount');
-        
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'message' => 'Monthly income retrieved successfully',
-    //         'data' => $result,
-    //         'total_amount' => $totalAmount,
-    //         'formatted_total_amount' => NumberFormatter::formatCount($totalAmount),
-    //     ]);
-    // }
-
 
     public function monthlyIncome()
     {
