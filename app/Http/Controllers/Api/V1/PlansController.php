@@ -70,4 +70,10 @@ class PlansController extends Controller
             'data' => $plan
         ]);
     }
+
+    public function destroy($id){
+        $plan = Plan::findOrFail($id);
+        $plan->delete();
+        return response()->json(['message' => 'Plan deleted successfully'], 200);
+    }
 }
