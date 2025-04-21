@@ -74,7 +74,7 @@ Route::prefix('v1')->group(function () {
         // Route::get('/shipments', [ShipmentController::class, 'index']);
         // Route::get('/shipments/{id}', [ShipmentController::class, 'show']);
         // Route::put('/shipments/{id}', [ShipmentController::class, 'update']);
-        Route::delete('/shipments/{id}', [ShipmentController::class, 'destroy']);
+        Route::delete('/shipments/delete/{id}', [ShipmentController::class, 'destroy']);
 
         Route::prefix('drivers')->group(function () {
             Route::resource('driver', DriverController::class);
