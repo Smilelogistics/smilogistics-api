@@ -104,6 +104,7 @@ Route::prefix('v1')->group(function () {
             Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
             Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
             Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
+            Route::delete('delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
         });
 
         Route::prefix('bikes')->group(function () {

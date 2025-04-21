@@ -354,5 +354,11 @@ protected function handlePayments(Request $request, $invoiceId)
             ->delete();
     }
 }
+    public function destroy($id)
+    {
+        $invoice = Invoice::findOrFail($id);
+        $invoice->delete();
+        return response()->json(['message' => 'Invoice deleted successfully'], 200);
+    }
 }
 
