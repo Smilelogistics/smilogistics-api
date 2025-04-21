@@ -679,5 +679,11 @@ class ShipmentController extends Controller
         return response()->json($agency);
     }
 
+    public function destroy($id) {
+        $shipment = Shipment::findOrFail($id);
+        $shipment->delete();
+        return response()->json(['message' => 'Shipment deleted successfully'], 200);
+    }
+
        
 }
