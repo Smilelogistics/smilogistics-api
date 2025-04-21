@@ -200,10 +200,15 @@ class TransactionsController extends Controller
                 ]);
 
                 $updateUser = User::where('id', $transaction->user_id)->first();
+                $currentEndDate = $updateUser->subscription_end_date;
+
+                $newEndDate = $currentEndDate && $currentEndDate->isFuture()
+                    ? $currentEndDate->copy()->addDays(30)
+                    : now()->addDays(30);
 
                 $updateUser->update([
                     'isSubscribed' => 1,
-                    'subscription_end_date' => now()->addDays(30),
+                    'subscription_end_date' => $newEndDate,
                     'subscription_start_date' => now(),
                     'subscription_type' => $transaction->subscription_type,
                     'subscription_count' => $updateUser->subscription_count + 1
