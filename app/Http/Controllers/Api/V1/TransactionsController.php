@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use Exception;
+use Carbon\Carbon;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\Transaction;
@@ -200,10 +201,10 @@ class TransactionsController extends Controller
                 ]);
 
                 $updateUser = User::where('id', $transaction->user_id)->first();
-                $currentEndDate = $updateUser->subscription_end_date;
+                $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
 
-                $newEndDate = $currentEndDate && $currentEndDate->isFuture()
-                    ? $currentEndDate->copy()->addDays(30)
+                $newEndDate = $currentEndDate->isFuture()
+                    ? $currentEndDate->addDays(30)
                     : now()->addDays(30);
 
                 $updateUser->update([
