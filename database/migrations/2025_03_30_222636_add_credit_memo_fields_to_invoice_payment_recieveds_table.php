@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('invoice_payment_recieveds', function (Blueprint $table) {
-            $table->text('credit_memo')->after('notes')->nullable();
-            $table->decimal('credit_amount', 20, 2)->after('notes')->nullable();
-            $table->string('credit_date', 30)->after('notes')->nullable();
-            $table->text('credit_note')->after('notes')->nullable();
+            $table->text('credit_memo')->nullable();
+            $table->decimal('credit_amount', 20, 2)->nullable();
+            $table->string('credit_date', 30)->nullable();
+            $table->text('credit_note')->nullable();
         });
     }
 
