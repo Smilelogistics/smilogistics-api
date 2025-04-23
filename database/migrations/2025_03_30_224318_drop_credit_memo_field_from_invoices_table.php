@@ -22,10 +22,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('invoices', function (Blueprint $table) {
-            $table->string('credit_memo')->after('notes')->nullable();
-            $table->string('credit_amount')->after('notes')->nullable();
-            $table->string('credit_date')->after('notes')->nullable();
-            $table->text('credit_note')->after('notes')->nullable();
+            $table->string('credit_memo')->nullable();
+            $table->string('credit_amount')->nullable();
+            $table->string('credit_date')->nullable();
+            $table->text('credit_note')->nullable();
         });
     }
 };
