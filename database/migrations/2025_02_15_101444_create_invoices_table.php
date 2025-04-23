@@ -51,6 +51,9 @@ return new class extends Migration
             $table->string('credit_amount', 30)->nullable();
             $table->string('credit_date')->nullable();
             $table->text('credit_note')->nullable();
+            
+            $table->integer('total_discount')->nullable();
+            $table->decimal('net_total', 20, 2)->nullable();
             //Apply credit from credit memos ends here
             $table->timestamps();
         });

@@ -14,11 +14,15 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('plan_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->decimal('amount', 15, 2);
             $table->string('currency', 10)->default('USD');
             $table->string('payment_method', 20); // paystack, stripe, paypal, flutterwave
             $table->string('payment_gateway_ref')->unique();
             $table->string('status')->default('pending'); // pending, success, failed, refunded
+            $table->string('plan_name', 100)->nullable();
+            $table->integer('duration')->nullable();
             $table->text('description')->nullable();
             $table->string('channel', 20)->nullable();
             $table->string('payment_type', 20)->nullable(); // one-time, recurring
@@ -33,14 +37,9 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::table('shipment_charges', function (Blueprint $table) {
-            $table->string('total_discount')->after('discount')->nullable();
-        });
+       
 
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->integer('total_discount')->nullable();
-            $table->decimal('net_total', 20, 2)->nullable();
-        });
+      
     }
 
     /**
@@ -50,13 +49,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('transactions');
 
-        Schema::table('shipment_charges', function (Blueprint $table) {
-            $table->dropColumn('total_discount');
-        });
-
-        Schema::table('invoices', function (Blueprint $table) {
-            $table->dropColumn('total_discount');
-            $table->dropColumn('net_total');
-        });
+   
     }
 };

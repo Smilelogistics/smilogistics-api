@@ -27,6 +27,8 @@ return new class extends Migration
             $table->date('invoice_date')->nullable();
             $table->decimal('total', 10, 2)->nullable();
             $table->decimal('net_total', 10, 2)->nullable();
+            $table->string('total_discount')->nullable();
+            
             $table->timestamps();
         });
     }

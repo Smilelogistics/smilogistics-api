@@ -99,6 +99,29 @@ return new class extends Migration
         Schema::table('bike_docs', function (Blueprint $table) {
             $table->string('public_id')->after('id')->nullable();
         });
+
+        Schema::create('plans', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->integer('price');
+            $table->text('description');
+            $table->string('billing_cycle')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->integer('trial_days')->nullable();
+            $table->string('currency')->default('USD');
+            $table->integer('sort_order')->nullable();
+            $table->json('features')->nullable();
+            $table->integer('max_users')->nullable();
+            $table->integer('storage_limit')->nullable();
+            $table->string('plan_code')->unique()->nullable();
+            $table->decimal('setup_fee', 10, 2)->nullable();
+            $table->string('support_level')->nullable();
+            $table->integer('shipment_count')->nullable();
+            $table->integer('truck_count')->nullable();
+            $table->integer('driver_count')->nullable();
+            $table->integer('customer_count')->nullable();
+            $table->timestamps();
+        });
         
     }
 
@@ -135,5 +158,6 @@ return new class extends Migration
 
         
         Schema::dropIfExists('deliveries');
+        Schema::dropIfExists('plans');
     }
 };
