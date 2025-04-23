@@ -29,8 +29,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     // Protected routes
+    
+    Route::post('/register', [AuthController::class, 'register']);
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 
