@@ -28,9 +28,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/send-reset-link', [AuthController::class, 'sendResetLink']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
-    Route::post('/register', [AuthController::class, 'register']);
     // Protected routes
     Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 
@@ -146,7 +146,7 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('delivery')->group(function () {
-            
+            Route::post('/create', [DeliveryController::class, 'makeRequest'])->name('delivery.makeRequest');
             Route::get('/driver-shipments/{driver}', [DeliveryController::class, 'getShipments']);
             Route::post('/update-shipment-status/{shipment}', [DeliveryController::class, 'updateStatus']);
         });

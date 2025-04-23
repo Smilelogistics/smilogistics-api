@@ -33,12 +33,6 @@ class User extends Authenticatable
         'lname',
         'email',
         'user_type',
-        'subscription_count',
-        'subscription_end_date',
-        'subscription_status',
-        'subscription_type',
-        'subscription_date',
-        'isSubscribed',
         'password',
     ];
 
@@ -76,6 +70,7 @@ class User extends Authenticatable
         ];
     }
 
+
     public function branch() {
         return $this->hasOne(Branch::class);
     }
@@ -101,4 +96,6 @@ class User extends Authenticatable
     {
         return $this->hasMany(Transaction::class);
     }
+
+    
 }

@@ -55,6 +55,12 @@ return new class extends Migration
             $table->string('logo2')->nullable();
             $table->string('logo3')->nullable();
             $table->string('business_status', 15)->default('active');
+
+            $table->integer('isSubscribed')->nullable()->default(1);
+            $table->date('subscription_date')->nullable();
+            $table->date('subscription_end_date')->nullable();
+            $table->integer('subscription_count')->nullable();
+            $table->string('subscription_type')->nullable()->default('trial');
             $table->timestamps();
         });
     }

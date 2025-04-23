@@ -50,8 +50,32 @@ class Branch extends Model
         'logo2',
         'logo3',
         'business_status',
+        'subscription_count',
+        'subscription_end_date',
+        'subscription_status',
+        'subscription_type',
+        'subscription_date',
+        'isSubscribed',
     ];
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+            if (empty($user->subscription_date)) {
+                $user->subscription_date = now()->toDateString();
+            }
+
+            if (empty($user->subscription_end_date)) {
+                $user->subscription_end_date = now()->addDays(30)->toDateString();
+            }
+        });
+    }
     
+    protected $casts = [
+        'subscription_date' => 'date',
+        'subscription_end_date' => 'date',
+    ];
 
     public function user()
     {

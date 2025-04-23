@@ -64,6 +64,7 @@ class ShipmentController extends Controller
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
+        $checkSubscription = false;
 
         // On charges, you multiply Unist * Rate = Amount
         // if there is a discount, you multiply Unist * Rate - discount = Amount

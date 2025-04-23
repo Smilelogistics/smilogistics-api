@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('fname');
             $table->string('mname')->nullable();
-            $table->string('lname');
+            $table->string('lname')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -23,11 +23,11 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->string('user_type')->nullable();
-            $table->integer('isSubscribed')->nullable()->default(0);
-            $table->string('subscription_date')->nullable();
-            $table->string('subscription_end_date')->nullable();
-            $table->integer('subscription_count')->nullable();
-            $table->string('subscription_type')->nullable()->default('none');
+            // $table->integer('isSubscribed')->nullable()->default(0);
+            // $table->date('subscription_date')->nullable();
+            // $table->date('subscription_end_date')->nullable();
+            // $table->integer('subscription_count')->nullable();
+            // $table->string('subscription_type')->nullable()->default('trial');
             $table->timestamps();
         });
 

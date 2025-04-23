@@ -320,9 +320,10 @@ class CarrierController extends Controller
             'flash_note_to_payroll_about_this_carrier' => 'nullable|string|max:255',
             'internal_note' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:255',
+
             'insurance_provider' => 'nullable|string|max:255',
             'insurance_expire' => 'nullable|date',
-            'note_about_coverage' => 'nullable|string|max:255',
+            'note_about_coverage' => 'nullable|string',
             'payment_terms' => 'nullable|string|max:100',
             'paid_via' => 'nullable|string|max:100',
             'account_number' => 'nullable|string|max:50',

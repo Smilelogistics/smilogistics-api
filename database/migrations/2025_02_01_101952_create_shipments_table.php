@@ -37,12 +37,16 @@ return new class extends Migration
             $table->string('genset_number', 50)->nullable();
             $table->string('reefer_temp', 100)->nullable();
             $table->string('seal_number', 30)->nullable();
-            $table->string('total_miles', 30)->nullable();
-            $table->string('loaded_miles', 30)->nullable();
-            $table->string('empty_miles', 30)->nullable();
-            $table->string('dh_miles', 30)->nullable();
-            $table->string('fuel_rate_per_gallon', 30)->nullable();
-            $table->string('mpg', 30)->nullable();
+
+
+            $table->decimal('total_miles', 10, 2)->default(0.00);
+            $table->decimal('loaded_miles', 10, 2)->default(0.00);
+            $table->decimal('empty_miles', 10, 2)->default(0.00);
+            $table->decimal('dh_miles', 10, 2)->default(0.00);
+            $table->decimal('fuel_rate_per_gallon', 8, 2)->default(0.00);
+            $table->decimal('mpg', 8, 2)->default(0.00);
+            $table->decimal('fuel_cost', 10, 2)->default(0.00);
+
             $table->decimal('total_fuel_cost', 10, 2)->nullable();
             $table->string('broker_name', 50)->nullable()->comment('FRIEGHT BROKER INFORMATION');
             $table->string('broker_email', 30)->nullable()->comment('FRIEGHT BROKER EMAIL');
