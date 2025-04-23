@@ -59,10 +59,10 @@ return new class extends Migration
             $table->dropColumn('branch_id');
             $table->dropColumn('plan_name');
             $table->dropColumn('duration');
-            $table->dropColumn('shipment_count');
-            $table->dropColumn('truck_count');
-            $table->dropColumn('driver_count');
-            $table->dropColumn('customer_count');
+            // $table->dropColumn('shipment_count');
+            // $table->dropColumn('truck_count');
+            // $table->dropColumn('driver_count');
+            // $table->dropColumn('customer_count');
         });
 
         Schema::dropIfExists('plans');
