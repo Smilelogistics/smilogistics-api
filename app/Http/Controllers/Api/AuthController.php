@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use App\Notifications\NewBranchNotification;
 
 class AuthController extends Controller
 {
@@ -71,6 +72,7 @@ class AuthController extends Controller
                      'about_us' => $request->about_us ?? null
                  ]);
                  Mail::to($user->email)->send(new newBranchMail($user));
+                 $user->notify(new NewBranchNotification($user));
      
              } elseif ($user->user_type == 'customer') {
                 $authuser = auth()->user();
