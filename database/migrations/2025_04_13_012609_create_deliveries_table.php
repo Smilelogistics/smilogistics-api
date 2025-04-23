@@ -109,7 +109,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('deliveries');
         Schema::dropIfExists('delivery_status_history');
 
         Schema::table('shipment_uploads', function (Blueprint $table) {
@@ -133,5 +132,8 @@ return new class extends Migration
         Schema::table('bike_docs', function (Blueprint $table) {
             $table->dropColumn('public_id');
         });
+
+        
+        Schema::dropIfExists('deliveries');
     }
 };
