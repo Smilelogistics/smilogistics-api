@@ -49,16 +49,16 @@ return new class extends Migration
     {
 
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropForeign(['plan_id']);
-            $table->dropForeign(['branch_id']);
+            // $table->dropForeign(['plan_id']);
+            // $table->dropForeign(['branch_id']);
         });
         
         // Then drop the columns
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('plan_id');
-            $table->dropColumn('branch_id');
-            $table->dropColumn('plan_name');
-            $table->dropColumn('duration');
+            // $table->dropColumn('plan_id');
+            // $table->dropColumn('branch_id');
+            // $table->dropColumn('plan_name');
+            // $table->dropColumn('duration');
             // $table->dropColumn('shipment_count');
             // $table->dropColumn('truck_count');
             // $table->dropColumn('driver_count');
