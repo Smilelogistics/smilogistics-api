@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('license_plate_state', 100)->nullable();
             $table->date('service_start_date')->nullable();
             $table->string('reffered_by', 80)->nullable()->comment('TRUCK REFFERED BY');
-            $table->string('tags')->nullable();
+            $table->json('tags')->nullable();
             $table->string('endorsements', 100)->nullable();
             $table->text('flash_notes_to_dispatchers')->nullable()->comment('NOTE WILL SHOW UP DURING ORDER ENTRY AND DISPATCH');
             $table->text('flash_notes_to_payroll')->nullable()->comment('NOTE WILL SHOW UP WHILE CREATING SETTLEMENTS');

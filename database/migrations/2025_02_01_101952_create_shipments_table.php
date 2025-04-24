@@ -17,8 +17,10 @@ return new class extends Migration
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('signature', 100)->nullable();
-            $table->string('office', 20)->nullable();
+            $table->string('shipment_tracking_number', 50)->nullable();
+            $table->string('shipment_status', 20)->nullable();
+            $table->string('signature', 180)->nullable();
+            $table->string('office', 30)->nullable();
             $table->string('load_type', 20)->nullable();
             $table->text('load_type_note')->nullable();
             $table->string('brokered', 80)->nullable();
@@ -32,8 +34,8 @@ return new class extends Migration
             $table->string('commodity', 30)->nullable();
             $table->string('pieces', 30)->nullable();
             $table->string('pickup_number', 30)->nullable();
-            $table->string('overweight_hazmat', 50)->nullable();
-            $table->string('tags')->nullable();
+            $table->json('overweight_hazmat')->nullable();
+            $table->json('tags')->nullable();
             $table->string('genset_number', 50)->nullable();
             $table->string('reefer_temp', 100)->nullable();
             $table->string('seal_number', 30)->nullable();
@@ -57,7 +59,7 @@ return new class extends Migration
             $table->string('broker_sales_rep', 50)->nullable();
             $table->string('broker_edi_api_shipment_number', 50)->nullable();
             $table->text('broker_notes')->nullable();
-
+            $table->string('delivery_type', 50)->nullable();
 
 
             // $table->string('agency')->nullable();

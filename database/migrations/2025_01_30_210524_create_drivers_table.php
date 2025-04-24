@@ -32,7 +32,7 @@ return new class extends Migration
             $table->date('hired_on')->nullable();
             $table->date('terminated_on')->nullable();
             $table->string('years_of_experience', 10)->nullable();
-            $table->string('tags')->nullable();
+            $table->json('tags')->nullable();
             $table->string('endorsements')->nullable();
             $table->string('rating')->nullable()->comment('Rate per Template category');
             $table->text('notes_about_the_choices_made')->nullable();

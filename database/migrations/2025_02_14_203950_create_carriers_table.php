@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('branch_id')->nullable()->constrained()->nullOnDelete();
+            $table->foreignId('customer_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name', 100)->nullable();
-            $table->string('state_served', 80)->nullable();
+            $table->json('state_served')->nullable();
             $table->string('code')->nullable();
             $table->string('offices', 50)->nullable();
             $table->string('carrier_number', 100)->nullable();
@@ -46,10 +47,11 @@ return new class extends Migration
             $table->string('other_equipments', 80)->nullable()->comment("CHASIS, REEFERS, VANS ETC");
             $table->string('profile_photo')->nullable();
             $table->string('rating', 100)->nullable()->comment('CARRIER BELONGSTO THIS PAY CATEGORY');
-            $table->string('carries_this_cargo', 105)->nullable();
+            $table->json('carries_this_cargo')->nullable();
+            $table->json('carrier_profile')->nullable();
             $table->text('note_about_choices')->nullable();
             $table->date('start_date')->nullable();
-            $table->string('tag')->nullable();
+            $table->json('tags')->nullable();
             $table->text('flash_note_to_riders_about_this_carrier')->nullable();
             $table->text('flash_note_to_payroll_about_this_carrier')->nullable();
             $table->text('internal_note')->nullable();
@@ -58,6 +60,7 @@ return new class extends Migration
             $table->string('insurance_expire', 80)->nullable();
             $table->text('note_about_coverage')->nullable();
             $table->string('payment_terms', 100)->nullable();
+            $table->string('payment_method', 20)->nullable();
             $table->string('paid_via', 100)->nullable();
             $table->string('account_number', 20)->nullable();
             $table->string('routing_number', 100)->nullable();
@@ -67,6 +70,7 @@ return new class extends Migration
             $table->text('payment_related_notes')->nullable()->comment('IF DIFFERENT FROM THE MAIN EMAIL');
             $table->string('carrier_smile_id', 50)->nullable()->comment('ASK CARRIER TO LOOK UP THEIR COMPANY PROFILE FOR IDENTIFICATION NUMBER');
             $table->string('data_exchange_option', 100)->nullable()->comment('0 = send Orders Electronically to the carries, 1 = Recieve shipment status from the carrier, 2 = Recieve backup docs from the carrier');
+            $table->string('status', 20)->nullable();
             $table->timestamps();
         });
     }

@@ -49,7 +49,7 @@ return new class extends Migration
             $table->text('flash_note_for_drivers')->nullable()->comment('Notes will show up when entering order');
             $table->text('flash_note_for_accounting')->nullable()->comment('Notes will show up in the charges section');
             $table->date('start_date')->nullable();
-            $table->string('tag')->nullable();
+            $table->json('tag')->nullable();
             $table->text('internal_note')->nullable();
             $table->text('note')->nullable();
             $table->string('customer_status', 20)->default('active');

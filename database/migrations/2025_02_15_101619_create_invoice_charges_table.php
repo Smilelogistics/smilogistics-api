@@ -23,7 +23,7 @@ return new class extends Migration
             $table->integer('discount')->nullable();
             $table->text('internal_notes')->nullable();
             $table->text('general_internal_notes')->nullable();
-            $table->string('tags')->nullable();
+            $table->json('tags')->nullable();
             $table->boolean('isAccessorial')->default(false)->comment('IF THE CHARGE IS ACCESSORIAL');
             $table->decimal('total', 20, 2)->nullable();
             $table->timestamps();
