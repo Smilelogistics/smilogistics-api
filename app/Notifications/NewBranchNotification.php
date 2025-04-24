@@ -48,7 +48,7 @@ class NewBranchNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message'=>'Your registration is sucessfull, your 30 days free trial is activated'
+            'message'=>'Your registration is sucessfull, your 30 days free trial is activated',
         ];
     }
 }

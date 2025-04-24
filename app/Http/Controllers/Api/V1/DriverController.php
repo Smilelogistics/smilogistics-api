@@ -130,6 +130,8 @@ class DriverController extends Controller
 
             $validateData = $validator->validate();
 
+            //dd($validateData);
+
             DB::beginTransaction();
 
             $authUser = Auth::user();
