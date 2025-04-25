@@ -165,7 +165,7 @@ class DriverController extends Controller
                 'password' => Hash::make('12345678'), //10 zeros is your default password to the app
                 'user_type' => 'driver',
             ]);
-            attachRoles($createUser->user_type);
+            $createUser->addRole($createUser->user_type);
 
             $driver = Driver::create([
                 'user_id' => $createUser->id,
