@@ -305,12 +305,72 @@ class DriverController extends Controller
             'flash_notes_to_payroll' => 'sometimes|nullable|string|max:500',
             'internal_notes' => 'sometimes|nullable|string|max:1000',
             'driver_status' => 'sometimes|nullable|string|in:active,inactive,suspended',
+
+            //form w-9
+            'name_tax_return' => 'nullable|string|max:80',
+            'different_bussiness_name' => 'nullable|string|max:80',
+            'wtype' => 'nullable|string|max:80',
+            'other_type' => 'nullable|string|max:80',
+            'waddress' => 'nullable|string|max:150',
+            'wstate' => 'nullable|string|max:50',
+            'wcity' => 'nullable|string|max:50',
+            'wzip' => 'nullable|string|max:20',
+            'wtaxid' => 'nullable|string|max:80',
+            'wwssn' => 'nullable|string|max:80',
+            'wwein' => 'nullable|string|max:80',
+            'wpaid_via' => 'nullable|string|max:80',
+            'waccountNumber' => 'nullable|string|max:20',
+            'wroutingNumber' => 'nullable|string',
+            'winternal_notes' => 'nullable|string',
+            'licensessn' => 'nullable|string|max:30',
+            'dob' => 'nullable|date|date_format:Y-m-d',
+            'cdlnumber' => 'nullable|string|max:80',
+            'license_state' => 'nullable|string|max:50',
+            'cdl_expires' => 'nullable|date|date_format:Y-m-d',
+            'medical_number' => 'nullable|string|max:100',
+            'medical_expires' => 'nullable|date|date_format:Y-m-d',
+            'twic_number' => 'nullable|string|max:80',
+            'twic_expires' => 'nullable|date|date_format:Y-m-d',
+            'sealink_number' => 'nullable|string|max:80',
+            'sealink_expires' => 'nullable|date|date_format:Y-m-d',
+            'annual_mvr' => 'nullable|date|date_format:Y-m-d',
+            'clearing_annual' => 'nullable|date|date_format:Y-m-d',
+            'liability_insurance_expires' => 'nullable|date|date_format:Y-m-d',
+            'insurance_provider' => 'nullable|string|max:100',
+            'insurance_coverage' => 'nullable|string|max:30',
+            'date_1' => 'nullable|date|date_format:Y-m-d',
+            'date_2' => 'nullable|date|date_format:Y-m-d',
+            'date_3' => 'nullable|date|date_format:Y-m-d',
+            'date_4' => 'nullable|date|date_format:Y-m-d',
+            'date_5' => 'nullable|date|date_format:Y-m-d',
+            'date_6' => 'nullable|date|date_format:Y-m-d',
+            'license_internal_notes' => 'nullable|string',
+            'providers' => 'nullable',
+            'providers.*card_device_linking_number' => 'nullable|string|max:255',
+            'providers.*app_provider' => 'nullable|string|max:255',
+            'providers.*quick_note' => 'nullable|string',
+
             'file' => 'sometimes|nullable|string|max:500',
         ]);
         
     
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
+        }
+
+        if (isset($request->tags)) {
+            if (is_string($request->tags)) {
+                $tagsArray = explode(',', $validatedData->tags);
+            } 
+            elseif (is_string($request->tags) && json_decode($request->tags)) {
+                $tagsArray = json_decode($requestt->tags, true);
+            }
+            else {
+                $tagsArray = $request->tags;
+            }
+            
+            $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+            $request->tags = !empty($tagsArray) ? $tagsArray : null;
         }
     
         $driver = Driver::findOrFail($id);
@@ -345,7 +405,51 @@ class DriverController extends Controller
             'flash_notes_to_dispatch' => $request->flash_notes_to_dispatch,
             'flash_notes_to_payroll' => $request->flash_notes_to_payroll,
             'internal_notes' => $request->internal_notes,
-            'driver_status' => $request->driver_status
+            'driver_status' => $request->driver_status,
+            'name_tax_return' => $request->name_tax_return,
+            'different_bussiness_name' => $request->different_bussiness_name,
+            'wtype' => $request->wtype,
+            'other_type' => $request->other_type,
+            'waddress' => $request->waddress,
+            'wstate' => $request->wstate,
+
+
+            'wcity' => $request->wcity,
+            'wzip' => $request->wzip,
+            'wphone' => $request->wphone,
+            'wemail' => $request->wemail,
+            'wtaxid' => $request->wtaxid,
+            'wwssn' => $request->wwssn,
+            'wwein' => $request->wwein,
+            'wpaid_via' => $request->wpaid_via,
+            'waccountNumber' => $request->waccountNumber,
+            'wroutingNumber' => $request->wroutingNumber,
+            'winternal_notes' => $request->winternal_notes,
+            'licensessn' => $request->licensessn,
+            'dob' => $request->dob,
+            'cdlnumber' => $request->cdlnumber,
+            'license_state' =>$request->license_state,
+            'cdl_expires' => $request->cdl_expires,
+            'medical_number' => $request->medical_number,
+            'medical_expires' => $request->medical_expires,
+            'twic_number' => $request->twic_number,
+            'twic_expires' => $request->twic_expires,
+            'sealink_number' => $request->sealink_number,
+            'sealink_expires' => $request->sealink_expires,
+            'annual_mvr' => $request->annual_mvr,
+
+            'clearing_annual' => $request->clearing_annual,
+            'liability_insurance_expires' => $request->liability_insurance_expires,
+            'insurance_provider' => $request->insurance_provider,
+            'insurance_coverage' => $request->insurance_coverage,
+            'date_1' => $request->date_1,
+            'date_2' => $request->date_2,
+            'date_3' => $request->date_3,
+            'date_4' => $request->date_4,
+            'date_5' => $request->date_5,
+            'date_6' => $request->date_6,
+            'license_internal_notes' => $request->license_internal_notes
+
         ]));
     
         // Update or create DriverDocs record
@@ -353,6 +457,18 @@ class DriverController extends Controller
             ['driver_id' => $driver->id],
             ['file' => $request->file_path]
         );
+
+        if (isset($validateData['providers'])) {
+            foreach ($validateData['providers'] as $provider) {
+                AppIntegration::create([
+                    'driver_id' => $driver->id,
+                    'card_device_linking_number' => $provider['card_device_linking_number'],
+                    'app_provider' => $provider['app_provider'],
+                    'quick_note' => $provider['quick_note'],
+                ]);
+            }
+        }
+
     
         if ($request->hasFile('file')) {
             $file = $request->file('file');
