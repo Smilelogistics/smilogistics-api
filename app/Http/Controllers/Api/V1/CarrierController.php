@@ -396,8 +396,45 @@ class CarrierController extends Controller
             'file_titles' => 'nullable|array',
             'file_titles.*' => 'string|max:255',
         ]);
+        $arrayFields = [
+            'state_served' => $request->input('state_served', []),
+            'carrier_profile' => $request->input('carrier_profile', []),
+            'carries_this_cargo' => $request->input('carries_this_cargo', [])
+        ];
+
+        // Convert single values to arrays if needed
+        foreach ($arrayFields as $field => $value) {
+            if (!is_array($value)) {
+                $arrayFields[$field] = [$value];
+            }
+        }
+$arrayFields = [
+            'state_served' => $request->input('state_served', []),
+            'carrier_profile' => $request->input('carrier_profile', []),
+            'carries_this_cargo' => $request->input('carries_this_cargo', [])
+        ];
+
+        // Convert single values to arrays if needed
+        foreach ($arrayFields as $field => $value) {
+            if (!is_array($value)) {
+                $arrayFields[$field] = [$value];
+            }
+        }
+    
+
         $carrier = Carrier::findOrFail($id);
-        $carrier->update($validatedData);
+        $carrier->update([
+            'state_served' => !empty($carrierData['state_served']) 
+            ? json_encode(array_filter($carrierData['state_served'])) 
+            : null,
+        'carrier_profile' => !empty($carrierData['carrier_profile']) 
+            ? json_encode(array_filter($carrierData['carrier_profile'])) 
+            : null,
+        'carries_this_cargo' => !empty($carrierData['carries_this_cargo']) 
+            ? json_encode(array_filter($carrierData['carries_this_cargo'])) 
+            : null,
+            ...$validatedData
+        ]);
 
         if ($request->has('insurances')) {
             foreach ($request->insurances as $insurance) {
