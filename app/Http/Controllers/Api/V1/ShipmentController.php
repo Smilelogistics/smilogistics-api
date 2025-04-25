@@ -75,6 +75,14 @@ class ShipmentController extends Controller
 
         $validatedData = $request->validated();
         //dd($validatedData);
+        if (isset($validatedData['tags'])) {
+            $tagsArray = is_array($validatedData['tags']) 
+                ? $validatedData['tags']
+                : explode(',', $validatedData['tags']);
+            
+            $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+            $validatedData['tags'] = count($tagsArray) > 0 ? $tagsArray : null;
+        }
        
         DB::beginTransaction();
 
