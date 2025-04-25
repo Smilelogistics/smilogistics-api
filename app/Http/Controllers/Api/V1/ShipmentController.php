@@ -76,12 +76,18 @@ class ShipmentController extends Controller
         $validatedData = $request->validated();
         //dd($validatedData);
         if (isset($validatedData['tags'])) {
-            $tagsArray = is_array($validatedData['tags']) 
-                ? $validatedData['tags']
-                : explode(',', $validatedData['tags']);
+            if (is_string($validatedData['tags'])) {
+                $tagsArray = explode(',', $validatedData['tags']);
+            } 
+            elseif (is_string($validatedData['tags']) && json_decode($validatedData['tags'])) {
+                $tagsArray = json_decode($validatedData['tags'], true);
+            }
+            else {
+                $tagsArray = $validatedData['tags'];
+            }
             
             $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
-            $validatedData['tags'] = count($tagsArray) > 0 ? $tagsArray : null;
+            $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
        
         DB::beginTransaction();

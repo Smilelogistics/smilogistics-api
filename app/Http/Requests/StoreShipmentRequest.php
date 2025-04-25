@@ -49,7 +49,7 @@ class StoreShipmentRequest extends FormRequest
             'pieces' => 'nullable|integer',
             'pickup_number' => 'nullable|string|max:255',
             'overweight_hazmat' => 'nullable|string|max:255',
-            'tags' => 'nullable|string|max:255',
+            'tags' => 'nullable',
             'genset_number' => 'nullable|string|max:255',
             'reefer_temp' => 'nullable|string|max:255',
             'seal_number' => 'nullable|string|max:255',
