@@ -100,7 +100,7 @@ class CarrierController extends Controller
             
             // Carrier Identifiers
             'usdot_number' => 'nullable|string|max:50',
-            'mc_number' => 'required|string|max:50',
+            'mc_number' => 'nullable|string|max:50',
             'scac' => 'nullable|string|max:50',
             'tax_id' => 'nullable|string|max:50',
             'carrier_number' => 'nullable|string|max:50',
