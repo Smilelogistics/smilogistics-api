@@ -131,7 +131,7 @@ class CarrierController extends Controller
             'insurance.*.coverage' => 'nullable|string|max:255',
             'insurance.*.amount' => 'nullable|numeric',
             'insurance.*.policy_number' => 'nullable|string|max:255',
-            'insurance.*.expires' => 'nullable|date',
+            'insurance.*.expires' => 'nullable',
 
             // File Uploads
             'file' => 'nullable|array',
@@ -388,7 +388,7 @@ class CarrierController extends Controller
             'insurance.*.coverage' => 'nullable|string|max:100',
             'insurance.*.amount' => 'nullable|numeric|min:0',
             'insurance.*.policy_number' => 'nullable|string|max:100',
-            'insurance.*.expires' => 'nullable|date',
+            'insurance.*.expires' => 'nullable',
 
             // File Upload
             'file' => 'nullable|array',
