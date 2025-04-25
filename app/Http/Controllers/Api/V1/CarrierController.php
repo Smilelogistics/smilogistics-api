@@ -384,11 +384,11 @@ class CarrierController extends Controller
             'payment_method' => 'nullable|string|max:100',
             'carrier_smile_id' => 'nullable|string|max:100',
             'data_exchange_option' => 'nullable|string|max:255',
-            'insurances' => 'nullable|array',
-            'insurance.*.coverage' => 'nullable|string|max:100',
-            'insurance.*.amount' => 'nullable|numeric|min:0',
-            'insurance.*.policy_number' => 'nullable|string|max:100',
-            'insurance.*.expires' => 'nullable',
+            // 'insurances' => 'nullable|array',
+            // 'insurance.*.coverage' => 'nullable|string|max:100',
+            // 'insurance.*.amount' => 'nullable|numeric|min:0',
+            // 'insurance.*.policy_number' => 'nullable|string|max:100',
+            // 'insurance.*.expires' => 'nullable',
 
             // File Upload
             'file' => 'nullable|array',
