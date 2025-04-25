@@ -9,6 +9,7 @@ use App\Models\Driver;
 use App\Models\DriverDocs;
 use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
+use App\Models\AppIntegration;
 use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -197,6 +198,14 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => $validateData['flash_notes_to_dispatch'] ?? null,
                 'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'] ?? null,
                 'internal_notes' => $validateData['internal_notes'] ?? null,
+                'date_1' => $validateData['date_1'] ?? null,
+                'date_2' => $validateData['date_2'] ?? null,
+                'date_3' => $validateData['date_3'] ?? null,
+                'date_4' => $validateData['date_4'] ?? null,
+                'date_5' => $validateData['date_5'] ?? null,
+                'date_6' => $validateData['date_6'] ?? null,
+
+                ...$validatedData,
             ]);
 
             if (isset($validateData['providers'])) {
@@ -256,7 +265,7 @@ class DriverController extends Controller
      */
     public function show(string $id)
     {
-        $driver = Driver::with(['branch', 'user', 'driverDocs'])->findOrFail($id);
+        $driver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])->findOrFail($id);
         return response()->json(['driver' => $driver], 200);
     }
 
@@ -378,75 +387,75 @@ class DriverController extends Controller
     
         $driver->update($request->only([
             'driver_number',
-    'driver_phone',
-    'driver_phone_carrier',
-    'driver_primary_address',
-    'driver_secondary_address',
-    'driver_country',
-    'driver_state',
-    'driver_city',
-    'driver_zip',
-    'office',
-    'driver_type',
-    'isAccessToMobileApp',
-    'mobile_settings',
-    'emergency_contact_info',
-    'hired_on',
-    'terminated_on',
-    'years_of_experience',
-    'tags',
-    'endorsements',
-    'rating',
-    'notes_about_the_choices_made',
-    'pay_via',
-    'company_name_paid_to',
-    'employer_identification_number',
-    'send_settlements_mail',
-    'print_settlements_under_this_company',
-    'flash_notes_to_dispatch',
-    'flash_notes_to_payroll',
-    'internal_notes',
-    'driver_status',
-    'name_tax_return',
-    'different_bussiness_name',
-    'wtype',
-    'other_type',
-    'waddress',
-    'wstate',
-    'wcity',
-    'wzip',
-    'wphone',
-    'wemail',
-    'wtaxid',
-    'wwssn',
-    'wwein',
-    'wpaid_via',
-    'waccountNumber',
-    'wroutingNumber',
-    'winternal_notes',
-    'licensessn',
-    'dob',
-    'cdlnumber',
-    'license_state',
-    'cdl_expires',
-    'medical_number',
-    'medical_expires',
-    'twic_number',
-    'twic_expires',
-    'sealink_number',
-    'sealink_expires',
-    'annual_mvr',
-    'clearing_annual',
-    'liability_insurance_expires',
-    'insurance_provider',
-    'insurance_coverage',
-    'date_1',
-    'date_2',
-    'date_3',
-    'date_4',
-    'date_5',
-    'date_6',
-    'license_internal_notes'
+            'driver_phone',
+            'driver_phone_carrier',
+            'driver_primary_address',
+            'driver_secondary_address',
+            'driver_country',
+            'driver_state',
+            'driver_city',
+            'driver_zip',
+            'office',
+            'driver_type',
+            'isAccessToMobileApp',
+            'mobile_settings',
+            'emergency_contact_info',
+            'hired_on',
+            'terminated_on',
+            'years_of_experience',
+            'tags',
+            'endorsements',
+            'rating',
+            'notes_about_the_choices_made',
+            'pay_via',
+            'company_name_paid_to',
+            'employer_identification_number',
+            'send_settlements_mail',
+            'print_settlements_under_this_company',
+            'flash_notes_to_dispatch',
+            'flash_notes_to_payroll',
+            'internal_notes',
+            'driver_status',
+            'name_tax_return',
+            'different_bussiness_name',
+            'wtype',
+            'other_type',
+            'waddress',
+            'wstate',
+            'wcity',
+            'wzip',
+            'wphone',
+            'wemail',
+            'wtaxid',
+            'wwssn',
+            'wwein',
+            'wpaid_via',
+            'waccountNumber',
+            'wroutingNumber',
+            'winternal_notes',
+            'licensessn',
+            'dob',
+            'cdlnumber',
+            'license_state',
+            'cdl_expires',
+            'medical_number',
+            'medical_expires',
+            'twic_number',
+            'twic_expires',
+            'sealink_number',
+            'sealink_expires',
+            'annual_mvr',
+            'clearing_annual',
+            'liability_insurance_expires',
+            'insurance_provider',
+            'insurance_coverage',
+            'date_1',
+            'date_2',
+            'date_3',
+            'date_4',
+            'date_5',
+            'date_6',
+            'license_internal_notes'
 
         ]));
     
@@ -457,13 +466,17 @@ class DriverController extends Controller
         );
 
         if (isset($validateData['providers'])) {
-            foreach ($validateData['providers'] as $provider) {
-                AppIntegration::create([
-                    'driver_id' => $driver->id,
-                    'card_device_linking_number' => $provider['card_device_linking_number'],
-                    'app_provider' => $provider['app_provider'],
-                    'quick_note' => $provider['quick_note'],
-                ]);
+            foreach ($validateData['providers'] as $providerData) {
+                AppIntegration::updateOrCreate(
+                    [
+                        'driver_id' => $driver->id
+                    ],
+                    [
+                        'app_provider' => $providerData['app_provider'],
+                        'card_device_linking_number' => $providerData['card_device_linking_number'],
+                        'quick_note' => $providerData['quick_note'],
+                    ]
+                );
             }
         }
 
