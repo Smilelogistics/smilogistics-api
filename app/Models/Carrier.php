@@ -20,64 +20,9 @@ class Carrier extends Model
         'state_served' => 'array',
         'carries_this_cargo' => 'array',
         'carrier_profile' => 'array',
+        'tags' => 'array'
     ];
-    protected $fillable = [
-        'branch_id',
-        'user_id',
-        'name',
-        'state_served',
-        'code',
-        'offices',
-        'carrier_number',
-        'type',
-        'usdot_number',
-        'mc_number',
-        'scac',
-        'tax_id',
-        'cell_phone',
-        'cell_carrier',
-        'carrier_access',
-        'show_payment_in_mobile_app',
-        'office_phone',
-        'contact_name',
-        'email',
-        'primary_address',
-        'secondary_address',
-        'city',
-        'state',
-        'zip',
-        'country',
-        'fax_no',
-        'toll_free_number',
-        'other_contact_info',
-        'no_of_drivers',
-        'power_units',
-        'other_equipments',
-        'profile_photo',
-        'rating',
-        'carries_this_cargo',
-        'note_about_choices',
-        'start_date',
-        'tag',
-        'flash_note_to_riders_about_this_carrier',
-        'flash_note_to_payroll_about_this_carrier',
-        'internal_note',
-        'notes',
-        'insurance_provider',
-        'insurance_expire',
-        'note_about_coverage',
-        'payment_terms',
-        'paid_via',
-        'account_number',
-        'routing_number',
-        'settlement_email_address',
-        'payment_mailling_address',
-        'payment_contact',
-        'payment_related_notes',
-        'payment_method',
-        'carrier_smile_id',
-        'data_exchange_option',
-    ];
+    protected $guarded = [];
 
     public function branch()
     {
@@ -92,7 +37,7 @@ class Carrier extends Model
     {
         return $this->hasMany(ConsolidateShipment::class);
     }
-    
+
     /**
      * Update the specified carrier in storage.
      *
@@ -232,6 +177,7 @@ class Carrier extends Model
     public function carrierDocs(){
         return $this->hasMany(CarrierDocs::class);
     }
+
 
     public function carrierInsurance(){
         return $this->hasMany(CarrierInsurance::class);

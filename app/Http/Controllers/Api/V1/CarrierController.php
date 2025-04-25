@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Mail\CarrierCreatedNotificationMail;
 use App\Notifications\CarrierAccountCreated;
 use App\Notifications\CarrierCreatedForAdmin;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
 class CarrierController extends Controller
@@ -229,22 +230,58 @@ class CarrierController extends Controller
                 'other_equipments' => $request->input('other_equipments'),
                 'no_of_drivers' => $request->input('no_of_drivers'),
                 'power_units' => $request->input('power_units'),
+                'insurance_provider' => $request->input('insurance_provider'),
+                'insurance_expires' => $request->input('insurance_expires'),
+                'payment_terms' => $request->input('payment_terms'),
+                'paid_via' => $request->input('paid_via'),
+                'account_number' => $request->input('account_number'),
+                'routing_number' => $request->input('routing_number'),
+                'note_about_coverage' => $request->input('note_about_coverage'),
+                'settlement_email_address' => $request->input('settlement_email_address'),
+                'payment_mailling_address' => $request->input('payment_mailling_address'),
+                'payment_contact' => $request->input('payment_contact'),
+                'payment_related_notes' => $request->input('payment_related_notes'),
 
             ]);
 
             // Store CarrierDocs (File Uploads)
-            if ($request->hasFile('files')) {
-                foreach ($request->file('files') as $file) {
-                    $path = $file->store('carrier_docs', 'public');
-                    CarrierDocs::create([
-                        'branch_id' => $branchId,
-                        'carrier_id' => $carrier->id,
-                        'file' => $path,
-                        'file_title' => $file->getClientOriginalName(),
-                    ]);
+            // if ($request->has('insurance')) {
+            //     foreach ($request->insurance as $insurance) {
+            //         $carrier->carrierInsurance()->create(
+            //             ['carrier_id' => $carrier->id ],
+            //             [
+            //                 'policy_number' => $insurance['policy_number'],
+            //                 'coverage' => $insurance['coverage'],
+            //                 'amount' => $insurance['amount'],
+            //                 'expires' => $insurance['expires']
+            //             ]
+            //         );
+            //     }
+            // }
+            
+    
+    
+            if ($request->hasFile('file')) {
+                $files = $request->file('file');
+            
+                // Normalize to array (even if it's one file)
+                $files = is_array($files) ? $files : [$files];
+            
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'Smile_logistics/Carrier',
+                        ]);
+            
+                        $carrier->carrierDocs()->create(
+                            [
+                                'file' => $uploadedFile->getSecurePath(),
+                                'public_id' => $uploadedFile->getPublicId()
+                        ]);
+                    }
                 }
             }
-
+    
             // Store Insurance Data
             foreach ($request->input('insurance', []) as $insurance) {
                 CarrierInsurance::create([
@@ -362,36 +399,44 @@ class CarrierController extends Controller
         $carrier = Carrier::findOrFail($id);
         $carrier->update($validatedData);
 
+        if ($request->has('insurance')) {
+            foreach ($request->insurance as $insurance) {
+                $carrier->carrierInsurance()->updateOrCreate(
+                    ['carrier_id' => $carrier->id ],
+                    [
+                        'policy_number' => $insurance['policy_number'],
+                        'coverage' => $insurance['coverage'],
+                        'amount' => $insurance['amount'],
+                        'expires' => $insurance['expires']
+                    ]
+                );
+            }
+        }
         
+
+
         if ($request->hasFile('file')) {
             $files = $request->file('file');
-            $fileTitles = $request->input('file_titles', []);
-
-            foreach ($files as $index => $file) {
-                $filePath = $this->uploadFile($file, 'carrier_docs');
-                if ($filePath) {
-                    CarrierDocs::create([
-                        'carrier_id' => $truck->id,
-                        'file' => $filePath,
-                        'file_title' => $fileTitles[$index] ?? null,
+        
+            // Normalize to array (even if it's one file)
+            $files = is_array($files) ? $files : [$files];
+        
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'Smile_logistics/Carrier',
+                    ]);
+        
+                    $carrier->carrierDocs()->updateOrCreate(
+                        [ 
+                            'carrier_id' => $carrier->id],
+                        [
+                            'file' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
                     ]);
                 }
             }
         }
-
-        // if ($request->has('insurance')) {
-        //     CarrierInsurance::where('carrier_id', $carrier->id)->delete();
-
-        //     foreach ($request->insurance as $insurance) {
-        //         CarrierInsurance::create([
-        //             'carrier_id' => $carrier->id,
-        //             'coverage' => $insurance['coverage'],
-        //             'amount' => $insurance['amount'],
-        //             'policy_number' => $insurance['policy_number'],
-        //             'expires' => $insurance['expires'],
-        //         ]);
-        //     }
-        // }
 
         return response()->json([
             'message' => 'Carrier updated successfully',
