@@ -48,7 +48,7 @@ class StoreShipmentRequest extends FormRequest
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
             'pickup_number' => 'nullable|string|max:255',
-            'overweight_hazmat' => 'nullable|string|max:255',
+            'overweight_hazmat' => 'nullable',
             'tags' => 'nullable',
             'genset_number' => 'nullable|string|max:255',
             'reefer_temp' => 'nullable|string|max:255',
@@ -155,7 +155,7 @@ class StoreShipmentRequest extends FormRequest
             'no_original_bill_of_landing' => 'nullable|integer',
             'original_bill_of_landing_payable_at' => 'nullable|string',
             'shipped_on_board_date' => 'nullable|date',
-            'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
+            //'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
             //'signature' => 'nullable|string',
             'goods' => 'nullable|array',
             'goods.*.goods_name' => 'nullable|string|max:255',
@@ -164,9 +164,9 @@ class StoreShipmentRequest extends FormRequest
             'goods.*.ocean_weight' => 'nullable|string|max:255',
 
 
-            'file_path' => 'nullable', 
-            'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:150',
-            'file_path' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:150', 
+            // 'file_path' => 'nullable', 
+            // 'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:150',
+            // 'file_path' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:150', 
 
             'delivery_type' => 'nullable|string',
         ];

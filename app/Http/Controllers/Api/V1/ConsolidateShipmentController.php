@@ -87,7 +87,7 @@ class ConsolidateShipmentController extends Controller
 
         if($request->hasFile('proof_of_delivery_path')) {
             $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [
-                'folder' => 'consolidate_shipment'
+                'folder' => 'Smile_logistics/consolidate_shipment'
             ]);
             
             $consolidateShipment->documents()->create([

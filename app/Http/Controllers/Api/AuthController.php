@@ -28,6 +28,7 @@ class AuthController extends Controller
      //4|Bo6rLmYLskMnDhSzhaSiXfIA32z7KJCHorDaAPRaef6af829
      public function register(Request $request)
      {
+        //dd(env('DB_DATABASE'));
         // $user = auth()->user();
         // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
 
@@ -37,7 +38,7 @@ class AuthController extends Controller
          $validator = Validator::make($request->all(), [
              'fname' => 'required|string|max:255',
              'mname' => 'nullable|string|max:255',
-             'lname' => 'required|string|max:255',
+             'lname' => 'nullable|string|max:255',
              'email' => 'required|email|max:255|unique:users',
              //'password' => 'required|string|min:8',
              'user_type' => 'required|in:superadministrator,businessadministrator,businessmanager,customer,driver,user',

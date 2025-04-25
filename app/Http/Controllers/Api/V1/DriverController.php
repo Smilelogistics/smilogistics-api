@@ -26,7 +26,7 @@ class DriverController extends Controller
      */
     public function index()
     {
-        $driver = Driver::with(['branch', 'user', 'driverDocs'])->get();
+        $driver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])->get();
         return response()->json($driver);
     }
 
@@ -63,7 +63,7 @@ class DriverController extends Controller
                 'years_of_experience' => 'nullable|integer|min:0',
                 'endorsements' => 'nullable|string',
                 'rating' => 'nullable|numeric|min:0|max:5',
-                'tags' => 'nullable|string',
+                'tags' => 'nullable',
                 'notes_about_the_choices_made' => 'nullable|string',
                 'isAccessToMobileApp' => 'nullable|integer',
                 'mobile_settings' => 'nullable|string',
@@ -115,6 +115,11 @@ class DriverController extends Controller
                 'date_5' => 'nullable|date|date_format:Y-m-d',
                 'date_6' => 'nullable|date|date_format:Y-m-d',
                 'license_internal_notes' => 'nullable|string',
+                'providers' => 'nullable',
+                'providers.*card_device_linking_number' => 'nullable|string|max:255',
+                'providers.*app_provider' => 'nullable|string|max:255',
+                'providers.*quick_note' => 'nullable|string',
+
 
                   // Files
                 'file_path' => 'nullable|array',
@@ -129,7 +134,20 @@ class DriverController extends Controller
             }
 
             $validateData = $validator->validate();
-
+            if (isset($validatedData['tags'])) {
+                if (is_string($validatedData['tags'])) {
+                    $tagsArray = explode(',', $validatedData['tags']);
+                } 
+                elseif (is_string($validatedData['tags']) && json_decode($validatedData['tags'])) {
+                    $tagsArray = json_decode($validatedData['tags'], true);
+                }
+                else {
+                    $tagsArray = $validatedData['tags'];
+                }
+                
+                $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+                $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
+            }
             //dd($validateData);
 
             DB::beginTransaction();
@@ -179,6 +197,17 @@ class DriverController extends Controller
                 'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'] ?? null,
                 'internal_notes' => $validateData['internal_notes'] ?? null,
             ]);
+
+            if (isset($validateData['providers'])) {
+                foreach ($validateData['providers'] as $provider) {
+                    AppIntegration::create([
+                        'driver_id' => $driver->id,
+                        'card_device_linking_number' => $provider['card_device_linking_number'],
+                        'app_provider' => $provider['app_provider'],
+                        'quick_note' => $provider['quick_note'],
+                    ]);
+                }
+            }
 
 
             if ($request->hasFile('file_path')) {

@@ -177,6 +177,18 @@ class CarrierController extends Controller
                     $arrayFields[$field] = [$value];
                 }
             }
+ $arrayFields = [
+                'state_served' => $request->input('state_served', []),
+                'carrier_profile' => $request->input('carrier_profile', []),
+                'carries_this_cargo' => $request->input('carries_this_cargo', [])
+            ];
+
+            // Convert single values to arrays if needed
+            foreach ($arrayFields as $field => $value) {
+                if (!is_array($value)) {
+                    $arrayFields[$field] = [$value];
+                }
+            }
 
             // Create Carrier
             $carrier = Carrier::create([

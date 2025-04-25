@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Notifications\Notification;
 use App\Http\Requests\StoreShipmentRequest;
 use App\Mail\ShipmentAdditionalNotifyPartyMail;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ShipmentController extends Controller
 {
@@ -89,6 +90,18 @@ class ShipmentController extends Controller
             $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
             $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
+
+        $arrayFields = [
+            'overweight_hazmat' => $request->input('overweight_hazmat', []),
+        ];
+
+        // Convert single values to arrays if needed
+        foreach ($arrayFields as $field => $value) {
+            if (!is_array($value)) {
+                $arrayFields[$field] = [$value];
+            }
+        }
+
        
         DB::beginTransaction();
 
@@ -117,6 +130,10 @@ class ShipmentController extends Controller
             'pieces' => $validatedData['pieces'] ?? null,
             'pickup_number' => $validatedData['pickup_number'] ?? null,
             'overweight_hazmat' => $validatedData['overweight_hazmat'] ?? null,
+            
+            'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
+                ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
+                : null,
             'tags' => $validatedData['tags'] ?? null,
             'genset_number' => $validatedData['genset_number'] ?? null,
             'reefer_temp' => $validatedData['reefer_temp'] ?? null,
@@ -166,20 +183,20 @@ class ShipmentController extends Controller
             'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'] ?? null,
             'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'] ?? null,
             'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
-            'signature' => $validatedData['signature'] ?? null,
+            'signature' => null,
             'delivery_type' => $validatedData['delivery_type'] ?? null,
             //'comment' => $validatedData['comment'] ?? null,
             ]);
             
             if ($request->hasFile('signature')) {
-                $file = $request->file('signature');
-                $filename = $user->email . '_' . time() . '.' . $file->getClientOriginalExtension();
-                $destinationPath = public_path("uploads/{$branch->branch_code}/signatures");
-                if (!is_dir($destinationPath)) {
-                    mkdir($destinationPath, 0755, true);
-                }
-                $file->move($destinationPath, $filename);
-                $validatedData['signature'] = "uploads/{$branch->branch_code}/signatures/{$filename}";
+                $uploadedFile = Cloudinary::upload($request->file('signature')->getRealPath(), [
+                'folder' => 'Smile_logistics/signatures',
+                ]);
+              
+                $shipment->update([
+                    'signature' => $uploadedFile->getSecurePath()
+                ]);
+                
             }
 
             
@@ -301,28 +318,91 @@ class ShipmentController extends Controller
             }
 
             if ($request->hasFile('file_path')) {
+                // Get the files - always convert to array for consistent handling
                 $files = $request->file('file_path');
-                //$fileTitles = $request->input('file_titles', []);
+                $files = is_array($files) ? $files : [$files]; // Ensure we always have an array
+                
+                // $uploadedFiles = [];
+                // $successCount = 0;
+                // $errorCount = 0;
+            
                 foreach ($files as $index => $file) {
                     try {
-                        $filePath = $this->uploadFile($file, 'shipments');
-                        if ($filePath) {
-                            ShipmentUploads::create([
-                                'shipment_id' => $truck->id,
-                                'file_path' => $filePath,
-                                //'file_title' => $fileTitles[$index] ?? null,
-                            ]);
-                        } else {
-                            \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
+                        if (!$file->isValid()) {
+                            throw new \Exception("Invalid file: " . $file->getClientOriginalName());
                         }
+            
+                        // Upload to Cloudinary
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'Smile_logistics/shipment',
+                            'timeout' => 30
+                        ]);
+            
+                        if (!$uploadedFile->getSecurePath()) {
+                            throw new \Exception("Cloudinary upload failed for: " . $file->getClientOriginalName());
+                        }
+            
+                        // Create shipment upload record
+                        $upload = $shipment->shipmentUploads()->create([
+                            'file_path' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId(),
+                            'original_name' => $file->getClientOriginalName()
+                        ]);
+            
+                        // $successCount++;
+                        // $uploadedFiles[] = $upload;
+            
                     } catch (\Exception $e) {
-                        \Log::error('Error uploading file: ' . $e->getMessage());
+                        $errorCount++;
+                        \Log::error("File upload error: " . $e->getMessage());
                     }
                 }
-            } else {
-                \Log::error('No files found in the request.');
-            }
             
+                // if ($successCount > 0) {
+                //     return response()->json([
+                //         'success' => true,
+                //         'message' => "Uploaded {$successCount} file(s)" . ($errorCount > 0 ? ", {$errorCount} failed" : ""),
+                //         'files' => $uploadedFiles
+                //     ]);
+                // }
+            
+                // return response()->json([
+                //     'success' => false,
+                //     'message' => 'All file uploads failed'
+                // ], 400);
+            
+            } 
+            // else {
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => 'No files were uploaded'
+            //     ], 400);
+            // }
+
+            // if ($request->hasFile('file_path')) {
+            //     $files = $request->file('file_path');
+            //     //dd($files);
+            //     //$fileTitles = $request->input('file_titles', []);
+            //     foreach ($files as $index => $file) {
+            //         try {
+            //             if ($file->isValid()) {
+            //                 $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+            //                     'folder' => 'Smile_logistics_shipment'
+            //                 ]);
+                
+            //                 $shipment->shipmentUploads()->create([
+            //                     'file_path' => $uploadedFile->getSecurePath(),
+            //                     'public_id' => $uploadedFile->getPublicId()
+            //                 ]);
+            //             }
+
+            //         } catch (\Exception $e) {
+            //             \Log::error('Error uploading file: ' . $e->getMessage());
+            //         }
+            //     }
+            // } else {
+            //     \Log::error('No files found in the request.');
+            // }
 
            // $uploadedPaths = FileUploadHelper::upload($request->file('files'), 'ShipmentUploads');
 
@@ -358,28 +438,28 @@ class ShipmentController extends Controller
        
        
         if ($request->email) {
-            Mail::to($request->email)->send(new ShipmentCreated($shipment));
+            //Mail::to($request->email)->send(new ShipmentCreated($shipment));
         } else {
             // Retrieve customer ID from the customer_name field
             $customer = Customer::where('id', $request->customer_name)->first();
         
             if ($customer && $customer->email) {
-                Mail::to($customer->email)->send(new ShipmentCreated($shipment));
+              //  Mail::to($customer->email)->send(new ShipmentCreated($shipment));
             }
         }
         // notify party email
         if($request->consignee_email) {
             $consignee_email = $request->consignee_email;
-            Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
+          //  Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
         }
         if($request->first_notify_party_email) {
             $first_notify_party_email = $request->first_notify_party_email;
-            Mail::to($first_notify_party_email)->send(new ShipmentNotifyPartyMail($shipment));
+            //Mail::to($first_notify_party_email)->send(new ShipmentNotifyPartyMail($shipment));
         } 
 
         if($request->second_notify_party_email) {
             $second_notify_party_email = $request->second_notify_party_email;
-            Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
+            //Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
         }            
         //Log::info(request()->headers->all());
         //Log::info('Authorization Header:', [request()->header('Authorization')]);
@@ -420,7 +500,7 @@ class ShipmentController extends Controller
 
             
             'pickup_number' => 'nullable|string|max:255',
-            'overweight_hazmat' => 'nullable|string|max:255',
+            'overweight_hazmat' => 'nullable',
             'tags' => 'nullable',
             'genset_number' => 'nullable|string|max:255',
             'reefer_temp' => 'nullable|string|max:255',
@@ -528,6 +608,16 @@ class ShipmentController extends Controller
         }
     
         $validatedData = $validator->validated();
+        $arrayFields = [
+            'overweight_hazmat' => $request->input('overweight_hazmat', []),
+        ];
+
+        // Convert single values to arrays if needed
+        foreach ($arrayFields as $field => $value) {
+            if (!is_array($value)) {
+                $arrayFields[$field] = [$value];
+            }
+        }
 
         //dd($validatedData);
         if (isset($validatedData['tags'])) {
@@ -551,17 +641,38 @@ class ShipmentController extends Controller
             //if ($shipment->isDirty($validatedData)) {
                 $shipment->update([
                     'branch_id' => $branchId,
+                    'tags' => $validatedData['tags'],
+                    'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
+                        ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
+                        : null,
                     ...$validatedData
                 ]);
             //}
     
             // Update related tables only if there are changes
+            // if (isset($validatedData['shipment_uploads'])) {
+            //     foreach ($validatedData['shipment_uploads'] as $upload) {
+            //         if (isset($upload['id'])) {
+            //             $shipment->shipmentUploads()->where('id', $upload['id'])->update(['file_path' => $upload['file_path']]);
+            //         } else {
+            //             $shipment->shipmentUploads()->create(['file_path' => $upload['file_path']]);
+            //         }
+            //     }
+            // }
+
             if (isset($validatedData['shipment_uploads'])) {
                 foreach ($validatedData['shipment_uploads'] as $upload) {
-                    if (isset($upload['id'])) {
-                        $shipment->shipmentUploads()->where('id', $upload['id'])->update(['file_path' => $upload['file_path']]);
-                    } else {
-                        $shipment->shipmentUploads()->create(['file_path' => $upload['file_path']]);
+                    if (isset($upload['file'])) {
+                        // Upload to Cloudinary
+                        $uploadedFileUrl = Cloudinary::upload($upload['file']->getRealPath())->getSecurePath();
+            
+                        if (isset($upload['id'])) {
+                            $shipment->shipmentUploads()
+                                ->where('id', $upload['id'])
+                                ->update(['file_path' => $uploadedFileUrl]);
+                        } else {
+                            $shipment->shipmentUploads()->create(['file_path' => $uploadedFileUrl]);
+                        }
                     }
                 }
             }

@@ -45,7 +45,9 @@ class Driver extends Model
         'driver_status',
     ];
     
-    
+    protected $casts = [
+        'tags' => 'array',
+    ];
 
     public function user()
     {
@@ -82,5 +84,10 @@ class Driver extends Model
     public function delivery()
     {
         return $this->hasMany(Delivery::class);
+    }
+
+    public function providers()
+    {
+        return $this->hasMany(AppIntegration::class);
     }
 }
