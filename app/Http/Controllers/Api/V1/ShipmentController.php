@@ -418,6 +418,31 @@ class ShipmentController extends Controller
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
 
+            
+            'pickup_number' => 'nullable|string|max:255',
+            'overweight_hazmat' => 'nullable|string|max:255',
+            'tags' => 'nullable',
+            'genset_number' => 'nullable|string|max:255',
+            'reefer_temp' => 'nullable|string|max:255',
+            'seal_number' => 'nullable|string|max:255',
+            'total_miles' => 'nullable|numeric',
+            'loaded_miles' => 'nullable|numeric',
+            'empty_miles' => 'nullable|numeric',
+            'dh_miles' => 'nullable|numeric',
+            'fuel_rate_per_gallon' => 'nullable|numeric',
+            'mpg' => 'nullable|numeric',
+            'total_fuel_cost' => 'nullable|numeric',
+            
+            'broker_name' => 'nullable|string|max:255',
+            'broker_email' => 'nullable|email|max:255',
+            'broker_phone' => 'nullable|string|max:20',
+            'broker_reference_number' => 'nullable|string|max:255',
+            'broker_batch_number' => 'nullable|string|max:255',
+            'broker_seq_number' => 'nullable|string|max:255',
+            'broker_sales_rep' => 'nullable|string|max:255',
+            'broker_edi_api_shipment_number' => 'nullable|string|max:255',
+            'broker_notes' => 'nullable|string|max:1000',
+
             //Ocean shipment
             'shipment_type' => 'nullable|string',
             'shipper_name' => 'nullable|string',
@@ -503,6 +528,22 @@ class ShipmentController extends Controller
         }
     
         $validatedData = $validator->validated();
+
+        //dd($validatedData);
+        if (isset($validatedData['tags'])) {
+            if (is_string($validatedData['tags'])) {
+                $tagsArray = explode(',', $validatedData['tags']);
+            } 
+            elseif (is_string($validatedData['tags']) && json_decode($validatedData['tags'])) {
+                $tagsArray = json_decode($validatedData['tags'], true);
+            }
+            else {
+                $tagsArray = $validatedData['tags'];
+            }
+            
+            $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+            $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
+        }
     
         DB::beginTransaction();
         try {
