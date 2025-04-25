@@ -210,7 +210,7 @@ class CarrierController extends Controller
                 'code' => $request->input('code'),
                 'type' => $request->input('type'),
                 'usdot_number' => $request->input('usdot_number'),
-                'mc_number' => $request->input('mc_number') ?? null,
+                'mc_number' => $request->input('mc_number') ?? 0000,
                 'scac' => $request->input('scac'),
                 'tax_id' => $request->input('tax_id'),
                 'contact_name' => $request->input('contact_name'),
