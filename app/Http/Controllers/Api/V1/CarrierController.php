@@ -127,7 +127,7 @@ class CarrierController extends Controller
             'note_about_choices' => 'nullable|string|max:255',
 
             // Insurance Details
-            'insurance' => 'nullable|array',
+            'insurances' => 'nullable|array',
             'insurance.*.coverage' => 'nullable|string|max:255',
             'insurance.*.amount' => 'nullable|numeric',
             'insurance.*.policy_number' => 'nullable|string|max:255',
@@ -210,7 +210,7 @@ class CarrierController extends Controller
                 'code' => $request->input('code'),
                 'type' => $request->input('type'),
                 'usdot_number' => $request->input('usdot_number'),
-                'mc_number' => $request->input('mc_number'),
+                'mc_number' => $request->input('mc_number') ?? null,
                 'scac' => $request->input('scac'),
                 'tax_id' => $request->input('tax_id'),
                 'contact_name' => $request->input('contact_name'),
@@ -283,7 +283,7 @@ class CarrierController extends Controller
             }
     
             // Store Insurance Data
-            foreach ($request->input('insurance', []) as $insurance) {
+            foreach ($request->input('insurances', []) as $insurance) {
                 CarrierInsurance::create([
                     'carrier_id' => $carrier->id,
                     'coverage' => $insurance['coverage'] ?? null,
@@ -384,7 +384,7 @@ class CarrierController extends Controller
             'payment_method' => 'nullable|string|max:100',
             'carrier_smile_id' => 'nullable|string|max:100',
             'data_exchange_option' => 'nullable|string|max:255',
-            'insurance' => 'nullable|array',
+            'insurances' => 'nullable|array',
             'insurance.*.coverage' => 'nullable|string|max:100',
             'insurance.*.amount' => 'nullable|numeric|min:0',
             'insurance.*.policy_number' => 'nullable|string|max:100',
@@ -399,8 +399,8 @@ class CarrierController extends Controller
         $carrier = Carrier::findOrFail($id);
         $carrier->update($validatedData);
 
-        if ($request->has('insurance')) {
-            foreach ($request->insurance as $insurance) {
+        if ($request->has('insurances')) {
+            foreach ($request->insurances as $insurance) {
                 $carrier->carrierInsurance()->updateOrCreate(
                     ['carrier_id' => $carrier->id ],
                     [
