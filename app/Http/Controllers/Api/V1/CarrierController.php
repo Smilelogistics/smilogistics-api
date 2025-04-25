@@ -231,7 +231,7 @@ class CarrierController extends Controller
                 'no_of_drivers' => $request->input('no_of_drivers'),
                 'power_units' => $request->input('power_units'),
                 'insurance_provider' => $request->input('insurance_provider'),
-                'insurance_expires' => $request->input('insurance_expires'),
+                'insurance_expire' => $request->input('insurance_expire'),
                 'payment_terms' => $request->input('payment_terms'),
                 'paid_via' => $request->input('paid_via'),
                 'account_number' => $request->input('account_number'),
