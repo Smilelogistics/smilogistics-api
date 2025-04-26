@@ -89,7 +89,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/carrier/{id}', [CarrierController::class, 'show'])->name('carriers.show');
             Route::put('/update/{id}', [CarrierController::class, 'update'])->name('carriers.update');
             Route::delete('/delete/{id}', [CarrierController::class, 'destroy'])->name('carriers.destroy');	
-        });
+        })->middleware('role:businessadministrator');
 
         Route::prefix('trucks')->group(function () {
             Route::post('create', [TruckController::class, 'store'])->name('trucks.store');
@@ -97,8 +97,7 @@ Route::prefix('v1')->group(function () {
             Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');
             Route::get('trucks', [TruckController::class, 'index'])->name('trucks.index');
             Route::delete('delete/{id}', [TruckController::class, 'destroy'])->name('trucks.destroy');
-        });
-
+        })->middleware('role:businessadministrator');
         Route::prefix('invoices')->group(function () {
             Route::post('create', [InvoiceController::class, 'store'])->name('invoices.store');
             Route::put('update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
@@ -107,7 +106,7 @@ Route::prefix('v1')->group(function () {
             Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
             Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
             Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
-            Route::delete('delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+            Route::delete('delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy')->middleware('role:businessadministrator');
         });
 
         Route::prefix('customers')->group(function () {
@@ -115,7 +114,7 @@ Route::prefix('v1')->group(function () {
             Route::put('update/{id}', [CustomerController::class, 'update'])->name('customers.update');
             Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
             Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
-            Route::delete('delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy');
+            Route::delete('delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy')->middleware('role:businessadministrator');
         });
 
         Route::prefix('bikes')->group(function () {
@@ -125,7 +124,7 @@ Route::prefix('v1')->group(function () {
             Route::get('bike/{id}', [BikeController::class, 'show'])->name('bikes.show');
             Route::post('update-location/{id}', [BikeController::class, 'updateLocation'])->name('bikes.updateLocation');
             Route::delete('delete/{id}', [BikeController::class, 'destroy'])->name('bikes.destroy');
-        });
+        })->middleware('role:businessadministrator');
 
         Route::prefix('roles')->group(function () {
             Route::get('role', [UnivController::class, 'getUserRole'])->name('roles.index');
@@ -136,7 +135,7 @@ Route::prefix('v1')->group(function () {
             Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
             Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
             Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
-        });
+        })->middleware('role:businessadministrator');
 
         
         Route::prefix('consolidate')->group(function () {
