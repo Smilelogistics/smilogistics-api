@@ -128,15 +128,15 @@ class CustomerController extends Controller
     }
 
 
-    public function update(UpdateCustomerRequest $request, $id)
+    public function update(Request $request, $id)
     {
         $customer = Customer::findOrFail($id);
-        $data = $request->validated();
+        //$data = $request->validated();
         // if (!empty($data)) {
         //     $customer->update($data);
         // }
 
-        $driver->update($request->only([
+        $customer->update($request->only([
             'customer_name',
             'customer_email',
             'customer_phone',
