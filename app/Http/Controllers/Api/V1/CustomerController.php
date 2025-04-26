@@ -129,38 +129,77 @@ class CustomerController extends Controller
 
 
     public function update(UpdateCustomerRequest $request, $id)
-{
-    $customer = Customer::findOrFail($id);
-    $data = $request->validated();
-    if (!empty($data)) {
-        $customer->update($data);
-    }
+    {
+        $customer = Customer::findOrFail($id);
+        $data = $request->validated();
+        // if (!empty($data)) {
+        //     $customer->update($data);
+        // }
 
-    // Handle file upload separately
-    if ($request->hasFile('file_path')) {
-        $file = $request->file('file_path');
+        $driver->update($request->only([
+            'customer_name',
+            'customer_email',
+            'customer_phone',
+            'customer_primary_address',
+            'customer_secondary_address',
+            'customer_code',
+            'customer_sales_rep',
+            'customer_office',
+            'customer_type',
+            'customer_city',
+            'customer_state',
+            'customer_zip',
+            'customer_country',
+            'fax_no',
+            'toll_free',
+            'other_notes',
+            'credit_limit',
+            'alert_percentage',
+            'outstanding_balance',    
+            'start_date',
+            'send_invoice_under_this_company',
+            'account_code',
+            'invoice_footer_note',
+            'isSubAccount',
+            'create_invoices_under_this_parent',
+            'subAccount_of',
+            'factoringCompany',
+            'isFactoredInvoice',
+            'isPrepaid',
+            'isNonBillable',
+            'flash_note_for_accounting',
+            'note',
+            'tag',
+            'flash_note_for_drivers',
+            'internal_note',
+            'customer_status',
+        ]));
 
-        if ($file->isValid()) {
-            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                'folder' => 'Smile_logistics/Customers',
-            ]);
+        // Handle file upload separately
+        if ($request->hasFile('file_path')) {
+            $file = $request->file('file_path');
 
-            $customer->documents()->updateOrCreate(
-                ['customer_id' => $customer->id],
-                [
-                    'file_path' => $uploadedFile->getSecurePath(),
-                    'public_id' => $uploadedFile->getPublicId()
-                ]
-            );
+            if ($file->isValid()) {
+                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    'folder' => 'Smile_logistics/Customers',
+                ]);
+
+                $customer->documents()->updateOrCreate(
+                    ['customer_id' => $customer->id],
+                    [
+                        'file_path' => $uploadedFile->getSecurePath(),
+                        'public_id' => $uploadedFile->getPublicId()
+                    ]
+                );
+            }
         }
-    }
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Customer Updated successfully',
-        'customer' => $customer
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Customer Updated successfully',
+            'customer' => $customer
+        ]);
+    }
 
     public function destroy($id)
     {
