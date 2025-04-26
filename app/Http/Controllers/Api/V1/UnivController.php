@@ -20,7 +20,7 @@ class UnivController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $branch = customer::with(['customer', 'user'])
+        $branch = customer::with(['branch', 'user'])
         ->where('branch_id', $branchId)
         ->get();
 
