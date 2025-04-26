@@ -55,7 +55,6 @@ class StoreCustomerRequest extends FormRequest
         'isPrepaid' => 'nullable|integer',
         'isNonBillable' => 'nullable|integer',
         'flash_note_for_accounting' => 'nullable|string',
-        'payment_terms' => 'nullable|string|max:255',
         'note' => 'nullable|string',
         'print_settlements_under_this_company' => 'nullable|string',
         'flash_note_for_drivers' => 'nullable|string',

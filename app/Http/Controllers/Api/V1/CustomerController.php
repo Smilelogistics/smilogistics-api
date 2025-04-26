@@ -78,7 +78,6 @@ class CustomerController extends Controller
             'isPrepaid' => $request->isPrepaid,
             'isNonBillable' => $request->isNonBillable,
             'flash_note_for_accounting' => $request->flash_note_for_accounting,
-            'payment_terms' => $request->payment_terms,
             'note' => $request->notes,
             'print_settlements_under_this_company' => $request->boolean('print_settlements_under_this_company'),
             'flash_note_for_drivers' => $request->flash_notes_to_dispatch,
