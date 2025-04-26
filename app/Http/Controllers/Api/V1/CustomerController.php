@@ -176,21 +176,28 @@ class CustomerController extends Controller
         ]));
 
         // Handle file upload separately
+    
         if ($request->hasFile('file_path')) {
-            $file = $request->file('file_path');
+            //dd($request->file('file_path'));
+            $files = $request->file('file_path');
+        
+            // Normalize to array (even if it's one file)
+            $files = is_array($files) ? $files : [$files];
+        
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'Smile_logistics/Customers'
+                    ]);
 
-            if ($file->isValid()) {
-                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                    'folder' => 'Smile_logistics/Customers',
-                ]);
-
-                $customer->documents()->updateOrCreate(
-                    ['customer_id' => $customer->id],
-                    [
+                    $customer->documents()->updateOrCreate([
+                        'customer_id' => $customer->id
+                    ], [
                         'file_path' => $uploadedFile->getSecurePath(),
                         'public_id' => $uploadedFile->getPublicId()
                     ]
-                );
+                    );
+            }
             }
         }
 
