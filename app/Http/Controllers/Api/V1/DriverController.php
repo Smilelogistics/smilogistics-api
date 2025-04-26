@@ -27,7 +27,11 @@ class DriverController extends Controller
      */
     public function index()
     {
-        $driver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])->get();
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $driver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
+        ->where('branch_id', $branchId)
+        ->get();
         return response()->json($driver);
     }
 
