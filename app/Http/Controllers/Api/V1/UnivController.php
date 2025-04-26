@@ -18,7 +18,11 @@ class UnivController extends Controller
 
     public function getUsers()
     {
-        $branch = Branch::with(['customer', 'user'])->get();
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $branch = customer::with(['customer', 'user'])
+        ->where('branch_id', $branchId)
+        ->get();
 
         return response()->json(['branch' => $branch]);
     }
