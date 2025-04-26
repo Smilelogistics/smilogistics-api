@@ -56,9 +56,10 @@ class StoreCustomerRequest extends FormRequest
         'isNonBillable' => 'nullable|integer',
         'flash_note_for_accounting' => 'nullable|string',
         'note' => 'nullable|string',
+        'tag' => 'nullable|string',	
        // 'print_settlements_under_this_company' => 'nullable|string',
         'flash_note_for_drivers' => 'nullable|string',
-        'flash_notes_to_payroll' => 'nullable|string',
+       //'flash_notes_to_payroll' => 'nullable|string',
         'internal_note' => 'nullable|string',
         'file_path' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:2048',
  
