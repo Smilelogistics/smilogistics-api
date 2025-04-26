@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Notifications\InvoiceBilltoNotification;
 use App\Notifications\invoiceStatusNotification;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class InvoiceController extends Controller
 {
@@ -173,14 +174,34 @@ class InvoiceController extends Controller
             }
 
             // Insert into InvoiceDoc
+            // if ($request->hasFile('file')) {
+            //     foreach ($request->file('file') as $index => $file) {
+            //         $filename = $file->store('invoices', 'public');
+            //         InvoiceDoc::create([
+            //             'invoice_id' => $invoice->id,
+            //             'file' => $filename,
+            //             'file_title' => $request->file_title[$index] ?? null,
+            //         ]);
+            //     }
+            // }
             if ($request->hasFile('file')) {
-                foreach ($request->file('file') as $index => $file) {
-                    $filename = $file->store('invoices', 'public');
-                    InvoiceDoc::create([
-                        'invoice_id' => $invoice->id,
-                        'file' => $filename,
-                        'file_title' => $request->file_title[$index] ?? null,
-                    ]);
+                //dd($request->file('file_path'));
+                $files = $request->file('file');
+            
+                // Normalize to array (even if it's one file)
+                $files = is_array($files) ? $files : [$files];
+            
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'Smile_logistics/invoice',
+                        ]);
+            
+                        $invoice->invoicedocs()->create([
+                            'file' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
+                        ]);
+                    }
                 }
             }
 
@@ -275,25 +296,47 @@ protected function handleCharges(Request $request, $invoiceId)
 
 protected function handleDocuments(Request $request, $invoiceId)
 {
-    if (!$request->hasFile('file')) return;
+    // if (!$request->hasFile('file')) return;
 
-    // Handle both single file and multiple files
-    $files = $request->file('file');
-    if (!is_array($files)) {
-        $files = [$files];
-    }
+    // // Handle both single file and multiple files
+    // $files = $request->file('file');
+    // if (!is_array($files)) {
+    //     $files = [$files];
+    // }
 
-    $fileTitles = is_array($request->file_title ?? []) ? $request->file_title : [$request->file_title];
+    // $fileTitles = is_array($request->file_title ?? []) ? $request->file_title : [$request->file_title];
 
-    InvoiceDoc::where('invoice_id', $invoiceId)->delete();
+    // InvoiceDoc::where('invoice_id', $invoiceId)->delete();
 
-    foreach ($files as $index => $file) {
-        $filename = $file->store('invoices', 'public');
-        InvoiceDoc::create([
-            'invoice_id' => $invoiceId,
-            'file' => $filename,
-            'file_title' => $fileTitles[$index] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
-        ]);
+    // foreach ($files as $index => $file) {
+    //     $filename = $file->store('invoices', 'public');
+    //     InvoiceDoc::create([
+    //         'invoice_id' => $invoiceId,
+    //         'file' => $filename,
+    //         'file_title' => $fileTitles[$index] ?? pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME),
+    //     ]);
+    // }
+
+    if ($request->hasFile('file')) {
+        //dd($request->file('file_path'));
+        $files = $request->file('file');
+    
+        // Normalize to array (even if it's one file)
+        $files = is_array($files) ? $files : [$files];
+    
+        foreach ($files as $file) {
+            if ($file->isValid()) {
+                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    'folder' => 'Smile_logistics/invoice',
+                ]);
+    
+                InvoiceDoc::create([
+                    'invoice_id' => $invoiceId,
+                    'file' => $uploadedFile->getSecurePath(),
+                    'public_id' => $uploadedFile->getPublicId()
+                ]);
+            }
+        }
     }
 }
 
