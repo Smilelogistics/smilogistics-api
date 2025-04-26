@@ -30,7 +30,7 @@ class CustomerController extends Controller
     public function show($id)
     {
         $customer = Customer::with(['branch', 'user', 'documents'])->findOrFail($id);
-        return response()->json(['data' => $customer], 200);
+        return response()->json(['customer' => $customer], 200);
     }
 
     public function store(StoreCustomerRequest $request)
