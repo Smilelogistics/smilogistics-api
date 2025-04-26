@@ -32,6 +32,8 @@ class CustomerController extends Controller
         $branchId = $authUser->branch ? $authUser->branch->id : null;
         $validatedData = $request->validated();
 
+        DB::beginTransaction();
+
         $user = User::create([
             'branch_id' => $branchId,
             'fname' => $request->customer_name,
@@ -107,6 +109,8 @@ class CustomerController extends Controller
                 }
             }
         }
+
+        DB::commit();
 
         return response()->json([
             'message' => 'Customer Created successfully',
