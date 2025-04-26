@@ -114,4 +114,10 @@ class CustomerController extends Controller
             'customer' => $customer
         ], 200);
     }
+
+
+    public function update(StoreCustomerRequest $request, $id)
+    {
+        
+    }
 }

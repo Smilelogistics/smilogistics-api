@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -17,7 +19,6 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\TransactionsController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
-use App\Http\Controllers\Api\V1\DeliveryController;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -107,6 +108,14 @@ Route::prefix('v1')->group(function () {
             Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
             Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
             Route::delete('delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy');
+        });
+
+        Route::prefix('customers')->group(function () {
+            Route::post('create', [CustomerController::class, 'store'])->name('customers.store');
+            Route::put('update/{id}', [CustomerController::class, 'update'])->name('customers.update');
+            Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+            Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
+            Route::delete('delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy');
         });
 
         Route::prefix('bikes')->group(function () {
