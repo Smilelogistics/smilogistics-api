@@ -43,7 +43,7 @@ class StoreCustomerRequest extends FormRequest
         'credit_limit' => 'nullable|numeric',
         'alert_percentage' => 'nullable|numeric|between:0,100',
         'outstanding_balance' => 'nullable|numeric',
-        'due_date' => 'nullable',
+        'start_date' => 'nullable',
         'send_invoice_under_this_company' => 'nullable|string|max:255',
         'account_code' => 'nullable|string|max:50',
         'invoice_footer_note' => 'nullable|string',
