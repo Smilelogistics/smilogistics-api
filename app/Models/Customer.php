@@ -33,4 +33,9 @@ class Customer extends Model
         return $this->hasMany(Carrier::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(CustomerDocs::class);
+    }
+
 }
