@@ -13,6 +13,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\DriverAssignedTruckNotification;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 
 class TruckController extends Controller
