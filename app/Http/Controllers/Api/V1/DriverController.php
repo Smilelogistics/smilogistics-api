@@ -52,6 +52,7 @@ class DriverController extends Controller
                 'lname' => 'required|string|max:255',
                 'mname' => 'nullable|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
+
                 'driver_type' => 'required|integer',
                 'truck_id' => 'nullable|integer|exists:trucks,id',	
                 'quick_note' => 'nullable|string',
@@ -119,6 +120,8 @@ class DriverController extends Controller
                 'date_5' => 'nullable',
                 'date_6' => 'nullable',
                 'license_internal_notes' => 'nullable|string',
+
+                
                 'providers' => 'nullable',
                 'providers.*card_device_linking_number' => 'nullable|string|max:255',
                 'providers.*app_provider' => 'nullable|string|max:255',
@@ -138,19 +141,20 @@ class DriverController extends Controller
             }
 
             $validateData = $validator->validate();
-            if (isset($validatedData['tags'])) {
-                if (is_string($validatedData['tags'])) {
-                    $tagsArray = explode(',', $validatedData['tags']);
+
+            if (isset($validateData['tags'])) {
+                if (is_string($validateData['tags'])) {
+                    $tagsArray = explode(',', $validateData['tags']);
                 } 
-                elseif (is_string($validatedData['tags']) && json_decode($validatedData['tags'])) {
-                    $tagsArray = json_decode($validatedData['tags'], true);
+                elseif (is_string($validateData['tags']) && json_decode($validateData['tags'])) {
+                    $tagsArray = json_decode($validateData['tags'], true);
                 }
                 else {
-                    $tagsArray = $validatedData['tags'];
+                    $tagsArray = $validateData['tags'];
                 }
                 
                 $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
-                $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
+                $validateData['tags'] = !empty($tagsArray) ? $tagsArray : null;
             }
             //dd($validateData);
 
@@ -201,6 +205,41 @@ class DriverController extends Controller
                 'flash_notes_to_dispatch' => $validateData['flash_notes_to_dispatch'] ?? null,
                 'flash_notes_to_payroll' => $validateData['flash_notes_to_payroll'] ?? null,
                 'internal_notes' => $validateData['internal_notes'] ?? null,
+
+
+                //form w-9
+                'name_tax_return' => $validateData['name_tax_return'] ?? null,
+                'different_bussiness_name' => $validateData['different_bussiness_name'] ?? null,
+                'wtype' => $validateData['wtype'] ?? null,
+                'other_type' => $validateData['other_type'] ?? null,
+                'waddress' => $validateData['waddress'] ?? null,
+                'wstate' => $validateData['wstate'] ?? null,
+                'wcity' => $validateData['wcity'] ?? null,
+                'wzip' => $validateData['wzip'] ?? null,
+                'wtaxid' => $validateData['wtaxid'] ?? null,
+                'wwssn' => $validateData['wwssn'] ?? null,
+                'wwein' => $validateData['wwein'] ?? null,
+                'wpaid_via' => $validateData['wpaid_via'] ?? null,
+                'waccountNumber' => $validateData['waccountNumber'] ?? null,
+                'wroutingNumber' => $validateData['wroutingNumber'] ?? null,
+                'winternal_notes' => $validateData['winternal_notes'] ?? null,
+                'licensessn' => $validateData['licensessn'] ?? null,
+                'dob' => $validateData['dob'] ?? null,
+                'cdlnumber' => $validateData['cdlnumber'] ?? null,
+                'license_state' => $validateData['license_state'] ?? null,
+                'cdl_expires' => $validateData['cdl_expires'] ?? null,
+                'medical_number' => $validateData['medical_number'] ?? null,
+                'medical_expires' => $validateData['medical_expires'] ?? null,
+                'twic_number' => $validateData['twic_number'] ?? null,
+                'twic_expires' => $validateData['twic_expires'] ?? null,
+                'sealink_expires' => $validateData['sealink_expires'] ?? null,
+                'annual_mvr' => $validateData['annual_mvr'] ?? null,
+                'clearing_annual' => $validateData['clearing_annual'] ?? null,
+                'liability_insurance_expires' => $validateData['liability_insurance_expires'] ?? null,
+                'insurance_provider' => $validateData['insurance_provider'] ?? null,
+                'insurance_coverage' => $validateData['insurance_coverage'] ?? null,
+                'license_internal_notes' => $validateData['license_internal_notes'] ?? null,
+
                 'date_1' => $validateData['date_1'] ?? null,
                 'date_2' => $validateData['date_2'] ?? null,
                 'date_3' => $validateData['date_3'] ?? null,
@@ -208,7 +247,6 @@ class DriverController extends Controller
                 'date_5' => $validateData['date_5'] ?? null,
                 'date_6' => $validateData['date_6'] ?? null,
 
-                ...$validatedData,
             ]);
 
             if (isset($validateData['providers'])) {
