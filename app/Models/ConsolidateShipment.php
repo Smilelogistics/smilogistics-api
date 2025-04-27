@@ -37,6 +37,10 @@ class ConsolidateShipment extends Model
         return $this->hasMany(ConsolidateShipmentDoc::class);
     }
 
+    public function consolidateShipmentCharges() {
+        return $this->hasMany(ConsolidateShipmentCharges::class);
+    }
+
     public static function generateTrackingNumber() {
         do {
             $trackingNumber = random_int(1000000000, 9999999999);

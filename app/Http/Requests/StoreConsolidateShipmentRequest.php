@@ -55,6 +55,21 @@ class StoreConsolidateShipmentRequest extends FormRequest
             // 'accepted_status' => 'required|in:Accepted,Rejected,Pending',
             // 'status' => 'required|string|max:100',
 
+            //chargeTable
+            'charges' => 'nullable|array',
+            'charges.*.charge_type' => 'nullable|string|max:255',
+            'charges.*.comment' => 'nullable|string|max:500',
+            'charges.*.units' => 'nullable|integer|min:1',
+            'charges.*.rate' => 'nullable|numeric|min:0',
+            'charges.*.amount' => 'nullable|numeric|min:0',
+            'charges.*.discount' => 'nullable|numeric|min:0|max:100',
+            'charges.*.internal_notes' => 'nullable|string|max:500',
+            'charges.*.billed' => 'nullable|boolean',
+            'charges.*.invoice_number' => 'nullable|string|unique:invoices,invoice_number|max:50',
+            'charges.*.invoice_date' => 'nullable|date',
+            'charges.*.total' => 'nullable|numeric|min:0',
+            'charges.*.net_total' => 'nullable|numeric|min:0',
+
             // Documents
             'file_path.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
             'file_path.*' => 'nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',

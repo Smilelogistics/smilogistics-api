@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Models\ConsolidateShipmentDoc;
 use Illuminate\Support\Facades\Validator;
+use App\Models\ConsolidateShipmentCharges;
 use App\Mail\ConsolidateShipmentCustomerMail;
 use App\Mail\ConsolidateShipmentRecieverMail;
 use App\Http\Requests\StoreConsolidateShipmentRequest;
@@ -80,6 +81,27 @@ class ConsolidateShipmentController extends Controller
             'payment_status' => $validatedData['payment_status'],
             'payment_method' => $validatedData['payment_method'],
         ]);
+
+        if ($request->has('charges')) {
+            foreach ($request->charges as $charge) {
+                ConsolidateShipmentCharges::create([
+                    'consolidate_shipment_id' => $consolidateShipment->id,
+                    'branch_id' => $branchId ?? null,
+                    'charge_type' => $charge['charge_type'] ?? null,
+                    'comment' => $charge['comment'] ?? null,
+                    'units' => $charge['units'] ?? null,
+                    'rate' => $charge['rate'] ?? null,
+                    'amount' => $charge['amount'] ?? null,
+                    'discount' => $charge['discount'] ?? null,
+                    'internal_notes' => $charge['internal_notes'] ?? null,
+                    'billed' => $charge['billed'] ?? null,
+                    'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
+                    'invoice_date' => $charge['invoice_date'] ?? null,
+                    'total' => $total ?? null,
+                    'net_total' => $net_total ?? null,
+                ]);
+            }
+        }
 
        // dd($consolidateShipment);
 
@@ -153,8 +175,15 @@ class ConsolidateShipmentController extends Controller
 
     public function update(Request $request, $id)
     {
-        $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $branch = $user->branch()->with('user')->first();
+
+        $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
+        $shipment_prefix = $branch_prfx ? $branch_prfx : '';
+        $branchId = $user->branch ? $user->branch->id : null;
+        $customerId = $user->customer ? $user->customer->id : null;
+        
         try{
             $validatedData = Validator::make($request->all(), [
                 'consolidation_type' => 'sometimes|string|nullable',
@@ -202,6 +231,29 @@ class ConsolidateShipmentController extends Controller
                 'payment_status' => $validatedShipment['payment_status'],
                 'payment_method' => $validatedShipment['payment_method'],
             ]);
+
+            if ($request->has('charges')) {
+                foreach ($request->charges as $charge) {
+                    ConsolidateShipmentCharges::updateOrCreate([
+                        'consolidate_shipment_id' => $consolidateShipment->id], 
+                        [
+                            
+                        'branch_id' => $branchId ?? null,
+                        'charge_type' => $charge['charge_type'] ?? null,
+                        'comment' => $charge['comment'] ?? null,
+                        'units' => $charge['units'] ?? null,
+                        'rate' => $charge['rate'] ?? null,
+                        'amount' => $charge['amount'] ?? null,
+                        'discount' => $charge['discount'] ?? null,
+                        'internal_notes' => $charge['internal_notes'] ?? null,
+                        'billed' => $charge['billed'] ?? null,
+                        'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
+                        'invoice_date' => $charge['invoice_date'] ?? null,
+                        'total' => $total ?? null,
+                        'net_total' => $net_total ?? null,
+                    ]);
+                }
+            }
 
             if ($request->hasFile('proof_of_delivery_path')) {
                 $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [

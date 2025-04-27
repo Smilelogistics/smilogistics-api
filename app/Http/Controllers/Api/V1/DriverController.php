@@ -49,8 +49,9 @@ class DriverController extends Controller
         try {
             
             $validator = Validator::make(request()->all(), [
+                'transport_type' => 'required|integer',
                 'fname' => 'required|string|max:255',
-                'lname' => 'required|string|max:255',
+                'lname' => 'nullable|string|max:255',
                 'mname' => 'nullable|string|max:255',
                 'email' => 'required|email|max:255|unique:users,email',
 
@@ -177,6 +178,7 @@ class DriverController extends Controller
             $driver = Driver::create([
                 'user_id' => $createUser->id,
                 'branch_id' => $branchId,
+                'transport_type' => $validateData['transport_type'] ?? null,
                 'driver_type' => $validateData['driver_type'] ?? null,
                 'driver_phone' => $validateData['driver_phone'] ?? null,
                 'driver_phone_carrier' => $validateData['driver_phone_carrier'] ?? null,
@@ -321,6 +323,7 @@ class DriverController extends Controller
     public function update(Request $request, string $id)
     {
         $validator = Validator::make($request->all(), [
+            'transport_type' => 'sometimes|nullable|integer',
             'driver_number' => 'sometimes|nullable|string|max:255|unique:drivers,driver_number,' . $id,
             'driver_phone' => 'sometimes|nullable|string|max:25|regex:/^\+?[0-9]{7,15}$/',
             'driver_phone_carrier' => 'sometimes|nullable|string|max:255',
@@ -424,6 +427,7 @@ class DriverController extends Controller
         $driver = Driver::findOrFail($id);
     
         $driver->update($request->only([
+            'transport_type',
             'driver_number',
             'driver_phone',
             'driver_phone_carrier',
