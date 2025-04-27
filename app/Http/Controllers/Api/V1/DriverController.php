@@ -179,7 +179,6 @@ class DriverController extends Controller
                 'user_id' => $createUser->id,
                 'branch_id' => $branchId,
                 'driver_type' => $validateData['driver_type'] ?? null,
-                'quick_note' => $validateData['quick_note'] ?? null,
                 'dispatcher_note' => $validateData['dispatcher_note'] ?? null,
                 'driver_phone' => $validateData['driver_phone'] ?? null,
                 'driver_phone_carrier' => $validateData['driver_phone_carrier'] ?? null,
