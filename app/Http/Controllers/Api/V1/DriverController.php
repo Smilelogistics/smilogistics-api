@@ -55,8 +55,6 @@ class DriverController extends Controller
 
                 'driver_type' => 'required|integer',
                 'truck_id' => 'nullable|integer|exists:trucks,id',	
-                'quick_note' => 'nullable|string',
-                'dispatcher_note' => 'nullable|string',
                 'driver_phone' => 'nullable|string|max:20',
                 'driver_phone_carrier' => 'nullable|string|max:255',
                 'driver_primary_address' => 'nullable|string|max:255',
@@ -179,7 +177,6 @@ class DriverController extends Controller
                 'user_id' => $createUser->id,
                 'branch_id' => $branchId,
                 'driver_type' => $validateData['driver_type'] ?? null,
-                'dispatcher_note' => $validateData['dispatcher_note'] ?? null,
                 'driver_phone' => $validateData['driver_phone'] ?? null,
                 'driver_phone_carrier' => $validateData['driver_phone_carrier'] ?? null,
                 'driver_primary_address' => $validateData['driver_primary_address'] ?? null,
