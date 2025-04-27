@@ -97,15 +97,15 @@ class Truck extends Model
         return $this->hasMany(TruckDoc::class);
     }
 
-    protected static function booted()
-    {
-        static::saved(function ($truck) {
-            Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
-        });
+    // protected static function booted()
+    // {
+    //     static::saved(function ($truck) {
+    //         Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
+    //     });
 
-        static::deleted(function ($truck) {
-            Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
-        });
-    }
+    //     static::deleted(function ($truck) {
+    //         Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
+    //     });
+    // }
     
 }
