@@ -197,7 +197,8 @@ class InvoiceController extends Controller
                             'folder' => 'Smile_logistics/invoice',
                         ]);
             
-                        $invoice->invoicedocs()->create([
+                        InvoiceDoc::create([
+                            'invoice_id' => $invoice->id,
                             'file' => $uploadedFile->getSecurePath(),
                             'public_id' => $uploadedFile->getPublicId()
                         ]);

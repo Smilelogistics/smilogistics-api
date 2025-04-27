@@ -90,19 +90,19 @@ class ConsolidateShipmentController extends Controller
                 'folder' => 'Smile_logistics/consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->create([
-                'type' => 'proof_of_delivery',
+            ConsolidateShipmentDoc::create([
+                'consolidate_shipment_id' => $consolidateShipment->id,
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
         }
 
         if($request->hasFile('invoice_path')){
             $uploadedFile = Cloudinary::upload($request->file('invoice_path')->getRealPath(), [
-                'folder' => 'consolidate_shipment'
+                'folder' => 'Smile_logistics/consolidate_shipment'
             ]);
             
-            $consolidateShipment->documents()->create([
-                'type' => 'invoice_path',
+            ConsolidateShipmentDoc::create([
+                'consolidate_shipment_id' => $consolidateShipment->id,
                 'file_path' => $uploadedFile->getSecurePath()
             ]);
         }
@@ -117,12 +117,13 @@ class ConsolidateShipmentController extends Controller
             foreach ($files as $file) {
                 if ($file->isValid()) {
                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'consolidate_shipment'
+                        'folder' => 'Smile_logistics/consolidate_shipment'
                     ]);
         
-                    $consolidateShipment->documents()->create([
+                    ConsolidateShipmentDoc::create([
+                        'consolidate_shipment_id' => $consolidateShipment->id,
                         'file_path' => $uploadedFile->getSecurePath(),
-                        //'public_id' => $uploadedFile->getPublicId()
+                        'public_id' => $uploadedFile->getPublicId()
                     ]);
                 }
             }
@@ -192,20 +193,20 @@ class ConsolidateShipmentController extends Controller
 
             if ($request->hasFile('proof_of_delivery_path')) {
                 $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [
-                    'folder' => 'consolidate_shipment'
+                    'folder' => 'Smile_logistics/consolidate_shipment'
                 ]);
                 $consolidateShipment->documents()->updateOrCreate(
-                    ['type' => 'proof_of_delivery'],
+                    ['consolidate_shipment_id' => $consolidateShipment->id],
                     ['file_path' => $uploadedFile->getSecurePath()]
                 );
             }
     
             if ($request->hasFile('invoice_path')) {
                 $uploadedFile = Cloudinary::upload($request->file('invoice_path')->getRealPath(), [
-                    'folder' => 'consolidate_shipment'
+                    'folder' => 'Smile_logistics/consolidate_shipment'
                 ]);
                 $consolidateShipment->documents()->updateOrCreate(
-                    ['type' => 'invoice_path'],
+                    ['consolidate_shipment_id' => $consolidateShipment->id],
                     ['file_path' => $uploadedFile->getSecurePath()]
                 );
             }
@@ -220,13 +221,14 @@ class ConsolidateShipmentController extends Controller
                 foreach ($files as $file) {
                     if ($file->isValid()) {
                         $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'consolidate_shipment'
+                            'folder' => 'Smile_logistics/consolidate_shipment'
                         ]);
             
-                        $consolidateShipment->documents()->create([
-                            'file_path' => $uploadedFile->getSecurePath(),
+                        $consolidateShipment->documents()->updateOrCreate(
+                            ['consolidate_shipment_id' => $consolidateShipment->id],
+                            ['file_path' => $uploadedFile->getSecurePath()],
                             //'public_id' => $uploadedFile->getPublicId()
-                        ]);
+                        );
                     }
                 }
             }
