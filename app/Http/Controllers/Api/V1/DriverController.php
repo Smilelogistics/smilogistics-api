@@ -224,23 +224,23 @@ class DriverController extends Controller
 
 
             if ($request->hasFile('file_path')) {
+                //dd($request->file('file_path'));
                 $files = $request->file('file_path');
-                //$fileTitles = $request->input('file_titles', []);
-        
-                foreach ($files as $index => $file) {
-                    try {
-                        $filePath = $this->uploadFile($file, 'drivers');
-                        if ($filePath) {
-                            DriverDocs::create([
-                                'driver_id' => $driver->id,
-                                'file' => $filePath,
-                                //'file_title' => $fileTitles[$index] ?? null,
-                            ]);
-                        } else {
-                            \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
-                        }
-                    } catch (\Exception $e) {
-                        \Log::error('Error uploading file: ' . $e->getMessage());
+            
+                // Normalize to array (even if it's one file)
+                $files = is_array($files) ? $files : [$files];
+            
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'Smile_logistics/Drivers'
+                        ]);
+            
+                        DriverDocs::create([
+                            'driver_id' => $driver->id,
+                            'file' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
+                        ]);
                     }
                 }
             } else {
@@ -463,10 +463,10 @@ class DriverController extends Controller
         ]));
     
         // Update or create DriverDocs record
-        $driverDoc = DriverDocs::updateOrCreate(
-            ['driver_id' => $driver->id],
-            ['file' => $request->file_path]
-        );
+        // $driverDoc = DriverDocs::updateOrCreate(
+        //     ['driver_id' => $driver->id],
+        //     ['file' => $request->file_path]
+        // );
 
         if (isset($validateData['providers'])) {
             foreach ($validateData['providers'] as $providerData) {
@@ -483,16 +483,27 @@ class DriverController extends Controller
             }
         }
 
-    
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filename = time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public', $filename);
-    
-            // Update DriverDocs with the new file path
-            $driverDoc->update(['file' => $filename, 'file_title' => $request->file_title]);
 
-            //dd($driverDoc);
+        if ($request->hasFile('file_path')) {
+            //dd($request->file('file_path'));
+            $files = $request->file('file_path');
+        
+            // Normalize to array (even if it's one file)
+            $files = is_array($files) ? $files : [$files];
+        
+            foreach ($files as $file) {
+                if ($file->isValid()) {
+                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'Smile_logistics/Drivers'
+                    ]);
+        
+                    DriverDocs::create([
+                        'driver_id' => $driver->id,
+                        'file' => $uploadedFile->getSecurePath(),
+                        'public_id' => $uploadedFile->getPublicId()
+                    ]);
+                }
+            }
         }
         
     
