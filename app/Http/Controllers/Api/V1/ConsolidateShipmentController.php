@@ -200,7 +200,10 @@ class ConsolidateShipmentController extends Controller
                 ]);
                 $consolidateShipment->documents()->updateOrCreate(
                     ['consolidate_shipment_id' => $consolidateShipment->id],
-                    ['file_path' => $uploadedFile->getSecurePath()]
+                    ['proof_of_delivery_path' => $uploadedFile->getSecurePath(),
+                    'public_id' => $uploadedFile->getPublicId()
+                    
+                    ]
                 );
             }
     
@@ -210,7 +213,9 @@ class ConsolidateShipmentController extends Controller
                 ]);
                 $consolidateShipment->documents()->updateOrCreate(
                     ['consolidate_shipment_id' => $consolidateShipment->id],
-                    ['file_path' => $uploadedFile->getSecurePath()]
+                    ['invoice_path' => $uploadedFile->getSecurePath(),
+                    'public_id' => $uploadedFile->getPublicId()
+                    ]
                 );
             }
     
@@ -229,9 +234,9 @@ class ConsolidateShipmentController extends Controller
             
                         $consolidateShipment->documents()->updateOrCreate(
                             ['consolidate_shipment_id' => $consolidateShipment->id],
-                            ['file_path' => $uploadedFile->getSecurePath()],
-                            //'public_id' => $uploadedFile->getPublicId()
-                        );
+                            ['file_path' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
+                        ]);
                     }
                 }
             }
