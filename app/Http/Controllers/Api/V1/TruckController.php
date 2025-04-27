@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\DriverAssignedTruckNotification;
@@ -18,23 +17,16 @@ use App\Notifications\DriverAssignedTruckNotification;
 
 class TruckController extends Controller
 {
-    use FileUploadTrait;public function index()
+    use FileUploadTrait;
+    public function index()
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        
-        $cacheKey = "trucks_for_branch_{$branchId}";
-        
-        $trucks = Cache::tags(["trucks", "branch_{$branchId}"])
-            ->remember($cacheKey, 3600, function() use ($branchId) {
-                return Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
-                    ->where('branch_id', $branchId)
-                    ->get();
-            });
-        
+        $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
+        ->where('branch_id', $branchId)
+        ->get();
         return response()->json(['trucks' => $trucks], 200);
     }
-    
     public function show($id)
     {
         $user = auth()->user();
