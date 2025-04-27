@@ -23,14 +23,20 @@ class ConsolidateShipmentController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)->with('customer.user', 'carrier', 'driver.user')->latest()->get();
+        $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)
+        ->with('customer.user', 'carrier', 'driver.user')
+        ->latest()
+        ->get();
         return response()->json(['consolidateShipments' => $consolidateShipments], 200);
     }
     public function show($id)
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $consolidateShipment = ConsolidateShipment::where('branch_id', $branchId)->with('customer', 'carrier', 'driver', 'documents')->findOrFail($id);
+        $consolidateShipment = ConsolidateShipment::where('branch_id', $branchId)
+        ->with('customer', 'carrier', 'driver', 'documents')
+        ->latest()
+        ->findOrFail($id);
         return response()->json(['consolidateShipment' => $consolidateShipment], 200);
     }
     public function store(StoreConsolidateShipmentRequest $request)
