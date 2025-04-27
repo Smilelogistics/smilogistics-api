@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Model;
 
 class Truck extends Model
@@ -94,6 +95,17 @@ class Truck extends Model
     public function truckDocs()
     {
         return $this->hasMany(TruckDoc::class);
+    }
+
+    protected static function booted()
+    {
+        static::saved(function ($truck) {
+            Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
+        });
+
+        static::deleted(function ($truck) {
+            Cache::tags(["trucks", "branch_{$truck->branch_id}"])->flush();
+        });
     }
     
 }

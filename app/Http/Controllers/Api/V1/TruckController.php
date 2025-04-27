@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\DriverAssignedTruckNotification;
@@ -17,16 +18,23 @@ use App\Notifications\DriverAssignedTruckNotification;
 
 class TruckController extends Controller
 {
-    use FileUploadTrait;
-    public function index()
+    use FileUploadTrait;public function index()
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
-        ->where('branch_id', $branchId)
-        ->get();
+        
+        $cacheKey = "trucks_for_branch_{$branchId}";
+        
+        $trucks = Cache::tags(["trucks", "branch_{$branchId}"])
+            ->remember($cacheKey, 3600, function() use ($branchId) {
+                return Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
+                    ->where('branch_id', $branchId)
+                    ->get();
+            });
+        
         return response()->json(['trucks' => $trucks], 200);
     }
+    
     public function show($id)
     {
         $user = auth()->user();
@@ -135,24 +143,49 @@ class TruckController extends Controller
             ]);
 
             if ($truck) {
-                if ($request->hasFile('file_path')) {
-                    $files = $request->file('file_path');
-                    //$fileTitles = $request->input('file_titles', []);
+                // if ($request->hasFile('file_path')) {
+                //     $files = $request->file('file_path');
+                //     //$fileTitles = $request->input('file_titles', []);
             
-                    foreach ($files as $index => $file) {
-                        try {
-                            $filePath = $this->uploadFile($file, 'trucks');
-                            if ($filePath) {
-                                TruckDoc::create([
-                                    'truck_id' => $truck->id,
-                                    'file' => $filePath,
-                                    //'file_title' => $fileTitles[$index] ?? null,
-                                ]);
-                            } else {
-                                \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
-                            }
-                        } catch (\Exception $e) {
-                            \Log::error('Error uploading file: ' . $e->getMessage());
+                //     foreach ($files as $index => $file) {
+                //         try {
+                //             $filePath = $this->uploadFile($file, 'trucks');
+                //             if ($filePath) {
+                //                 TruckDoc::create([
+                //                     'truck_id' => $truck->id,
+                //                     'file' => $filePath,
+                //                     //'file_title' => $fileTitles[$index] ?? null,
+                //                 ]);
+                //             } else {
+                //                 \Log::error('File upload failed for file: ' . $file->getClientOriginalName());
+                //             }
+                //         } catch (\Exception $e) {
+                //             \Log::error('Error uploading file: ' . $e->getMessage());
+                //         }
+                //     }
+                // } else {
+                //     \Log::error('No files found in the request.');
+                // }
+
+
+                if ($request->hasFile('file_path')) {
+                    //dd($request->file('file_path'));
+                    $files = $request->file('file_path');
+                
+                    // Normalize to array (even if it's one file)
+                    $files = is_array($files) ? $files : [$files];
+                
+                    foreach ($files as $file) {
+                        if ($file->isValid()) {
+                            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                                'folder' => 'Smile_logistics/Trucks',
+                            ]);
+                
+                            TruckDoc::create([
+                                'truck_id' => $truck->id,
+                                'file' => $uploadedFile->getSecurePath(),
+                                'public_id' => $uploadedFile->getPublicId()
+                            ]);
                         }
                     }
                 } else {
@@ -287,17 +320,39 @@ class TruckController extends Controller
                 ...$validatedTruck
             ]);
 
-            if ($request->hasFile('file')) {
-                $files = $request->file('file');
-                $fileTitles = $request->input('file_titles', []);
+            // if ($request->hasFile('file')) {
+            //     $files = $request->file('file');
+            //     $fileTitles = $request->input('file_titles', []);
 
-                foreach ($files as $index => $file) {
-                    $filePath = $this->uploadFile($file, 'trucks');
-                    if ($filePath) {
-                        TruckDoc::create([
-                            'truck_id' => $truck->id,
-                            'file_path' => $filePath,
-                            'file_title' => $fileTitles[$index] ?? null,
+            //     foreach ($files as $index => $file) {
+            //         $filePath = $this->uploadFile($file, 'trucks');
+            //         if ($filePath) {
+            //             TruckDoc::create([
+            //                 'truck_id' => $truck->id,
+            //                 'file_path' => $filePath,
+            //                 'file_title' => $fileTitles[$index] ?? null,
+            //             ]);
+            //         }
+            //     }
+            // }
+
+            if ($request->hasFile('file_path')) {
+                //dd($request->file('file_path'));
+                $files = $request->file('file_path');
+            
+                // Normalize to array (even if it's one file)
+                $files = is_array($files) ? $files : [$files];
+            
+                foreach ($files as $file) {
+                    if ($file->isValid()) {
+                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            'folder' => 'Smile_logistics/Drivers'
+                        ]);
+            
+                        DriverDocs::create([
+                            'driver_id' => $driver->id,
+                            'file' => $uploadedFile->getSecurePath(),
+                            'public_id' => $uploadedFile->getPublicId()
                         ]);
                     }
                 }
