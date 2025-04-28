@@ -40,7 +40,8 @@ class DriverController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $truckDriver = Driver::where('branch_id', $branchId)
+        $truckDriver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
+        ->where('branch_id', $branchId)
         ->where('transport_type', '1')
         ->get();
         return response()->json($truckDriver);
@@ -50,7 +51,8 @@ class DriverController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $bikeDriver = Driver::where('branch_id', $branchId)
+        $bikeDriver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
+        ->where('branch_id', $branchId)
         ->where('transport_type', '2')
         ->get();
         return response()->json($bikeDriver);
