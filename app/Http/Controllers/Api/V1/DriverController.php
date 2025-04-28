@@ -36,6 +36,26 @@ class DriverController extends Controller
         return response()->json($driver);
     }
 
+    public function getTruckDrivers()
+    {
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $truckDriver = Driver::where('branch_id', $branchId)
+        ->where('transport_type', '1')
+        ->get();
+        return response()->json($truckDriver);
+    }
+
+    public function getBikeDrivers()
+    {
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $bikeDriver = Driver::where('branch_id', $branchId)
+        ->where('transport_type', '2')
+        ->get();
+        return response()->json($bikeDriver);
+    }
+
     /**
      * Show the form for creating a new resource.
      */

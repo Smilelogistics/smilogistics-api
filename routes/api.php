@@ -80,6 +80,8 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('drivers')->group(function () {
             Route::resource('driver', DriverController::class);
+            Route::get('truckdrivers', [DriverController::class, 'getTruckDrivers']);
+            Route::get('bikedrivers', [DriverController::class, 'getBikeDrivers']);
         });
 
 
