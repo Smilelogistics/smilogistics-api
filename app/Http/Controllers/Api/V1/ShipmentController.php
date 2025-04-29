@@ -67,6 +67,12 @@ class ShipmentController extends Controller
         $branchId = $user->branch ? $user->branch->id : null;
         $checkSubscription = false;
 
+        $total_miles = $validatedData['total_miles'];
+        $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
+        $mpg = $validatedData['mpg'] ?? 1;
+
+        $total_fuelL = $total_miles * $fuel_rate_per_gallon / $mpg;
+
         // On charges, you multiply Unist * Rate = Amount
         // if there is a discount, you multiply Unist * Rate - discount = Amount
         // for the Total is same Figure as Amount, but discoubt is applied yhu now have Net Total
@@ -144,7 +150,7 @@ class ShipmentController extends Controller
             'dh_miles' => $validatedData['dh_miles'] ?? 0.00,
             'fuel_rate_per_gallon' => $validatedData['fuel_rate_per_gallon'] ?? 0.00,
             'mpg' => $validatedData['mpg'] ?? 0.00,
-            'total_fuel_cost' => $validatedData['total_fuel_cost'] ?? 0.00,
+            'total_fuel_cost' => $total_fuelL,
             'broker_name' => $validatedData['broker_name'] ?? null,
             'broker_email' => $validatedData['broker_email'] ?? null,
             'broker_phone' => $validatedData['broker_phone'] ?? null,
