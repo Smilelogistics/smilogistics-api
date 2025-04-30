@@ -66,11 +66,11 @@ class AuthController extends Controller
              // Check user type and create related records
              if ($user->user_type == 'businessadministrator') {
                  Branch::create([
-                     'user_id' => $user->id, // Ensure user_id is assigned
+                     'user_id' => $user->id,
                      'branch_code' => 'SML-' . $user->id,
                      'phone' => $request->phone ?? null,
-                     'address' => $request->address ?? null,
-                     'about_us' => $request->about_us ?? null
+                     'address' => $request->address ?? 'No address provided',
+                     'about_us' => $request->about_us ?? null,
                  ]);
                  Mail::to($user->email)->send(new newBranchMail($user));
                  $user->notify(new NewBranchNotification($user));
