@@ -27,7 +27,9 @@ use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 // })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    
     Route::post('/send-reset-link', function (Request $request) {
         $request->validate(['email' => 'required|email']);
     
@@ -41,38 +43,12 @@ Route::prefix('v1')->group(function () {
     })->middleware('guest')->name('password.email');
     
     // Handle reset submission
-    Route::post('/reset-password', function (Request $request) {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-        ]);
-    
-        $status = Password::reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user, $password) {
-                $user->forceFill([
-                    'password' => Hash::make($password)
-                ])->setRememberToken(Str::random(60));
-    
-                $user->save();
-    
-                event(new PasswordReset($user));
-            }
-        );
-    
-        return $status === Password::PASSWORD_RESET
-                    ? response()->json(['status' => __($status)])
-                    : response()->json(['email' => [__($status)]], 422);
-    })->middleware('guest')->name('password.update');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
 
-    // Route::post('/send-reset-link', [AuthController::class, 'sendResetLink']);
-    // Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     // Protected routes
     
     Route::middleware('auth:sanctum')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::get('/user', [AuthController::class, 'user']);
 

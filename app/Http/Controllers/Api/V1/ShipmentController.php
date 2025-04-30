@@ -71,7 +71,7 @@ class ShipmentController extends Controller
         $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
         $mpg = $validatedData['mpg'] ?? 1;
 
-        $total_fuelL = $total_miles * $fuel_rate_per_gallon / $mpg;
+        $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
 
         // On charges, you multiply Unist * Rate = Amount
         // if there is a discount, you multiply Unist * Rate - discount = Amount

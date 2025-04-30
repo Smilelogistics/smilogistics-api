@@ -204,27 +204,27 @@ class AuthController extends Controller
     {
         // Validate input
         $request->validate([
-            'email' => 'required|email|exists:users,email',
             'token' => 'required',
-            'password' => 'required|string|min:8|confirmed',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
         ]);
-
-        // Reset password using Laravel's Password Broker
+    
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
-            function (User $user, string $password) {
+            function ($user, $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password),
-                ])->save();
+                    'password' => Hash::make($password)
+                ])->setRememberToken(Str::random(60));
+    
+                $user->save();
+    
+                event(new PasswordReset($user));
             }
         );
-
-        // Check reset status
-        if ($status === Password::PASSWORD_RESET) {
-            return response()->json(['message' => 'Password reset successful'], 200);
-        }
-
-        return response()->json(['message' => __($status)], 400);
+    
+        return $status === Password::PASSWORD_RESET
+                    ? response()->json(['status' => __($status)])
+                    : response()->json(['email' => [__($status)]], 422);
     }
 
     public function changePassword(Request $request)
