@@ -155,21 +155,50 @@ class AuthController extends Controller
     public function sendResetLink(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
+            'email' => 'required|email|exists:users,email',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $status = Password::sendResetLink($request->only('email'));
+        try {
+            $status = Password::sendResetLink($request->only('email'));
 
-        if ($status === Password::RESET_LINK_SENT) {
-            return response()->json(['message' => 'Reset link sent to your email']);
+            switch ($status) {
+                case Password::RESET_LINK_SENT:
+                    return response()->json(['message' => __($status)]);
+                
+                case Password::INVALID_USER:
+                    return response()->json(['message' => __($status)], 400);
+                    
+                default:
+                    return response()->json(['message' => __($status)], 500);
+            }
+        } catch (\Exception $e) {
+            \Log::error('Password reset error: '.$e->getMessage());
+            return response()->json(['message' => 'Server error occurred'], 500);
         }
-
-        return response()->json(['message' => 'Unable to send reset link'], 500);
     }
+
+    // public function sendResetLink(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'email' => 'required|email',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json(['errors' => $validator->errors()], 422);
+    //     }
+
+    //     $status = Password::sendResetLink($request->only('email'));
+
+    //     if ($status === Password::RESET_LINK_SENT) {
+    //         return response()->json(['message' => 'Reset link sent to your email']);
+    //     }
+
+    //     return response()->json(['message' => 'Unable to send reset link'], 500);
+    // }
 
     public function resetPassword(Request $request)
     {
