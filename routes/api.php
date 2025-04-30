@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Auth\Events\PasswordReset;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\BikeController;
 use App\Http\Controllers\Api\V1\UnivController;
