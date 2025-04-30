@@ -11,6 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use App\Notifications\PasswordResetNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\Events\PasswordReset;
 
 class User extends Authenticatable
 {
