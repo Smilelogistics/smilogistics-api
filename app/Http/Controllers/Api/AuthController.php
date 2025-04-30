@@ -40,7 +40,7 @@ class AuthController extends Controller
              'mname' => 'nullable|string|max:255',
              'lname' => 'nullable|string|max:255',
              'email' => 'required|email|max:255|unique:users',
-             //'password' => 'required|string|min:8',
+             'password' => 'nullable|string|min:8',
              'user_type' => 'required|in:superadministrator,businessadministrator,businessmanager,customer,driver,user',
              //'phone' => 'nullable|string|max:20',
          ]);
@@ -57,7 +57,7 @@ class AuthController extends Controller
                  'mname' => $request->mname,
                  'lname' => $request->lname,
                  'email' => $request->email,
-                 'password' => Hash::make('123456789'),
+                 'password' => Hash::make($request->password ?? '123456789'),
                  'user_type' => $request->user_type,
              ]);
 
