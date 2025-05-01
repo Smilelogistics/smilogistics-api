@@ -100,10 +100,14 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     // Protected routes
+
+    Route::middleware('auth:sanctum')->group(function () {
+        
+        Route::get('/user', [AuthController::class, 'user']);
+    });
     
     Route::middleware('auth:sanctum', 'verified')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
-        Route::get('/user', [AuthController::class, 'user']);
 
         Route::prefix('dashboard')->group(function () {
             Route::get('/branches', [DashboardController::class, 'countBranches'])->name('dashboard.countBranches');
