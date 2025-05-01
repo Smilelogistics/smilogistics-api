@@ -49,6 +49,7 @@ class Branch extends Model
         'logo1',
         'logo2',
         'logo3',
+        'mpg',
         'business_status',
         'subscription_count',
         'subscription_end_date',

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class SettingsController extends Controller
 {
@@ -44,6 +45,8 @@ class SettingsController extends Controller
             'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'mpg' => 'sometimes|integer',
         ]);
 
         // Define upload directory
@@ -54,21 +57,29 @@ class SettingsController extends Controller
             mkdir($uploadPath, 0777, true);
         }
 
-        $logoPaths = [];
-
-        // Handle file uploads
         foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
             if ($request->hasFile($logoField)) {
                 // Generate unique file name
-                $fileName = $logoField . '_' . time() . '.' . $request->file($logoField)->extension();
+                // $fileName = $logoField . '_' . time() . '.' . $request->file($logoField)->extension();
+                // $request->file($logoField)->move($uploadPath, $fileName);
+                // $logoPaths[$logoField] = 'uploads/logos/' . $fileName;
 
-                // Move file to the folder
-                $request->file($logoField)->move($uploadPath, $fileName);
-
-                // Save path in validated data
-                $logoPaths[$logoField] = 'uploads/logos/' . $fileName;
+                if ($file->isValid()) {
+                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        'folder' => 'Smile_logistics/Branch_Logos',
+                    ]);
+        
+                    Branch::create([
+                        'truck_id' => $truck->id,
+                        'logo1' => $uploadedFile->getSecurePath(),
+                        'logo2' => $uploadedFile->getSecurePath(),
+                        'logo3' => $uploadedFile->getSecurePath(),
+                        //'public_id' => $uploadedFile->getPublicId()
+                    ]);
+                }
             }
         }
+        
 
         $updateData = array_merge($validated, $logoPaths);
 

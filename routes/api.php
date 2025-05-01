@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Auth\Events\PasswordReset;
@@ -25,6 +27,57 @@ use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
 // })->middleware('auth:sanctum');
+
+
+Route::get('/email/verify', function () {
+    return response()->json(['message' => 'Please verify your email address.'], 403);
+})->middleware('auth:sanctum')->name('verification.notice');
+
+
+// ✅ Send verification email after registration
+Route::post('/email/resend', function (Request $request) {
+    if ($request->user()->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email already verified.'], 200);
+    }
+
+    $request->user()->sendEmailVerificationNotification();
+    return response()->json(['message' => 'Verification email resent.']);
+})->middleware(['auth:sanctum']);
+
+// ✅ Verify email when user clicks the link
+Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json(['message' => 'User not found.'], 404);
+    }
+
+    if (!hash_equals((string) $user->getKey(), (string) $id)) {
+        return response()->json(['message' => 'Invalid verification ID.'], 403);
+    }
+
+    if (!hash_equals(sha1($user->getEmailForVerification()), $hash)) {
+        return response()->json(['message' => 'Invalid verification hash.'], 403);
+    }
+
+    if ($user->hasVerifiedEmail()) {
+        return response()->json(['message' => 'Email already verified.'], 200);
+    }
+
+    $user->markEmailAsVerified();
+    event(new Verified($user));
+
+    return response()->json(['message' => 'Email verified successfully.']);
+})->middleware(['signed'])->name('verification.verify');
+
+
+
+// ✅ Check if user has verified their email
+Route::get('/email/check', function (Request $request) {
+    return response()->json(['verified' => $request->user()->hasVerifiedEmail()]);
+})->middleware(['auth:sanctum']);
+
+
 
 Route::prefix('v1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
@@ -198,4 +251,4 @@ Route::prefix('v1')->group(function () {
             Route::post('/create-plan', [PlansController::class, 'store']);
         });
     });
-});
+})->middleware('verified');
