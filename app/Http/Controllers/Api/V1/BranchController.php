@@ -13,6 +13,14 @@ class BranchController extends Controller
         $branch = Branch::all();
         return response()->json($branch);
     }
+    public function getMPG()
+    {
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+
+        $mpg = Branch::where('id', $branchId)->value('mpg');
+        return response()->json($mpg);
+    }
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -65,7 +73,7 @@ class BranchController extends Controller
         }
 
         $branch = Branch::findOrFail($id);
-        dd($branch);
+        //dd($branch);
         $branch->update($request->all());
 
         return response()->json($branch);

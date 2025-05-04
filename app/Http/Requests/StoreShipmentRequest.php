@@ -53,7 +53,7 @@ class StoreShipmentRequest extends FormRequest
             'genset_number' => 'nullable|string|max:255',
             'reefer_temp' => 'nullable|string|max:255',
             'seal_number' => 'nullable|string|max:255',
-            'total_miles' => 'nullable|numeric',
+            'total_miles' =>  'nullable|numeric|min:200',
             'loaded_miles' => 'nullable|numeric',
             'empty_miles' => 'nullable|numeric',
             'dh_miles' => 'nullable|numeric',
