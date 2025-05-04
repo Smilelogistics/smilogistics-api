@@ -61,7 +61,10 @@ class StoreCustomerRequest extends FormRequest
         'flash_note_for_drivers' => 'nullable|string',
        //'flash_notes_to_payroll' => 'nullable|string',
         'internal_note' => 'nullable|string',
-        'file_path' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+        //'file_path' => 'nullable|file|mimes:pdf,jpg,png,doc,docx|max:2048',
+        
+        'file_path' => 'nullable|array',
+        'file_path.*' => 'file|mimes:jpeg,png,jpg,pdf|max:5120', // Only allow jpeg, png, jpg, and pdf files
  
         ];
     }
