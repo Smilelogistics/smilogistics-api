@@ -51,20 +51,21 @@ class CustomerController extends Controller
 
         $user->addRole('customer');
 
-        if (isset($request->tags)) {
-            if (is_string($request->tags)) {
-                $tagsArray = explode(',', $request->tags);
+               if (isset($validatedData['tags'])) {
+            if (is_string($validatedData['tags'])) {
+                $tagsArray = explode(',', $validatedData['tags']);
             } 
-            elseif (is_string($request->tags) && json_decode($validatedData['tags'])) {
-                $tagsArray = json_decode($request->tags, true);
+            elseif (is_string($validatedData['tags']) && json_decode($validatedData['tags'])) {
+                $tagsArray = json_decode($validatedData['tags'], true);
             }
             else {
-                $tagsArray = $request->tags;
+                $tagsArray = $validatedData['tags'];
             }
             
             $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
-            $request->tags = !empty($tagsArray) ? $tagsArray : null;
+            $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
+       // dd($validatedData['tags']);
 
         //Mail::to($user->email)->send(new newCustomerMail($user));
 
@@ -103,7 +104,7 @@ class CustomerController extends Controller
             'isNonBillable' => $request->isNonBillable,
             'flash_note_for_accounting' => $request->flash_note_for_accounting,
             'note' => $request->notes,
-            'tag' => $request->tag,
+            'tag' => $validatedData['tags'],
             //'print_settlements_under_this_company' => $request->boolean('print_settlements_under_this_company'),
             'flash_note_for_drivers' => $request->flash_notes_to_dispatch,
             //'flash_notes_to_payroll' => $request->flash_notes_to_payroll,
