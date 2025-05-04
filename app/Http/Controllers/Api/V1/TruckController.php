@@ -25,6 +25,7 @@ class TruckController extends Controller
         $branchId = $user->branch ? $user->branch->id : null;
         $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
         ->where('branch_id', $branchId)
+        ->latest()
         ->get();
         return response()->json(['trucks' => $trucks], 200);
     }

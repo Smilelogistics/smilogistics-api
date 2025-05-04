@@ -80,10 +80,10 @@ class ShipmentController extends Controller
 
         $total_miles = $validatedData['total_miles'];
         $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
-        $mpg = $validatedData['mpg'] ?? 1;
+        $mpg = $user->branch->mpg ?? 1;
 
         $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
-        
+
         //dd($validatedData);
         if (isset($validatedData['tags'])) {
             if (is_string($validatedData['tags'])) {
