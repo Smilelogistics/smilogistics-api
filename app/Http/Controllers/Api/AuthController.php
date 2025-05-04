@@ -57,7 +57,7 @@ class AuthController extends Controller
                  'mname' => $request->mname,
                  'lname' => $request->lname,
                  'email' => $request->email,
-                 'password' => Hash::make('123456789'),
+                 'password' => Hash::make($request->password ??'123456789'),
                  'user_type' => $request->user_type,
              ]);
 
@@ -77,7 +77,7 @@ class AuthController extends Controller
      
              } elseif ($user->user_type == 'customer') {
                 $authuser = auth()->user();
-                //dd($authuser);
+                dd($authuser);
                 $branchId = $authuser->branch ? $authuser->branch->id : null; 
                  Customer::create([
                      'user_id' => $user->id,

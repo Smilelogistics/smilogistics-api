@@ -80,7 +80,6 @@ Route::get('/email/check', function (Request $request) {
 
 
 Route::prefix('v1')->group(function () {
-    Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     
     Route::post('/send-reset-link', function (Request $request) {
@@ -107,6 +106,8 @@ Route::prefix('v1')->group(function () {
     });
     
     Route::middleware('auth:sanctum', 'verified')->group(function () {
+        
+    Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
         Route::prefix('dashboard')->group(function () {
