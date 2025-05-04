@@ -51,6 +51,21 @@ class CustomerController extends Controller
 
         $user->addRole('customer');
 
+        if (isset($request->tags)) {
+            if (is_string($request->tags)) {
+                $tagsArray = explode(',', $request->tags);
+            } 
+            elseif (is_string($request->tags) && json_decode($validatedData['tags'])) {
+                $tagsArray = json_decode($request->tags, true);
+            }
+            else {
+                $tagsArray = $request->tags;
+            }
+            
+            $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+            $request->tags = !empty($tagsArray) ? $tagsArray : null;
+        }
+
         //Mail::to($user->email)->send(new newCustomerMail($user));
 
         $customer = Customer::create([
