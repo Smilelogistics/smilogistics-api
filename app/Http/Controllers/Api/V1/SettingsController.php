@@ -29,7 +29,123 @@ class SettingsController extends Controller
         
     }
 
-    public function updateGeneral(Request $request)
+//     public function updateGeneral(Request $request)
+// {
+//     try {
+//         $user = auth()->user();
+        
+//         // Validate input
+//         $validated = $request->validate([
+//             'phone' => 'nullable|string|max:20',
+//             'address' => 'nullable|string|min:10|max:255',
+//             'parcel_prefix' => 'nullable|string|max:10',
+//             'invoice_prefix' => 'nullable|string|max:10',
+//             'currency' => 'nullable|string|size:3',
+//             'copyright' => 'nullable|string|min:5|max:100',
+//             'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'mpg' => 'sometimes|integer',
+//         ]);
+
+//         // Define upload directory
+//         $uploadPath = public_path('uploads/logos');
+
+//         // Create folder if not exists
+//         if (!file_exists($uploadPath)) {
+//             mkdir($uploadPath, 0777, true);
+//         }
+
+//         foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+//             if ($request->hasFile($logoField)) {
+//                 // Generate unique file name
+//                 // $fileName = $logoField . '_' . time() . '.' . $request->file($logoField)->extension();
+//                 // $request->file($logoField)->move($uploadPath, $fileName);
+//                 // $logoPaths[$logoField] = 'uploads/logos/' . $fileName;
+
+//                 if ($file->isValid()) {
+//                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+//                         'folder' => 'Smile_logistics/Branch_Logos',
+//                     ]);
+        
+//                     Branch::create([
+//                         'truck_id' => $truck->id,
+//                         'logo1' => $uploadedFile->getSecurePath(),
+//                         'logo2' => $uploadedFile->getSecurePath(),
+//                         'logo3' => $uploadedFile->getSecurePath(),
+//                         //'public_id' => $uploadedFile->getPublicId()
+//                     ]);
+//                 }
+//             }
+//         }
+        
+
+//         $updateData = $validated; //array_merge($validated, $logoPaths);
+
+//         $updateData = array_filter($updateData);
+
+//         // if ($user->hasRole('customer')) {
+//         //     $customer = Customer::updateOrCreate(
+//         //         ['user_id' => $user->id],
+//         //         $updateData
+//         //     );
+
+//         //     foreach ($logoPaths as $field => $path) {
+//         //         if (!empty($customer->{$field})) {
+//         //             Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
+//         //         }
+//         //     }
+//         // } 
+//         // else
+//         if ($user->hasRole('businessadministrator')) {
+//             if (!$user->branch) {
+//                 return response()->json([
+//                     'message' => 'Branch not found',
+//                     'hint' => 'Contact administrator to assign you to a branch'
+//                 ], 404);
+//             }
+
+//             $branch = $user->branch;
+            
+//             // Delete old logos before updating
+//             foreach ($logoPaths as $field => $path) {
+//                 if (!empty($branch->{$field})) {
+//                     Storage::delete(str_replace('storage/', 'public/', $branch->{$field}));
+//                 }
+//             }
+
+//             $branch->update($updateData);
+//         }
+//         else {
+//             return response()->json([
+//                 'message' => 'Unauthorized action',
+//                 'hint' => 'Your role cannot update these settings'
+//             ], 403);
+//         }
+
+//         return response()->json([
+//             'message' => 'General Settings updated successfully',
+//             'data' => $updateData,
+//             'logo_urls' => $logoPaths
+//         ]);
+
+//     } catch (ValidationException $e) {
+//         return response()->json([
+//             'message' => 'Validation failed',
+//             'errors' => $e->errors()
+//         ], 422);
+        
+//     } catch (\Exception $e) {
+//         Log::error("Settings update failed: " . $e->getMessage());
+//         return response()->json([
+//             'message' => 'Update failed',
+//             'hint' => 'Please try again or contact support'
+//         ], 500);
+//     }
+// }
+
+public function updateGeneral(Request $request)
 {
     try {
         $user = auth()->user();
@@ -49,55 +165,28 @@ class SettingsController extends Controller
             'mpg' => 'sometimes|integer',
         ]);
 
-        // Define upload directory
-        $uploadPath = public_path('uploads/logos');
+        // Initialize logo paths array
+        $logoPaths = [];
 
-        // Create folder if not exists
-        if (!file_exists($uploadPath)) {
-            mkdir($uploadPath, 0777, true);
-        }
-
-        foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+        // Handle file uploads to Cloudinary
+        foreach (['logo1', 'logo2', 'logo3', 'favicon'] as $logoField) {
             if ($request->hasFile($logoField)) {
-                // Generate unique file name
-                // $fileName = $logoField . '_' . time() . '.' . $request->file($logoField)->extension();
-                // $request->file($logoField)->move($uploadPath, $fileName);
-                // $logoPaths[$logoField] = 'uploads/logos/' . $fileName;
-
+                $file = $request->file($logoField);
+                
                 if ($file->isValid()) {
                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
                         'folder' => 'Smile_logistics/Branch_Logos',
                     ]);
-        
-                    Branch::create([
-                        'truck_id' => $truck->id,
-                        'logo1' => $uploadedFile->getSecurePath(),
-                        'logo2' => $uploadedFile->getSecurePath(),
-                        'logo3' => $uploadedFile->getSecurePath(),
-                        //'public_id' => $uploadedFile->getPublicId()
-                    ]);
+                    
+                    $logoPaths[$logoField] = $uploadedFile->getSecurePath();
                 }
             }
         }
-        
 
+        // Prepare update data
         $updateData = array_merge($validated, $logoPaths);
-
         $updateData = array_filter($updateData);
 
-        // if ($user->hasRole('customer')) {
-        //     $customer = Customer::updateOrCreate(
-        //         ['user_id' => $user->id],
-        //         $updateData
-        //     );
-
-        //     foreach ($logoPaths as $field => $path) {
-        //         if (!empty($customer->{$field})) {
-        //             Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
-        //         }
-        //     }
-        // } 
-        // else
         if ($user->hasRole('businessadministrator')) {
             if (!$user->branch) {
                 return response()->json([
@@ -108,27 +197,20 @@ class SettingsController extends Controller
 
             $branch = $user->branch;
             
-            // Delete old logos before updating
-            foreach ($logoPaths as $field => $path) {
-                if (!empty($branch->{$field})) {
-                    Storage::delete(str_replace('storage/', 'public/', $branch->{$field}));
-                }
-            }
-
+            // Update branch with new data
             $branch->update($updateData);
-        }
-        else {
+
             return response()->json([
-                'message' => 'Unauthorized action',
-                'hint' => 'Your role cannot update these settings'
-            ], 403);
+                'message' => 'General Settings updated successfully',
+                'data' => $updateData,
+                'logo_urls' => $logoPaths
+            ]);
         }
 
         return response()->json([
-            'message' => 'General Settings updated successfully',
-            'data' => $updateData,
-            'logo_urls' => $logoPaths
-        ]);
+            'message' => 'Unauthorized action',
+            'hint' => 'Your role cannot update these settings'
+        ], 403);
 
     } catch (ValidationException $e) {
         return response()->json([
@@ -140,6 +222,7 @@ class SettingsController extends Controller
         Log::error("Settings update failed: " . $e->getMessage());
         return response()->json([
             'message' => 'Update failed',
+            'error' => $e->getMessage(),
             'hint' => 'Please try again or contact support'
         ], 500);
     }
