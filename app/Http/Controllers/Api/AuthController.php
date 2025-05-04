@@ -111,6 +111,70 @@ class AuthController extends Controller
              return response()->json(['error' => 'Registration failed!', 'details' => $e->getMessage()], 500);
          }
      }
+
+
+     public function guestRegister(Request $request)
+     {
+        //dd(env('DB_DATABASE'));
+        // $user = auth()->user();
+        // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
+
+        // if ($user->user_type == 'businessadministrator' && $request->user_type == 'superadministrator') {
+        //     return response()->json(['error' => 'You cannot register a superadmin as a business admin.'], 400);
+        // }
+         $validator = Validator::make($request->all(), [
+             'fname' => 'required|string|max:255',
+             'mname' => 'nullable|string|max:255',
+             'lname' => 'nullable|string|max:255',
+             'email' => 'required|email|max:255|unique:users',
+             'password' => 'nullable|string|min:8',
+             //'user_type' => 'required|in:superadministrator,businessadministrator,businessmanager,customer,driver,user',
+             //'phone' => 'nullable|string|max:20',
+         ]);
+     
+         if ($validator->fails()) {
+             return response()->json(['errors' => $validator->errors()], 422);
+         }
+     
+         DB::beginTransaction();
+         try {
+             // Create User First
+             $user = User::create([
+                 'fname' => $request->fname,
+                 'mname' => $request->mname,
+                 'lname' => $request->lname,
+                 'email' => $request->email,
+                 'password' => Hash::make($request->password ??'123456789'),
+                 'user_type' => 'businessadministrator',
+             ]);
+
+                 Branch::create([
+                     'user_id' => $user->id,
+                     'branch_code' => 'SML-' . $user->id,
+                     'phone' => $request->phone ?? null,
+                     'address' => $request->address ?? 'No address provided',
+                     'about_us' => $request->about_us ?? null,
+                 ]);
+                 Mail::to($user->email)->send(new newBranchMail($user));
+                 $user->notify(new NewBranchNotification($user));
+     
+             $user->addRole('businessadministrator');
+           
+             DB::commit();
+             $token = $user->createToken('api-token')->plainTextToken;
+     
+             return response()->json([
+                 'message' => 'User registered successfully!',
+                 'user' => $user,
+                 'token' => $token,
+             ]);
+         } catch (\Exception $e) {
+             DB::rollback(); // Rollback on error
+     
+             return response()->json(['error' => 'Registration failed!', 'details' => $e->getMessage()], 500);
+         }
+     }
+
      
      
      //login
