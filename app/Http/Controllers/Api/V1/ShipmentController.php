@@ -690,7 +690,7 @@ class ShipmentController extends Controller
             
                 foreach ($validatedData['shipment_charges'] as $charge) {
                     if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-                        $shipment->shipmentCharges()->where('id', $charge['id'])->update([
+                        $shipment->shipmentCharges()->where('id', $charge['id'])->create([
                             'amount' => $charge['amount'],
                             'units' => $charge['units'],
                             'rate'  => $charge['rate'],
