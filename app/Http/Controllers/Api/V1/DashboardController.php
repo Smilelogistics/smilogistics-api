@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\Branch;
+use App\Models\Driver;
 use App\Models\Customer;
+use App\Models\Shipment;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Helpers\NumberFormatter;
+use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
 
 class DashboardController extends Controller
@@ -16,12 +19,18 @@ class DashboardController extends Controller
     public function dashboardStats()
     {
         $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
         if($user->hasRole('superadministrator')) {
             $totalincome = Transaction::where('status', 'success')->sum('amount');
             $userCount = User::count();
             $recentTransactions = Transaction::latest()->take(10)->get();
             $plans = Plan::count();
             $branches = Branch::count();
+            $myCustomers = Customer::where('branch_id', $branchId)->count();
+            $myDrivers = Driver::where('branch_id', $branchId)->count();
+            $myShipments = Shipment::where('branch_id', $branchId)->count();
+            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)->count();
+            $totalBiz = $myCustomers+$myDrivers;
 
             return response()->json([
                 'status' => 'success',
@@ -30,7 +39,10 @@ class DashboardController extends Controller
                     'totalincome' => NumberFormatter::formatCount($totalincome),
                     'userCount' => $userCount,
                     'recentTransactions' => $recentTransactions,
-                    'plans' => $plans
+                    'plans' => $plans,
+                    'totalBiz' => $totalBiz,
+                    'myShipments' => $myShipments,
+                    'myConsolidate' => $myConsolidated
                 ]
             ]);
         }
