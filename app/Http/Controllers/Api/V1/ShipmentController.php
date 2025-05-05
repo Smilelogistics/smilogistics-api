@@ -684,27 +684,65 @@ class ShipmentController extends Controller
                     }
                 }
             }
-    
+
             if (isset($validatedData['shipment_charges'])) {
                 $shipment->load('shipmentCharges'); // Ensure the relation is loaded
-            
+                
+                // Track processed IDs to identify charges that need to be deleted
+                $processedIds = [];
+                
                 foreach ($validatedData['shipment_charges'] as $charge) {
+                    $chargeData = [
+                        'amount' => $charge['amount'],
+                        'units' => $charge['units'] ?? null,
+                        'rate' => $charge['rate'] ?? null,
+                        'comment' => $charge['comment'] ?? null,
+                        'total' => $charge['total'] ?? null,
+                        'net_total' => $charge['net_total'] ?? null, 
+                        'discount' => $charge['discount'] ?? null,
+                        'total_discount' => $charge['total_discount'] ?? null,
+                    ];
+                    
                     if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-                        $shipment->shipmentCharges()->where('id', $charge['id'])->create([
-                            'amount' => $charge['amount'],
-                            'units' => $charge['units'],
-                            'rate'  => $charge['rate'],
-                            'comment' => $charge['comment'],
-                            'total' => $charge[['total']],
-                            'net_total' => $charge['net_total'],
-                            'discount' => $charge['discount'],
-                            'total_discount' => $charge['total_discount'],
-                        ]);
+                        // Update existing charge
+                        $shipment->shipmentCharges()->where('id', $charge['id'])->update($chargeData);
+                        $processedIds[] = $charge['id'];
                     } else {
-                        $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
+                        // Create new charge
+                        $newCharge = $shipment->shipmentCharges()->create($chargeData);
+                        $processedIds[] = $newCharge->id;
                     }
                 }
+                
+                // Optional: Delete charges that weren't in the submitted data
+                // Uncomment the following if you want to remove charges not included in the update
+                /*
+                $shipment->shipmentCharges()
+                    ->whereNotIn('id', $processedIds)
+                    ->delete();
+                */
             }
+    
+            // if (isset($validatedData['shipment_charges'])) {
+            //     $shipment->load('shipmentCharges'); // Ensure the relation is loaded
+            
+            //     foreach ($validatedData['shipment_charges'] as $charge) {
+            //         if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
+            //             $shipment->shipmentCharges()->where('id', $charge['id'])->update([
+            //                 'amount' => $charge['amount'],
+            //                 'units' => $charge['units'],
+            //                 'rate'  => $charge['rate'],
+            //                 'comment' => $charge['comment'],
+            //                 'total' => $charge[['total']],
+            //                 'net_total' => $charge['net_total'],
+            //                 'discount' => $charge['discount'],
+            //                 'total_discount' => $charge['total_discount'],
+            //             ]);
+            //         } else {
+            //             $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
+            //         }
+            //     }
+            // }
 
             
             
