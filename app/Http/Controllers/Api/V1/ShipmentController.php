@@ -685,35 +685,25 @@ class ShipmentController extends Controller
                 }
             }
     
-            // if (isset($validatedData['shipment_charges'])) {
-            //     $shipment->load('shipmentCharges'); // Ensure the relation is loaded
-            
-            //     foreach ($validatedData['shipment_charges'] as $charge) {
-            //         if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-            //             $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
-            //         } else {
-            //             $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
-            //         }
-            //     }
-            // }
 
             if ($request->shipment_charges) {
                 foreach ($request->shipment_charges as $index => $charge) {
                     ShipmentCharge::updateOrCreate(
                         [
-                            'shipment_id' => $shipment->id,
+                            'shipment_id' => $shipment->id ?? null, // If ID is present, update; otherwise create
                         ],
                         [
-                            'units' => $request->units[$index] ?? null,
-                            'rate' => $request->rate[$index] ?? null,
-                            'amount' => $request->amount[$index] ?? null,
-                            'charge_type' => $request->charge_type[$index] ?? null,
-                            'discount' => $request->discount[$index] ?? null,
-                            'comment' => $request->comment[$index] ?? null,
-                            'internal_notes' => $request->internal_notes[$index] ?? null,
-                            'total' => $request->total[$index] ?? null,
-                            'total_discount' => $request->total_discount[$index] ?? null,
-                            'net_total' => $request->net_total[$index] ?? null,
+                            'shipment_id' => $shipment->id,
+                            'units' => $charge['units'] ?? null,
+                            'rate' => $charge['rate'] ?? null,
+                            'amount' => $charge['amount'] ?? null,
+                            'charge_type' => $charge['charge_type'] ?? null,
+                            'discount' => $charge['discount'] ?? null,
+                            'comment' => $charge['comment'] ?? null,
+                            'internal_notes' => $charge['internal_notes'] ?? null,
+                            'total' => $charge['total'] ?? null,
+                            'total_discount' => $charge['total_discount'] ?? null,
+                            'net_total' => $charge['net_total'] ?? null,
                         ]
                     );
                 }
