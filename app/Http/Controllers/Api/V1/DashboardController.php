@@ -26,11 +26,9 @@ class DashboardController extends Controller
             $recentTransactions = Transaction::latest()->take(10)->get();
             $plans = Plan::count();
             $branches = Branch::count();
-            $myCustomers = Customer::where('branch_id', $branchId)->count();
-            $myDrivers = Driver::where('branch_id', $branchId)->count();
-            $myShipments = Shipment::where('branch_id', $branchId)->count();
-            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)->count();
-            $totalBiz = $myCustomers+$myDrivers;
+            // $myCustomers = Customer::where('branch_id', $branchId)->count();
+            // $myDrivers = Driver::where('branch_id', $branchId)->count();
+            // $totalBiz = $myCustomers+$myDrivers;
 
             return response()->json([
                 'status' => 'success',
@@ -39,10 +37,7 @@ class DashboardController extends Controller
                     'totalincome' => NumberFormatter::formatCount($totalincome),
                     'userCount' => $userCount,
                     'recentTransactions' => $recentTransactions,
-                    'plans' => $plans,
-                    'totalBiz' => $totalBiz,
-                    'myShipments' => $myShipments,
-                    'myConsolidate' => $myConsolidated
+                    'plans' => $plans
                 ]
             ]);
         }
@@ -55,6 +50,8 @@ class DashboardController extends Controller
                 $totalCustomers = $branch->customer()->count();
                 $totalDrivers = $branch->driver()->count();
                 $userCount = $totalCustomers + $totalDrivers;
+                $myShipments = Shipment::where('branch_id', $branchId)->count();
+                $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)->count();
             } else {
                 $totalCustomers = 0;
                 $totalDrivers = 0;
@@ -69,7 +66,8 @@ class DashboardController extends Controller
                 'data' => [
                     'userCount' => $userCount,
                     'recentTransactions' => $recentTransactions,
-                    'plans' => $plans
+                    'myShipments' => $myShipments,
+                    'myConsolidated' => $myConsolidated,
                 ]
             ]);
         }
