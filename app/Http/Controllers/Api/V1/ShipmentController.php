@@ -690,7 +690,16 @@ class ShipmentController extends Controller
             
                 foreach ($validatedData['shipment_charges'] as $charge) {
                     if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-                        $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
+                        $shipment->shipmentCharges()->where('id', $charge['id'])->update([
+                            'amount' => $charge['amount'],
+                            'units' => $charge['units'],
+                            'rate'  => $charge['rate'],
+                            'comment' => $charge['comment'],
+                            'total' => $charge[['total']],
+                            'net_total' => $charge['net_total'],
+                            'discount' => $charge['discount'],
+                            'total_discount' => $charge['total_discount'],
+                        ]);
                     } else {
                         $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
                     }
