@@ -646,91 +646,15 @@ class ShipmentController extends Controller
     
         DB::beginTransaction();
         try {
+            // Check if there are changes before updating
+            //if ($shipment->isDirty($validatedData)) {
                 $shipment->update([
                     'branch_id' => $branchId,
                     'tags' => $validatedData['tags'],
                     'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
                         ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
                         : null,
-                    //...$validatedData
-                    'branch_id' => $branchId ?? null,
-            'driver_id' => $validatedData['driver_id'] ?? null,
-            'user_id' => $validatedData['user_id'] ?? null,
-            'carrier_id' => $validatedData['carrier_id'] ?? null,
-            'truck_id' => $validatedData['truck_id'] ?? null,
-            'bike_id' => $validatedData['bike_id'] ?? null,
-            'shipment_tracking_number' => $shipment_prefix . Shipment::generateTrackingNumber() ?? null,
-            'shipment_status' => $validatedData['shipment_status'] ?? null,
-            'signature' => $validatedData['signature'] ?? null,
-            'office' => $validatedData['office'] ?? null,
-            'load_type' => $validatedData['load_type'] ?? null,
-            'load_type_note' => $validatedData['load_type_note'] ?? null,
-            'brokered' => $validatedData['brokered'] ?? null,
-            'shipment_image' => $validatedData['shipment_image'] ?? null,
-            'reference_number' => $validatedData['reference_number'] ?? null,
-            'bill_of_laden_number' => $validatedData['bill_of_laden_number'] ?? null,
-            'booking_number' => $validatedData['booking_number'] ?? null,
-            'po_number' => $validatedData['po_number'] ?? null,
-            'shipment_weight' => $validatedData['shipment_weight'] ?? null,
-            'commodity' => $validatedData['commodity'] ?? null,
-            'pieces' => $validatedData['pieces'] ?? null,
-            'pickup_number' => $validatedData['pickup_number'] ?? null,
-            'overweight_hazmat' => $validatedData['overweight_hazmat'] ?? null,
-            
-            'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
-                ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
-                : null,
-            'tags' => $validatedData['tags'] ?? null,
-            'genset_number' => $validatedData['genset_number'] ?? null,
-            'reefer_temp' => $validatedData['reefer_temp'] ?? null,
-            'seal_number' => $validatedData['seal_number'] ?? null,
-            'total_miles' => $validatedData['total_miles'] ?? 0.00,
-            'loaded_miles' => $validatedData['loaded_miles'] ?? 0.00,
-            'empty_miles' => $validatedData['empty_miles'] ?? 0.00,
-            'dh_miles' => $validatedData['dh_miles'] ?? 0.00,
-            'fuel_rate_per_gallon' => $validatedData['fuel_rate_per_gallon'] ?? 0.00,
-            'mpg' => $validatedData['mpg'] ?? 0.00,
-            'total_fuel_cost' => $total_fuelL,
-            'broker_name' => $validatedData['broker_name'] ?? null,
-            'broker_email' => $validatedData['broker_email'] ?? null,
-            'broker_phone' => $validatedData['broker_phone'] ?? null,
-            'broker_reference_number' => $validatedData['broker_reference_number'] ?? null,
-            'broker_batch_number' => $validatedData['broker_batch_number'] ?? null,
-            'broker_seq_number' => $validatedData['broker_seq_number'] ?? null,
-            'broker_sales_rep' => $validatedData['broker_sales_rep'] ?? null,
-            'broker_edi_api_shipment_number' => $validatedData['broker_edi_api_shipment_number'] ?? null,
-            'broker_notes' => $validatedData['broker_notes'] ?? null,
-            //ocean shipment
-            'shipment_type' => $validatedData['shipment_type'] ?? null,
-            'shipper_name' => $validatedData['shipper_name'] ?? null,
-            'ocean_shipper_reference_number' => $validatedData['ocean_shipper_reference_number'] ?? null,
-            'carrier_name' => $validatedData['carrier_name'] ?? null,
-            'carrier_reference_number' => $validatedData['carrier_reference_number'] ?? null,
-            'ocean_bill_of_ladening_number' => $validatedData['ocean_bill_of_ladening_number'] ?? null,
-            'consignee' => $validatedData['consignee'] ?? null,
-            'consignee_phone' => $validatedData['consignee_phone'] ?? null,
-            'consignee_email' => $validatedData['consignee_email'] ?? null,
-            'first_notify_party_name' => $validatedData['first_notify_party_name'] ?? null,
-            'first_notify_party_phone' => $validatedData['first_notify_party_phone'] ?? null,
-            'first_notify_party_email' => $validatedData['first_notify_party_email'] ?? null,
-            'second_notify_party_name' => $validatedData['second_notify_party_name'] ?? null,
-            'second_notify_party_phone' => $validatedData['second_notify_party_phone'] ?? null,
-            'second_notify_party_email' => $validatedData['second_notify_party_email'] ?? null,
-            'pre_carrier' => $validatedData['pre_carrier'] ?? null,
-            'vessel_aircraft_name' => $validatedData['vessel_aircraft_name'] ?? null,
-            'voyage_number' => $validatedData['voyage_number'] ?? null,
-            'port_of_discharge' => $validatedData['port_of_discharge'] ?? null,
-            'place_of_delivery' => $validatedData['place_of_delivery'] ?? null,
-            'final_destination' => $validatedData['final_destination'] ?? null,
-            'port_of_landing' => $validatedData['port_of_landing'] ?? null,
-            'ocean_note' => $validatedData['ocean_note'] ?? null,
-            'ocean_freight_charges' => $validatedData['ocean_freight_charges'] ?? null,
-            'ocean_total_containers_in_words' => $validatedData['ocean_total_containers_in_words'] ?? null,
-            'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'] ?? null,
-            'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'] ?? null,
-            'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
-            'signature' => null,
-            'delivery_type' => $validatedData['delivery_type'] ?? null,
+                    ...$validatedData
                 ]);
     
             // Update related tables only if there are changes
@@ -761,17 +685,40 @@ class ShipmentController extends Controller
                 }
             }
     
-            if (isset($validatedData['shipment_charges'])) {
-                $shipment->load('shipmentCharges'); // Ensure the relation is loaded
+            // if (isset($validatedData['shipment_charges'])) {
+            //     $shipment->load('shipmentCharges'); // Ensure the relation is loaded
             
-                foreach ($validatedData['shipment_charges'] as $charge) {
-                    if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-                        $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
-                    } else {
-                        $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
-                    }
+            //     foreach ($validatedData['shipment_charges'] as $charge) {
+            //         if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
+            //             $shipment->shipmentCharges()->where('id', $charge['id'])->update(['amount' => $charge['amount']]);
+            //         } else {
+            //             $shipment->shipmentCharges()->create(['amount' => $charge['amount']]);
+            //         }
+            //     }
+            // }
+
+            if ($request->shipment_charges) {
+                foreach ($request->shipment_charges as $index => $charge) {
+                    ShipmentCharge::updateOrCreate(
+                        [
+                            'shipment_id' => $shipment->id,
+                        ],
+                        [
+                            'units' => $request->units[$index] ?? null,
+                            'rate' => $request->rate[$index] ?? null,
+                            'amount' => $request->amount[$index] ?? null,
+                            'charge_type' => $request->charge_type[$index] ?? null,
+                            'discount' => $request->discount[$index] ?? null,
+                            'comment' => $request->comment[$index] ?? null,
+                            'internal_notes' => $request->internal_notes[$index] ?? null,
+                            'total' => $request->total[$index] ?? null,
+                            'total_discount' => $request->total_discount[$index] ?? null,
+                            'net_total' => $request->net_total[$index] ?? null,
+                        ]
+                    );
                 }
             }
+            
             
     
             if (isset($validatedData['shipment_expenses'])) {
