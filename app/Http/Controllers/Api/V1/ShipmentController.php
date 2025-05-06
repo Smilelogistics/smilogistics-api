@@ -211,15 +211,15 @@ class ShipmentController extends Controller
             }
 
             $charges = [];
-            for ($i = 0; $i < count($validateData['charge_type']); $i++) {
+            for ($i = 0; $i < count($validatedData['charge_type']); $i++) {
                 $charges[] = [
-                    'charge_type' => $validateData['charge_type'][$i],
-                    'comment' => $validateData['comment'][$i] ?? null,
-                    'units' => $validateData['units'][$i] ?? null,
-                    'rate' => $validateData['rate'][$i] ?? null,
-                    'amount' => $validateData['amount'][$i] ?? null,
-                    'discount' => $validateData['discount'][$i] ?? null,
-                    'internal_notes' => $validateData['internal_notes'][$i] ?? null,
+                    'charge_type' => $validatedData['charge_type'][$i],
+                    'comment' => $validatedData['comment'][$i] ?? null,
+                    'units' => $validatedData['units'][$i] ?? null,
+                    'rate' => $validatedData['rate'][$i] ?? null,
+                    'amount' => $validatedData['amount'][$i] ?? null,
+                    'discount' => $validatedData['discount'][$i] ?? null,
+                    'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
                 ];
             }
 
