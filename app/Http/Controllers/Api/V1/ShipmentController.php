@@ -210,14 +210,14 @@ class ShipmentController extends Controller
                 
             }
 
-            if (!empty($payload['charges'])) {
-                foreach ($payload['charges'] as $charge) {
-                    ShipmentCharge::create([
-                        'shipment_id' => $shipment->id,
-                        ...$charge
-                    ]);
-                }
-            }
+            // if (!empty($payload['charges'])) {
+            //     foreach ($payload['charges'] as $charge) {
+            //         ShipmentCharge::create([
+            //             'shipment_id' => $shipment->id,
+            //             ...$charge
+            //         ]);
+            //     }
+            // }
 
             
             if (isset($validatedData['charges'])) {
@@ -236,8 +236,8 @@ class ShipmentController extends Controller
                         'billed' => $charge['billed'] ?? null,
                         'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
                         'invoice_date' => $charge['invoice_date'] ?? null,
-                        'total' => $total ?? 0,
-                        'net_total' => $net_total ?? 0,
+                        // 'total' => $total ?? 0,
+                        // 'net_total' => $net_total ?? 0,
                     ]);
                 }
             }
