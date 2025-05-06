@@ -111,6 +111,8 @@ class ShipmentController extends Controller
             }
         }
 
+        $payload = json_decode($request->payload, true);
+
        
         DB::beginTransaction();
 
@@ -208,11 +210,19 @@ class ShipmentController extends Controller
                 
             }
 
+            if (!empty($payload['charges'])) {
+                foreach ($payload['charges'] as $charge) {
+                    ShipmentCharge::create([
+                        'shipment_id' => $shipment->id,
+                        ...$charge
+                    ]);
+                }
+            }
+
             
-            
-            if ($request->has('charges')) {
-                dd($request->charges);
-                foreach ($request->charges as $charge) {
+            if (isset($validatedData['charges'])) {
+                //dd($request->charges);
+                foreach ($validateData['charges'] as $charge) {
                     ShipmentCharge::create([
                         'shipment_id' => $shipment->id,
                         'branch_id' => $branchId ?? null,
