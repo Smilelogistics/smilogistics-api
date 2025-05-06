@@ -78,6 +78,8 @@ class ShipmentController extends Controller
 
         $validatedData = $request->validated();
 
+        //dd($validatedData);
+
         $total_miles = $validatedData['total_miles'];
         $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
         $mpg = $user->branch->mpg ?? 1;
@@ -110,8 +112,6 @@ class ShipmentController extends Controller
                 $arrayFields[$field] = [$value];
             }
         }
-
-        $payload = json_decode($request->payload, true);
 
        
         DB::beginTransaction();
@@ -210,37 +210,57 @@ class ShipmentController extends Controller
                 
             }
 
-            // if (!empty($payload['charges'])) {
-            //     foreach ($payload['charges'] as $charge) {
+            $charges = [];
+            for ($i = 0; $i < count($validateData['charge_type']); $i++) {
+                $charges[] = [
+                    'charge_type' => $validateData['charge_type'][$i],
+                    'comment' => $validateData['comment'][$i] ?? null,
+                    'units' => $validateData['units'][$i] ?? null,
+                    'rate' => $validateData['rate'][$i] ?? null,
+                    'amount' => $validateData['amount'][$i] ?? null,
+                    'discount' => $validateData['discount'][$i] ?? null,
+                    'internal_notes' => $validateData['internal_notes'][$i] ?? null,
+                ];
+            }
+
+            foreach ($charges as $charge) {
+                ShipmentCharge::create([
+                    'shipment_id' => $shipment->id,
+                    'branch_id' => $branchId ?? null,
+                    'charge_type' => $charge['charge_type'],
+                    'comment' => $charge['comment'],
+                    'units' => $charge['units'],
+                    'rate' => $charge['rate'],
+                    'amount' => $charge['amount'],
+                    'discount' => $charge['discount'],
+                    'internal_notes' => $charge['internal_notes'],
+                    'total' => $total,
+                    'net_total' => $netTotal,
+                ]);
+            }
+
+            
+            // if (isset($validatedData['charges'])) {
+            //     //dd($request->charges);
+            //     foreach ($validateData['charges'] as $charge) {
             //         ShipmentCharge::create([
             //             'shipment_id' => $shipment->id,
-            //             ...$charge
+            //             'branch_id' => $branchId ?? null,
+            //             'charge_type' => $charge['charge_type'] ?? null,
+            //             'comment' => $charge['comment'] ?? null,
+            //             'units' => $charge['units'] ?? null,
+            //             'rate' => $charge['rate'] ?? null,
+            //             'amount' => $charge['amount'] ?? null,
+            //             'discount' => $charge['discount'] ?? null,
+            //             'internal_notes' => $charge['internal_notes'] ?? null,
+            //             'billed' => $charge['billed'] ?? null,
+            //             'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
+            //             'invoice_date' => $charge['invoice_date'] ?? null,
+            //             'total' => $total ?? 0,
+            //             'net_total' => $net_total ?? 0,
             //         ]);
             //     }
             // }
-
-            
-            if (isset($validatedData['charges'])) {
-                //dd($request->charges);
-                foreach ($validateData['charges'] as $charge) {
-                    ShipmentCharge::create([
-                        'shipment_id' => $shipment->id,
-                        'branch_id' => $branchId ?? null,
-                        'charge_type' => $charge['charge_type'] ?? null,
-                        'comment' => $charge['comment'] ?? null,
-                        'units' => $charge['units'] ?? null,
-                        'rate' => $charge['rate'] ?? null,
-                        'amount' => $charge['amount'] ?? null,
-                        'discount' => $charge['discount'] ?? null,
-                        'internal_notes' => $charge['internal_notes'] ?? null,
-                        'billed' => $charge['billed'] ?? null,
-                        'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
-                        'invoice_date' => $charge['invoice_date'] ?? null,
-                        // 'total' => $total ?? 0,
-                        // 'net_total' => $net_total ?? 0,
-                    ]);
-                }
-            }
 
             // if ($request->has('notes')) {
             //     foreach ($request->notes as $note) {
