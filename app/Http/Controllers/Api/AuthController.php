@@ -77,7 +77,7 @@ class AuthController extends Controller
      
              } elseif ($user->user_type == 'customer') {
                 $authuser = auth()->user();
-                dd($authuser);
+                //dd($authuser);
                 $branchId = $authuser->branch ? $authuser->branch->id : null; 
                  Customer::create([
                      'user_id' => $user->id,
@@ -92,7 +92,7 @@ class AuthController extends Controller
                      'user_id' => $user->id,
                      'branch_id' => $branchId
                  ]);
-                 Mail::to($user->email)->send(new newDriverMail($user));
+                 //Mail::to($user->email)->send(new newDriverMail($user));
              }
              
              $user->addRole($user->user_type);

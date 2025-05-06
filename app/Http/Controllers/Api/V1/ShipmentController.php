@@ -211,6 +211,7 @@ class ShipmentController extends Controller
             
             
             if ($request->has('charges')) {
+                dd($request->charges);
                 foreach ($request->charges as $charge) {
                     ShipmentCharge::create([
                         'shipment_id' => $shipment->id,
@@ -225,8 +226,8 @@ class ShipmentController extends Controller
                         'billed' => $charge['billed'] ?? null,
                         'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
                         'invoice_date' => $charge['invoice_date'] ?? null,
-                        'total' => $total ?? null,
-                        'net_total' => $net_total ?? null,
+                        'total' => $total ?? 0,
+                        'net_total' => $net_total ?? 0,
                     ]);
                 }
             }
@@ -272,20 +273,6 @@ class ShipmentController extends Controller
                     ]);
                 }
             }
-
-            
-            // if($request->has('goods')) {
-            //     foreach($request->goods as $good) {
-            //         GoodsDescription::create([
-            //             'shipment_id' => $shipment->id,
-            //             'branch_id' => $validatedData['branch_id'] ?? null,
-            //             'goods_name' => $good['goods_name'],
-            //             'ocean_vin' => $good['ocean_vin'],
-            //             'ocean_weight' => $good['ocean_weight'],
-            //         ]);
-            //     }
-            // }
-
 
             if ($request->has('expenses')) {
                 $total = 0;
@@ -366,72 +353,10 @@ class ShipmentController extends Controller
                         \Log::error("File upload error: " . $e->getMessage());
                     }
                 }
-            
-                // if ($successCount > 0) {
-                //     return response()->json([
-                //         'success' => true,
-                //         'message' => "Uploaded {$successCount} file(s)" . ($errorCount > 0 ? ", {$errorCount} failed" : ""),
-                //         'files' => $uploadedFiles
-                //     ]);
-                // }
-            
-                // return response()->json([
-                //     'success' => false,
-                //     'message' => 'All file uploads failed'
-                // ], 400);
+           ;
             
             } 
-            // else {
-            //     return response()->json([
-            //         'success' => false,
-            //         'message' => 'No files were uploaded'
-            //     ], 400);
-            // }
-
-            // if ($request->hasFile('file_path')) {
-            //     $files = $request->file('file_path');
-            //     //dd($files);
-            //     //$fileTitles = $request->input('file_titles', []);
-            //     foreach ($files as $index => $file) {
-            //         try {
-            //             if ($file->isValid()) {
-            //                 $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-            //                     'folder' => 'Smile_logistics_shipment'
-            //                 ]);
-                
-            //                 $shipment->shipmentUploads()->create([
-            //                     'file_path' => $uploadedFile->getSecurePath(),
-            //                     'public_id' => $uploadedFile->getPublicId()
-            //                 ]);
-            //             }
-
-            //         } catch (\Exception $e) {
-            //             \Log::error('Error uploading file: ' . $e->getMessage());
-            //         }
-            //     }
-            // } else {
-            //     \Log::error('No files found in the request.');
-            // }
-
-           // $uploadedPaths = FileUploadHelper::upload($request->file('files'), 'ShipmentUploads');
-
-            // Check if files are multiple or single[used first before implementing traits]
-            // if (is_array($uploadedPaths)) {
-            //     foreach ($uploadedPaths as $index => $filePath) {
-            //         ShipmentUploads::create([
-            //             'shipment_id' => $shipment->id,
-            //             'file_name' => $request->titles[$index] ?? 'Untitled',
-            //             'file_path' => $filePath
-            //         ]);
-            //     }
-            // } else {
-            //     ShipmentUploads::create([
-            //         'shipment_id' => $shipment->id,
-            //         'file_name' => $request->titles[0] ?? 'Untitled',
-            //         'file_path' => $uploadedPaths
-            //     ]);
-            // }
-
+         
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
                 'user_id' => Auth::id(),
