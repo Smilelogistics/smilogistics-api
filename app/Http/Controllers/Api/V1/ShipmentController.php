@@ -234,8 +234,8 @@ class ShipmentController extends Controller
                     'amount' => $charge['amount'],
                     'discount' => $charge['discount'],
                     'internal_notes' => $charge['internal_notes'],
-                    'total' => $total,
-                    'net_total' => $netTotal,
+                    //'total' => $total,
+                    //'net_total' => $netTotal,
                 ]);
             }
 
