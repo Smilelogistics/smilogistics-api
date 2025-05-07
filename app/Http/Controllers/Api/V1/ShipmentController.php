@@ -41,7 +41,12 @@ class ShipmentController extends Controller
     use FileUploadTrait;
     public function index()
     {
-        $shipments = Shipment::with(['branch','customer', 'billTo', 'shipmentContainers', 'shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])->get();
+        $user = auth()->user();
+        $branchId = $user->branch ? $user->branch->id : null;
+        $shipments = Shipment::with(['branch','customer', 'billTo', 'shipmentContainers', 'shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])
+            ->where('branch_id', $branchId)
+            ->latest()
+            ->get();
         return response()->json(['shipments' => $shipments]);
     }
 

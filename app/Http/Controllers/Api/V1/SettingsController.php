@@ -163,6 +163,8 @@ public function updateGeneral(Request $request)
             'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'mpg' => 'sometimes|integer',
+            'base_rate' => 'sometimes|numeric',
+            'base_fee' => 'sometimes|numeric'
         ]);
 
         // Initialize logo paths array
