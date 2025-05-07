@@ -125,7 +125,7 @@ class ShipmentController extends Controller
         try {
             $shipment = Shipment::create([
             'branch_id' => $branchId ?? null,
-            'driver_id' => $driverId ?? null,
+            'driver_id' => $validateData['driver_id'] ?? null,
             'user_id' => $user->id ?? null,
             'carrier_id' => $validatedData['carrier_id'] ?? null,
             'truck_id' => $validatedData['truck_id'] ?? null,
@@ -717,11 +717,87 @@ class ShipmentController extends Controller
             //if ($shipment->isDirty($validatedData)) {
                 $shipment->update([
                     'branch_id' => $branchId,
-                    'tags' => $validatedData['tags'],
-                    'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
-                        ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
-                        : null,
-                    ...$validatedData
+                    'driver_id' => $validateData['driver_id'],
+                    'carrier_id' => $validatedData['carrier_id'],
+            'truck_id' => $validatedData['truck_id'],
+            'bike_id' => $validatedData['bike_id'],
+            //'shipment_tracking_number' => $shipment_prefix . Shipment::generateTrackingNumber() ?? null,
+            'shipment_status' => $validatedData['shipment_status'],
+            'signature' => $validatedData['signature'],
+            'office' => $validatedData['office'],
+            'load_type' => $validatedData['load_type'],
+            'load_type_note' => $validatedData['load_type_note'],
+            'brokered' => $validatedData['brokered'],
+            'shipment_image' => $validatedData['shipment_image'],
+            'reference_number' => $validatedData['reference_number'],
+            'bill_of_laden_number' => $validatedData['bill_of_laden_number'],
+            'booking_number' => $validatedData['booking_number'],
+            'po_number' => $validatedData['po_number'],
+            'shipment_weight' => $validatedData['shipment_weight'],
+            'commodity' => $validatedData['commodity'],
+            'pieces' => $validatedData['pieces'],
+            'pickup_number' => $validatedData['pickup_number'],
+            'overweight_hazmat' => $validatedData['overweight_hazmat'],
+            
+            'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
+                ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
+                : null,
+            'tags' => $validatedData['tags'],
+            'genset_number' => $validatedData['genset_number'],
+            'reefer_temp' => $validatedData['reefer_temp'],
+            'seal_number' => $validatedData['seal_number'],
+            'total_miles' => $validatedData['total_miles'],
+            'loaded_miles' => $validatedData['loaded_miles'],
+            'empty_miles' => $validatedData['empty_miles'],
+            'dh_miles' => $validatedData['dh_miles'],
+            'fuel_rate_per_gallon' => $validatedData['fuel_rate_per_gallon'],
+            'mpg' => $validatedData['mpg'],
+            'total_fuel_cost' => $total_fuelL,
+            'broker_name' => $validatedData['broker_name'],
+            'broker_email' => $validatedData['broker_email'],
+            'broker_phone' => $validatedData['broker_phone'],
+            'broker_reference_number' => $validatedData['broker_reference_number'],
+            'broker_batch_number' => $validatedData['broker_batch_number'],
+            'broker_seq_number' => $validatedData['broker_seq_number'],
+            'broker_sales_rep' => $validatedData['broker_sales_rep'],
+            'broker_edi_api_shipment_number' => $validatedData['broker_edi_api_shipment_number'],
+            'broker_notes' => $validatedData['broker_notes'],
+            //ocean shipment
+            'shipment_type' => $validatedData['shipment_type'],
+            'shipper_name' => $validatedData['shipper_name'],
+            'ocean_shipper_reference_number' => $validatedData['ocean_shipper_reference_number'],
+            'carrier_name' => $validatedData['carrier_name'],
+            'carrier_reference_number' => $validatedData['carrier_reference_number'],
+            'ocean_bill_of_ladening_number' => $validatedData['ocean_bill_of_ladening_number'],
+            'consignee' => $validatedData['consignee'],
+            'consignee_phone' => $validatedData['consignee_phone'],
+            'consignee_email' => $validatedData['consignee_email'],
+            'first_notify_party_name' => $validatedData['first_notify_party_name'],
+            'first_notify_party_phone' => $validatedData['first_notify_party_phone'],
+            'first_notify_party_email' => $validatedData['first_notify_party_email'],
+            'second_notify_party_name' => $validatedData['second_notify_party_name'],
+            'second_notify_party_phone' => $validatedData['second_notify_party_phone'],
+            'second_notify_party_email' => $validatedData['second_notify_party_email'],
+            'pre_carrier' => $validatedData['pre_carrier'],
+            'vessel_aircraft_name' => $validatedData['vessel_aircraft_name'],
+            'voyage_number' => $validatedData['voyage_number'],
+            'port_of_discharge' => $validatedData['port_of_discharge'],
+            'place_of_delivery' => $validatedData['place_of_delivery'],
+            'final_destination' => $validatedData['final_destination'],
+            'port_of_landing' => $validatedData['port_of_landing'],
+            'ocean_note' => $validatedData['ocean_note'],
+            'ocean_freight_charges' => $validatedData['ocean_freight_charges'],
+            'ocean_total_containers_in_words' => $validatedData['ocean_total_containers_in_words'],
+            'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'],
+            'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'],
+            'shipped_on_board_date' => $validatedData['shipped_on_board_date'],
+            'signature' => null,
+            'delivery_type' => $validatedData['delivery_type']
+                    // 'tags' => $validatedData['tags'],
+                    // 'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
+                    //     ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
+                    //     : null,
+                    // ...$validatedData
                 ]);
     
 
