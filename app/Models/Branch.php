@@ -50,6 +50,8 @@ class Branch extends Model
         'logo2',
         'logo3',
         'mpg',
+        'base_rate',
+        'base_fee',
         'business_status',
         'subscription_count',
         'subscription_end_date',
