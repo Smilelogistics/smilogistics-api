@@ -717,7 +717,7 @@ class ShipmentController extends Controller
             //if ($shipment->isDirty($validatedData)) {
                 $shipment->update([
                     'branch_id' => $branchId,
-                    'driver_id' => $validateData['driver_id'],
+                    'driver_id' => $validatedData['driver_id'],
                     'carrier_id' => $validatedData['carrier_id'],
             'truck_id' => $validatedData['truck_id'],
             'bike_id' => $validatedData['bike_id'],
