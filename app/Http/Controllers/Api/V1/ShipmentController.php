@@ -348,83 +348,105 @@ class ShipmentController extends Controller
                     $expenses[] = [
                         'expense_type' => $validatedData['expense_type'][$i],
                         'credit_reimbursement_amount' => $validatedData['credit_reimbursement_amount'][$i] ?? 0,
-                        'units' => $validatedData['expense_unit'][$i] ?? 0, // Changed from 'units'
-                        'rate' => $validatedData['expense_rate'][$i] ?? 0,  // Changed from 'rate'
+                        'units' => $validatedData['expense_unit'][$i] ?? 0,
+                        'rate' => $validatedData['expense_rate'][$i] ?? 0,
                         'amount' => $validatedData['expense_amount'][$i] ?? 0,
                         'vendor_invoice_number' => $validatedData['vendor_invoice_number'][$i] ?? null,
                         'payment_reference_note' => $validatedData['payment_reference_note'][$i] ?? null,
                         'disputed_note' => $validatedData['disputed_note'][$i] ?? null,
-                        'expense_disputed' => isset($validatedData['expense_disputed'][$i]) ? 1 : 0,
-                        'paid' => isset($validatedData['paid'][$i]) ? 1 : 0
+                        'expense_disputed' => !empty($validatedData['expense_disputed'][$i]) ? true : false,
+                        'paid' => !empty($validatedData['paid'][$i]) ? true : false
                     ];
                 }
             
-                    foreach ($expenses as $expense) {
-                        $units = (float)$expense['units'];
-                        $rate = (float)$expense['rate'];
-                        $amount = (float)$expense['amount'];
-                        $credit = (float)$expense['credit_reimbursement_amount'];
+                foreach ($expenses as $expense) {
+                    $expense_total += (float)$expense['amount'];
+                    $credit_total += (float)$expense['credit_reimbursement_amount'];
+                }
+                $net_total = $expense_total - $credit_total;
             
-                        // Calculate totals
-                        $expense_total += $amount;
-                        $credit_total += $credit;
-                        $net_total = $expense_total - $credit_total;
+                // Then create all records with the same totals
+                foreach ($expenses as $expense) {
+                    ShipmentExpense::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $branchId ?? null,
+                        'expense_type' => $expense['expense_type'],
+                        'credit_reimbursement_amount' => (float)$expense['credit_reimbursement_amount'],
+                        'units' => (float)$expense['units'],
+                        'rate' => (float)$expense['rate'],
+                        'amount' => (float)$expense['amount'],
+                        'vendor_invoice_number' => $expense['vendor_invoice_number'],
+                        'payment_reference_note' => $expense['payment_reference_note'],
+                        'disputed_note' => $expense['disputed_note'],
+                        'expense_disputed' => $expense['expense_disputed'],
+                        'paid' => $expense['paid'],
+                        'credit_total' => $credit_total,
+                        'expense_total' => $expense_total,
+                        'net_expense' => $net_total,
+                    ]);
+                }
             
-                        ShipmentExpense::create([
-                            'shipment_id' => $shipment->id,
-                            'branch_id' => $branchId ?? null,
-                            'expense_type' => $expense['expense_type'],
-                            'credit_reimbursement_amount' => $credit,
-                            'units' => $units,
-                            'rate' => $rate,
-                            'amount' => $amount,
-                            'vendor_invoice_number' => $expense['vendor_invoice_number'],
-                            'payment_reference_note' => $expense['payment_reference_note'],
-                            'disputed_note' => $expense['disputed_note'],
-                            'expense_disputed' => $expense['expense_disputed'],
-                            'paid' => $expense['paid'],
-                            'credit_total' => $credit_total,
-                            'expense_total' => $expense_total,
-                            'net_expense' => $net_total,
-                        ]);
-                    }
+                // Update the shipment with these totals
+                $shipment->update([
+                    'expense_total' => $expense_total,
+                    'credit_total' => $credit_total,
+                    'net_expense' => $net_total
+                ]);
+            }
+
+
+            // if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
+            //     $credit_total = 0;
+            //     $expense_total = 0;
+                
+            //     $expenses = [];
+            //     for ($i = 0; $i < count($validatedData['expense_type']); $i++) {
+            //         $expenses[] = [
+            //             'expense_type' => $validatedData['expense_type'][$i],
+            //             'credit_reimbursement_amount' => $validatedData['credit_reimbursement_amount'][$i] ?? 0,
+            //             'units' => $validatedData['expense_unit'][$i] ?? 0, // Changed from 'units'
+            //             'rate' => $validatedData['expense_rate'][$i] ?? 0,  // Changed from 'rate'
+            //             'amount' => $validatedData['expense_amount'][$i] ?? 0,
+            //             'vendor_invoice_number' => $validatedData['vendor_invoice_number'][$i] ?? null,
+            //             'payment_reference_note' => $validatedData['payment_reference_note'][$i] ?? null,
+            //             'disputed_note' => $validatedData['disputed_note'][$i] ?? null,
+            //             'expense_disputed' => isset($validatedData['expense_disputed'][$i]) ? 1 : 0,
+            //             'paid' => isset($validatedData['paid'][$i]) ? 1 : 0
+            //         ];
+            //     }
+            
+            //         foreach ($expenses as $expense) {
+            //             $units = (float)$expense['units'];
+            //             $rate = (float)$expense['rate'];
+            //             $amount = (float)$expense['amount'];
+            //             $credit = (float)$expense['credit_reimbursement_amount'];
+            
+            //             // Calculate totals
+            //             $expense_total += $amount;
+            //             $credit_total += $credit;
+            //             $net_total = $expense_total - $credit_total;
+            
+            //             ShipmentExpense::create([
+            //                 'shipment_id' => $shipment->id,
+            //                 'branch_id' => $branchId ?? null,
+            //                 'expense_type' => $expense['expense_type'],
+            //                 'credit_reimbursement_amount' => $credit,
+            //                 'units' => $units,
+            //                 'rate' => $rate,
+            //                 'amount' => $amount,
+            //                 'vendor_invoice_number' => $expense['vendor_invoice_number'],
+            //                 'payment_reference_note' => $expense['payment_reference_note'],
+            //                 'disputed_note' => $expense['disputed_note'],
+            //                 'expense_disputed' => $expense['expense_disputed'],
+            //                 'paid' => $expense['paid'],
+            //                 'credit_total' => $credit_total,
+            //                 'expense_total' => $expense_total,
+            //                 'net_expense' => $net_total,
+            //             ]);
+            //         }
                     
                 
-            }
-            // if ($request->has('expenses')) {
-            //     $total = 0;
-            //     $net_total = 0;
-            
-            //     foreach ($request->expenses as $expense) {
-                 
-            //         $unit = $expense['expense_unit'];
-            //         $rate = $expense['expense_rate'];
-            //         $discount = $expense['disputed_amount'];
-            
-            //         // Calculate totals
-            //         $itemTotal = $unit * $rate;
-            //         $total += $itemTotal;
-            //         $net_total += ($itemTotal - $discount);
-            
-            //         // Store expense
-            //         ShipmentExpense::create([
-            //             'shipment_id' => $shipment->id,
-            //             'branch_id' => $branchId,
-            //             'expense_type' => $expense['expense_type'],
-            //             'units' => $unit,
-            //             'rate' => $rate,
-            //             'amount' => $expense['amount'] ?? 0,
-            //             'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'] ?? 0,
-            //             'vendor_invoice_name' => $expense['vendor_invoice_name'] ?? '',
-            //             'vendor_invoice_number' => $expense['vendor_invoice_number'] ?? '',
-            //             'payment_reference_note' => $expense['payment_reference_note'] ?? '',
-            //             'disputed_note' => $expense['disputed_note'] ?? '',
-            //             'billed' => $expense['billed'] ?? false,
-            //             'paid' => $expense['paid'] ?? false,
-            //         ]);
-            //     }
             // }
-
             if ($request->hasFile('file_path')) {
                 // Get the files - always convert to array for consistent handling
                 $files = $request->file('file_path');
