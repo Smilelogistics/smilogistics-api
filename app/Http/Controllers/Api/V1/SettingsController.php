@@ -31,15 +31,37 @@ class SettingsController extends Controller
 
     public function getRates()
     {
-        $user = auth()->user();
-        $data = DB::table('branches')
-            ->where('branch_id', $user->branch->id)
-            ->select('mpg', 'base_rate', 'base_fee')
-            ->first();
-    
-        return response()->json($data);
+        try {
+            $user = auth()->user();
+            
+            if (!$user || !$user->branch) {
+                return response()->json([
+                    'error' => 'User branch not found'
+                ], 404);
+            }
+            
+            $data = DB::table('branches')
+                ->where('id', $user->branch->id)  // Changed from 'branch_id' to 'id'
+                ->select('base_rate', 'base_fee')
+                ->first();
+                
+            if (!$data) {
+                return response()->json([
+                    'error' => 'Branch rates not found'
+                ], 404);
+            }
+            
+            return response()->json([
+                'base_rate' => (float)$data->base_rate,
+                'base_fee' => (float)$data->base_fee
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch rates'
+            ], 500);
+        }
     }
-    
 
 //     public function updateGeneral(Request $request)
 // {
