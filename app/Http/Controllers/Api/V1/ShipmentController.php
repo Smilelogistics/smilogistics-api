@@ -692,7 +692,7 @@ class ShipmentController extends Controller
         $mpg = $user->branch->mpg ?? 1;
 
         $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
-        
+
         $arrayFields = [
             'overweight_hazmat' => $request->input('overweight_hazmat', []),
         ];
@@ -808,7 +808,7 @@ class ShipmentController extends Controller
                     // ...$validatedData
                 ]);
     
-                $shipment->update($shipmentData);
+                //$shipment->update($shipmentData);
 
                 // Handle charges
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
