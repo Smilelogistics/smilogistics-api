@@ -161,10 +161,11 @@ public function updateGeneral(Request $request)
             'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            //'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'mpg' => 'sometimes|integer',
-            'base_rate' => 'sometimes|numeric',
-            'base_fee' => 'sometimes|numeric'
+            'base_rate' => 'nullable|numeric',
+            'base_fee' => 'nullable|numeric',
+
         ]);
 
         // Initialize logo paths array
