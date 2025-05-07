@@ -41,7 +41,7 @@ class SettingsController extends Controller
             }
             
             $data = DB::table('branches')
-                ->where('id', $user->branch->id)  // Changed from 'branch_id' to 'id'
+                ->where('id', $user->branch->id)
                 ->select('base_rate', 'base_fee')
                 ->first();
                 

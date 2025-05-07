@@ -58,6 +58,10 @@ class DashboardController extends Controller
                 $userCount = 0;
             }
             $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
+            $cardTransactions = Transaction::where('user_id', $user->id)
+            ->where('status', 'success')
+            ->sum('amount');
+        
             $plans = Plan::count();
 
             return response()->json([
@@ -68,6 +72,7 @@ class DashboardController extends Controller
                     'recentTransactions' => $recentTransactions,
                     'myShipments' => $myShipments,
                     'myConsolidated' => $myConsolidated,
+                    'cardTransactions' => $cardTransactions
                 ]
             ]);
         }
