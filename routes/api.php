@@ -119,6 +119,7 @@ Route::prefix('v1')->group(function () {
         });
 
         Route::prefix('settings')->group(function () {
+            Route::get('/rates', [SettingsController::class, 'getRates'])->name('settings.rates');
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
             Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
             Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('settings.payment.update');

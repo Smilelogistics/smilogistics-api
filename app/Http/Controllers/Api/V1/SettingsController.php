@@ -29,6 +29,18 @@ class SettingsController extends Controller
         
     }
 
+    public function getRates()
+    {
+        $user = auth()->user();
+        $data = DB::table('branches')
+            ->where('branch_id', $user->branch->id)
+            ->select('mpg', 'base_rate', 'base_fee')
+            ->first();
+    
+        return response()->json($data);
+    }
+    
+
 //     public function updateGeneral(Request $request)
 // {
 //     try {
