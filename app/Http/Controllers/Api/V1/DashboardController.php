@@ -76,6 +76,14 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
+            // When you need the totals later:
+            // $totals = ShipmentExpense::where('shipment_id', $shipment->id)
+            // ->selectRaw('SUM(amount) as expense_total, SUM(credit_reimbursement_amount) as credit_total')
+            // ->first();
+            // $net_total = $totals->expense_total - $totals->credit_total;
+
+
+            
             $myShipments = Shipment::where('branch_id', $branchId)
             ->where('driver_id', $user->driver->id)
             ->count();

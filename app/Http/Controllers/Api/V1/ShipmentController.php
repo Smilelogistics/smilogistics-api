@@ -217,36 +217,42 @@ class ShipmentController extends Controller
             }
             
             if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
+                $total = 0;
+                $totalDiscount = 0;
 
-            $charges = [];
-            for ($i = 0; $i < count($validatedData['charge_type']); $i++) {
-                $charges[] = [
-                    'charge_type' => $validatedData['charge_type'][$i],
-                    'comment' => $validatedData['comment'][$i] ?? null,
-                    'units' => $validatedData['units'][$i] ?? null,
-                    'rate' => $validatedData['rate'][$i] ?? null,
-                    'amount' => $validatedData['amount'][$i] ?? null,
-                    'discount' => $validatedData['discount'][$i] ?? null,
-                    'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
-                ];
+                // Process each charge
+                foreach ($validatedData['charge_type'] as $i => $chargeType) {
+                    $amount = (float)($validatedData['amount'][$i] ?? 0);
+                    $discount = (float)($validatedData['discount'][$i] ?? 0);
+                    
+                    // Calculate totals
+                    $total += $amount;
+                    $totalDiscount += $discount;
+            
+                    // Create charge record
+                    ShipmentCharge::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $branchId ?? null,
+                        'charge_type' => $chargeType,
+                        'comment' => $validatedData['comment'][$i] ?? null,
+                        'units' => $validatedData['units'][$i] ?? null,
+                        'rate' => $validatedData['rate'][$i] ?? null,
+                        'amount' => $amount,
+                        'discount' => $discount,
+                        'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
+                        'total' => $total,
+                        'total_discount' => $totalDiscount,
+                        'net_total' => $total - $totalDiscount
+                    ]);
+                }
+            
+                // Update shipment with calculated totals
+                // $shipment->update([
+                //     'total' => $total,
+                //     'total_discount' => $totalDiscount,
+                //     'net_total' => $total - $totalDiscount
+                // ]);
             }
-
-            foreach ($charges as $charge) {
-                ShipmentCharge::create([
-                    'shipment_id' => $shipment->id,
-                    'branch_id' => $branchId ?? null,
-                    'charge_type' => $charge['charge_type'],
-                    'comment' => $charge['comment'],
-                    'units' => $charge['units'],
-                    'rate' => $charge['rate'],
-                    'amount' => $charge['amount'],
-                    'discount' => $charge['discount'],
-                    'internal_notes' => $charge['internal_notes'],
-                    //'total' => $total,
-                    //'net_total' => $netTotal,
-                ]);
-            }
-        }
 
             
             // if (isset($validatedData['charges'])) {
@@ -623,24 +629,20 @@ class ShipmentController extends Controller
             'shipped_on_board_date' => 'nullable|date',
             'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
 
-            'goods' => 'nullable|array',
-            'goods.*.goods_name' => 'nullable|string|max:255',
-            'goods.*.branch_id' => 'nullable|integer|exists:branches,id',
-            'goods.*.ocean_vin' => 'nullable|string|max:255',
-            'goods.*.ocean_weight' => 'nullable|string|max:255',
+           'goods_name.*' => 'nullable|string|max:255',
+            'ocean_vin.*' => 'nullable|string|max:255',
+            'ocean_weight.*' => 'nullable|string|max:255',
 
               //container details
-              'containers' => 'nullable|array',
-              'containers.*.container' => 'nullable|string|max:255',
-              'containers.*.container_size' => 'nullable|string|max:255',
-              'containers.*.container_type' => 'nullable|string|max:255',
-              'containers.*.container_number' => 'nullable|string|max:255',
-              'containers.*.chasis' => 'nullable|string|max:255',
-              'containers.*.chasis_size' => 'nullable|string|max:255',
-              'containers.*.chasis_type' => 'nullable|string|max:255',
-              'containers.*.chasis_vendor' => 'nullable|string|max:255',
-              'containers.*.isLoaded' => 'nullable|string|max:255',
-
+              'container.*' => 'nullable|string|max:255',
+              'container_size.*' => 'nullable|string|max:255',
+              'container_type.*' => 'nullable|string|max:255',
+              'container_number.*' => 'nullable|string|max:255',
+              'chasis.*' => 'nullable|string|max:255',
+              'chasis_size.*' => 'nullable|string|max:255',
+              'chasis_type.*' => 'nullable|string|max:255',
+              'chasis_vendor.*' => 'nullable|string|max:255',
+              'isLoaded.*' => 'nullable|string|max:255',
 
 
             // Add validation for related tables
@@ -648,23 +650,29 @@ class ShipmentController extends Controller
             'shipment_uploads.*.id' => 'nullable|exists:shipmentuploads,id',
             'shipment_uploads.*.file_path' => 'nullable|string',
             
-            'charges' => 'nullable|array',
-            'charges.*.charge_type' => 'nullable|string|max:255',
-            'charges.*.comment' => 'nullable|string|max:500',
-            'charges.*.units' => 'nullable|integer|min:1',
-            'charges.*.rate' => 'nullable|numeric|min:0',
-            'charges.*.amount' => 'nullable|numeric|min:0',
-            'charges.*.discount' => 'nullable|numeric|min:0|max:100',
-            'charges.*.internal_notes' => 'nullable|string|max:500',
-            'charges.*.billed' => 'nullable|boolean',
-            'charges.*.invoice_number' => 'nullable|string|unique:invoices,invoice_number|max:50',
-            'charges.*.invoice_date' => 'nullable|string',
-            'charges.*.total' => 'nullable|numeric|min:0',
-            'charges.*.net_total' => 'nullable|numeric|min:0',
+           'charge_type.*' => 'nullable|string',
+            'comment.*' => 'nullable|string',
+            'units.*' => 'nullable|numeric',
+            'rate.*' => 'nullable|numeric',
+            'amount.*' => 'nullable|numeric',
+            'discount.*' => 'nullable|numeric',
+            'internal_notes.*' => 'nullable|string',
+            //notes starts here
     
-            'shipment_expenses' => 'nullable|array',
-            'shipment_expenses.*.id' => 'nullable|exists:shipmentexpenses,id',
-            'shipment_expenses.*.cost' => 'nullable|numeric',
+              
+            'expense_type.*' => 'nullable|string|max:255',
+            'expense_unit.*' => 'nullable|integer|min:1',
+            'expense_rate.*' => 'nullable|numeric|min:0',
+            'expense_amount.*' => 'nullable|numeric|min:0',
+            'credit_reimbursement_amount.*' => 'nullable|numeric|min:0',
+            'vendor_invoice_name.*' => 'nullable|string|max:255',
+            'vendor_invoice_number.*' => 'nullable|string|max:100',
+            'payment_reference_note.*' => 'nullable|string|max:255',
+            'disputed_note.*' => 'nullable|string',
+            'billed.*' => 'nullable|boolean',
+            'paid.*' => 'nullable|boolean',
+            'expense_disputed.*' => 'nullable|boolean',
+            'disputed_amount.*' => 'nullable|numeric|min:0',
             
             'shipment_docs' => 'nullable|array',
             'shipment_docs.*.id' => 'nullable|exists:shipmentdocs,id',
@@ -716,16 +724,6 @@ class ShipmentController extends Controller
                     ...$validatedData
                 ]);
     
-            // Update related tables only if there are changes
-            // if (isset($validatedData['shipment_uploads'])) {
-            //     foreach ($validatedData['shipment_uploads'] as $upload) {
-            //         if (isset($upload['id'])) {
-            //             $shipment->shipmentUploads()->where('id', $upload['id'])->update(['file_path' => $upload['file_path']]);
-            //         } else {
-            //             $shipment->shipmentUploads()->create(['file_path' => $upload['file_path']]);
-            //         }
-            //     }
-            // }
 
             if (isset($validatedData['shipment_uploads'])) {
                 foreach ($validatedData['shipment_uploads'] as $upload) {
@@ -744,43 +742,37 @@ class ShipmentController extends Controller
                 }
             }
 
-            if (isset($validatedData['shipment_charges'])) {
-                $shipment->load('shipmentCharges'); // Ensure the relation is loaded
+            // if (isset($validatedData['shipment_charges'])) {
+            //     $shipment->load('shipmentCharges'); // Ensure the relation is loaded
                 
-                // Track processed IDs to identify charges that need to be deleted
-                $processedIds = [];
+            //     // Track processed IDs to identify charges that need to be deleted
+            //     $processedIds = [];
                 
-                foreach ($validatedData['shipment_charges'] as $charge) {
-                    $chargeData = [
-                        'amount' => $charge['amount'],
-                        'units' => $charge['units'] ?? null,
-                        'rate' => $charge['rate'] ?? null,
-                        'comment' => $charge['comment'] ?? null,
-                        'total' => $charge['total'] ?? null,
-                        'net_total' => $charge['net_total'] ?? null, 
-                        'discount' => $charge['discount'] ?? null,
-                        'total_discount' => $charge['total_discount'] ?? null,
-                    ];
+            //     foreach ($validatedData['shipment_charges'] as $charge) {
+            //         $chargeData = [
+            //             'amount' => $charge['amount'],
+            //             'units' => $charge['units'] ?? null,
+            //             'rate' => $charge['rate'] ?? null,
+            //             'comment' => $charge['comment'] ?? null,
+            //             'total' => $charge['total'] ?? null,
+            //             'net_total' => $charge['net_total'] ?? null, 
+            //             'discount' => $charge['discount'] ?? null,
+            //             'total_discount' => $charge['total_discount'] ?? null,
+            //         ];
                     
-                    if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
-                        // Update existing charge
-                        $shipment->shipmentCharges()->where('id', $charge['id'])->update($chargeData);
-                        $processedIds[] = $charge['id'];
-                    } else {
-                        // Create new charge
-                        $newCharge = $shipment->shipmentCharges()->create($chargeData);
-                        $processedIds[] = $newCharge->id;
-                    }
-                }
+            //         if (isset($charge['id']) && $shipment->shipmentCharges()->where('id', $charge['id'])->exists()) {
+            //             // Update existing charge
+            //             $shipment->shipmentCharges()->where('id', $charge['id'])->update($chargeData);
+            //             $processedIds[] = $charge['id'];
+            //         } else {
+            //             // Create new charge
+            //             $newCharge = $shipment->shipmentCharges()->create($chargeData);
+            //             $processedIds[] = $newCharge->id;
+            //         }
+            //     }
                 
-                // Optional: Delete charges that weren't in the submitted data
-                // Uncomment the following if you want to remove charges not included in the update
-                /*
-                $shipment->shipmentCharges()
-                    ->whereNotIn('id', $processedIds)
-                    ->delete();
-                */
-            }
+               
+            // }
     
             // if (isset($validatedData['shipment_charges'])) {
             //     $shipment->load('shipmentCharges'); // Ensure the relation is loaded
@@ -803,28 +795,100 @@ class ShipmentController extends Controller
             //     }
             // }
 
+            if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
+                $total = 0;
+                $totalDiscount = 0;
+                
+                ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+
+                foreach ($validatedData['charge_type'] as $i => $chargeType) {
+                    $amount = (float)($validatedData['amount'][$i] ?? 0);
+                    $discount = (float)($validatedData['discount'][$i] ?? 0);
+                    
+                    $total += $amount;
+                    $totalDiscount += $discount;
+
+                    ShipmentCharge::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $branchId ?? null,
+                        'charge_type' => $chargeType,
+                        'comment' => $validatedData['comment'][$i] ?? null,
+                        'units' => $validatedData['units'][$i] ?? null,
+                        'rate' => $validatedData['rate'][$i] ?? null,
+                        'amount' => $amount,
+                        'discount' => $discount,
+                        'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
+                        'total' => $total,
+                        'total_discount' => $totalDiscount,
+                        'net_total' => $total - $totalDiscount
+                    ]);
+                }
+
+                // Update shipment with calculated totals
+                // $shipment->update([
+                //     'total' => $total,
+                //     'total_discount' => $totalDiscount,
+                //     'net_total' => $total - $totalDiscount
+                // ]);
+            }
+
             
             
     
-            if (isset($validatedData['shipment_expenses'])) {
-                foreach ($validatedData['shipment_expenses'] as $expense) {
-                    if (isset($expense['id'])) {
-                        $shipment->shipmentExpenses()->where('id', $expense['id'])->update(['cost' => $expense['cost']]);
-                    } else {
-                        $shipment->shipmentExpenses()->create(['cost' => $expense['cost']]);
-                    }
+            if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
+                $credit_total = 0;
+                $expense_total = 0;
+                
+                ShipmentExpense::where('shipment_id', $shipment->id)->delete();
+            
+                // Process each expense
+                foreach ($validatedData['expense_type'] as $i => $expenseType) {
+                    $expense = [
+                        'expense_type' => $expenseType,
+                        'credit_reimbursement_amount' => $validatedData['credit_reimbursement_amount'][$i] ?? 0,
+                        'units' => $validatedData['expense_unit'][$i] ?? 0,
+                        'rate' => $validatedData['expense_rate'][$i] ?? 0,
+                        'amount' => $validatedData['expense_amount'][$i] ?? 0,
+                        'vendor_invoice_number' => $validatedData['vendor_invoice_number'][$i] ?? null,
+                        'payment_reference_note' => $validatedData['payment_reference_note'][$i] ?? null,
+                        'disputed_note' => $validatedData['disputed_note'][$i] ?? null,
+                        'expense_disputed' => !empty($validatedData['expense_disputed'][$i]),
+                        'paid' => !empty($validatedData['paid'][$i]),
+                    ];
+            
+                    // Calculate totals
+                    $expense_total += (float)$expense['amount'];
+                    $credit_total += (float)$expense['credit_reimbursement_amount'];
+            
+                    // Create new expense record
+                    ShipmentExpense::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $branchId ?? null,
+                        'expense_type' => $expense['expense_type'],
+                        'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'],
+                        'units' => $expense['units'],
+                        'rate' => $expense['rate'],
+                        'amount' => $expense['amount'],
+                        'vendor_invoice_number' => $expense['vendor_invoice_number'],
+                        'payment_reference_note' => $expense['payment_reference_note'],
+                        'disputed_note' => $expense['disputed_note'],
+                        'expense_disputed' => $expense['expense_disputed'],
+                        'paid' => $expense['paid'],
+                    ]);
                 }
+            
+                // If you need to store totals on the shipment (only if columns exist)
+                // if (Schema::hasColumn('shipments', 'expense_total')) {
+                //     $shipment->update([
+                //         'expense_total' => $expense_total,
+                //         'credit_total' => $credit_total,
+                //         'net_expense' => $expense_total - $credit_total
+                //     ]);
+                // }
             }
+
     
-            if (isset($validatedData['shipment_docs'])) {
-                foreach ($validatedData['shipment_docs'] as $doc) {
-                    if (isset($doc['id'])) {
-                        $shipment->shipmentUploads()->where('id', $doc['id'])->update(['file_path' => $doc['document_path']]);
-                    } else {
-                        $shipment->shipmentUploads()->create(['file_path' => $doc['document_path']]);
-                    }
-                }
-            }
+         
     
             DB::commit();
             return response()->json(['message' => 'Shipment updated successfully', 'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentUploads'])], 200);
