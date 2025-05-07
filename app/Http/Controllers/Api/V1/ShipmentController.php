@@ -313,7 +313,7 @@ class ShipmentController extends Controller
                 }
             }
 
-            if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
+            //if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
                 $credit_total = 0;
                 $expense_total = 0;
                 
@@ -364,7 +364,7 @@ class ShipmentController extends Controller
                     }
                     
                 
-            }
+         //   }
             // if ($request->has('expenses')) {
             //     $total = 0;
             //     $net_total = 0;
