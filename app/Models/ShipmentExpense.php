@@ -28,6 +28,9 @@ class ShipmentExpense extends Model
         'disputed',
         'disputed_amount',
         'disputed_date',
+        'net_expense',
+        'expense_total',
+        'credit_total'
     ];
 
     public function shipment()

@@ -70,6 +70,7 @@ class ShipmentController extends Controller
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
+        $driverId = $user->driver ? $user->driver->id : null;
         $checkSubscription = false;
 
        
@@ -124,8 +125,8 @@ class ShipmentController extends Controller
         try {
             $shipment = Shipment::create([
             'branch_id' => $branchId ?? null,
-            'driver_id' => $validatedData['driver_id'] ?? null,
-            'user_id' => $validatedData['user_id'] ?? null,
+            'driver_id' => $driverId ?? null,
+            'user_id' => $user->id ?? null,
             'carrier_id' => $validatedData['carrier_id'] ?? null,
             'truck_id' => $validatedData['truck_id'] ?? null,
             'bike_id' => $validatedData['bike_id'] ?? null,
@@ -214,6 +215,8 @@ class ShipmentController extends Controller
                 ]);
                 
             }
+            
+            if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
 
             $charges = [];
             for ($i = 0; $i < count($validatedData['charge_type']); $i++) {
@@ -243,6 +246,7 @@ class ShipmentController extends Controller
                     //'net_total' => $netTotal,
                 ]);
             }
+        }
 
             
             // if (isset($validatedData['charges'])) {
@@ -309,44 +313,71 @@ class ShipmentController extends Controller
                 }
             }
 
-            if ($request->has('expenses')) {
-                $total = 0;
-                $net_total = 0;
-            
-                foreach ($request->expenses as $expense) {
-                    // Validate required fields
-                    // if (!isset($expense['expense_unit'], $expense['expense_rate'], $expense['disputed_amount'])) {
-                    //     dd("Missing keys in expense entry:", $expense);
-                    // }
-                    
-            
-                    $unit = $expense['expense_unit'];
-                    $rate = $expense['expense_rate'];
-                    $discount = $expense['disputed_amount'];
-            
-                    // Calculate totals
-                    $itemTotal = $unit * $rate;
-                    $total += $itemTotal;
-                    $net_total += ($itemTotal - $discount);
-            
-                    // Store expense
+            if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
+
+                $expenses = [];
+                for ($i = 0; $i < count($validatedData['expense_type']); $i++) {
+                    $expenses[] = [
+                        'expense_type' => $validatedData['expense_type'][$i],
+                        'comment' => $validatedData['comment'][$i] ?? null,
+                        'units' => $validatedData['units'][$i] ?? null,
+                        'rate' => $validatedData['rate'][$i] ?? null,
+                        'amount' => $validatedData['amount'][$i] ?? null,
+                        'discount' => $validatedData['discount'][$i] ?? null,
+                        'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
+                    ];
+                }
+    
+                foreach ($charges as $charge) {
                     ShipmentExpense::create([
                         'shipment_id' => $shipment->id,
-                        'branch_id' => $branchId,
-                        'expense_type' => $expense['expense_type'],
-                        'units' => $unit,
-                        'rate' => $rate,
-                        'amount' => $expense['amount'] ?? 0,
-                        'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'] ?? 0,
-                        'vendor_invoice_name' => $expense['vendor_invoice_name'] ?? '',
-                        'vendor_invoice_number' => $expense['vendor_invoice_number'] ?? '',
-                        'payment_reference_note' => $expense['payment_reference_note'] ?? '',
-                        'disputed_note' => $expense['disputed_note'] ?? '',
-                        'billed' => $expense['billed'] ?? false,
-                        'paid' => $expense['paid'] ?? false,
+                        'branch_id' => $branchId ?? null,
+                        'charge_type' => $charge['charge_type'],
+                        'comment' => $charge['comment'],
+                        'units' => $charge['units'],
+                        'rate' => $charge['rate'],
+                        'amount' => $charge['amount'],
+                        'discount' => $charge['discount'],
+                        'internal_notes' => $charge['internal_notes'],
+                        //'total' => $total,
+                        //'net_total' => $netTotal,
                     ]);
                 }
             }
+
+            // if ($request->has('expenses')) {
+            //     $total = 0;
+            //     $net_total = 0;
+            
+            //     foreach ($request->expenses as $expense) {
+                 
+            //         $unit = $expense['expense_unit'];
+            //         $rate = $expense['expense_rate'];
+            //         $discount = $expense['disputed_amount'];
+            
+            //         // Calculate totals
+            //         $itemTotal = $unit * $rate;
+            //         $total += $itemTotal;
+            //         $net_total += ($itemTotal - $discount);
+            
+            //         // Store expense
+            //         ShipmentExpense::create([
+            //             'shipment_id' => $shipment->id,
+            //             'branch_id' => $branchId,
+            //             'expense_type' => $expense['expense_type'],
+            //             'units' => $unit,
+            //             'rate' => $rate,
+            //             'amount' => $expense['amount'] ?? 0,
+            //             'credit_reimbursement_amount' => $expense['credit_reimbursement_amount'] ?? 0,
+            //             'vendor_invoice_name' => $expense['vendor_invoice_name'] ?? '',
+            //             'vendor_invoice_number' => $expense['vendor_invoice_number'] ?? '',
+            //             'payment_reference_note' => $expense['payment_reference_note'] ?? '',
+            //             'disputed_note' => $expense['disputed_note'] ?? '',
+            //             'billed' => $expense['billed'] ?? false,
+            //             'paid' => $expense['paid'] ?? false,
+            //         ]);
+            //     }
+            // }
 
             if ($request->hasFile('file_path')) {
                 // Get the files - always convert to array for consistent handling

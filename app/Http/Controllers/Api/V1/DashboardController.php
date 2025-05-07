@@ -75,6 +75,13 @@ class DashboardController extends Controller
                     'cardTransactions' => $cardTransactions
                 ]
             ]);
+        }elseif($user->hasRole('driver')) {
+            $myShipments = Shipment::where('branch_id', $branchId)
+            ->where('driver_id', $user->driver->id)
+            ->count();
+            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
+            ->where('driver_id', $user->driver->id)
+            ->count();
         }
         
     }
