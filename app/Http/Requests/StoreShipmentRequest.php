@@ -91,8 +91,8 @@ class StoreShipmentRequest extends FormRequest
             'discount.*' => 'nullable|numeric',
             'internal_notes.*' => 'nullable|string',
             //notes starts here
-            'notes' => 'nullable|array',
-            'notes.*.note' => 'nullable|string',
+            //'notes' => 'nullable|array',
+            'note.*' => 'nullable|string',
             //expense starts here
             
             'expense_type.*' => 'nullable|string|max:255',
@@ -111,26 +111,25 @@ class StoreShipmentRequest extends FormRequest
             //'disputed_date' => 'nullable|date',
 
             //container details
-            'containers' => 'nullable|array',
-            'containers.*.container' => 'nullable|string|max:255',
-            'containers.*.container_size' => 'nullable|string|max:255',
-            'containers.*.container_type' => 'nullable|string|max:255',
-            'containers.*.container_number' => 'nullable|string|max:255',
-            'containers.*.chasis' => 'nullable|string|max:255',
-            'containers.*.chasis_size' => 'nullable|string|max:255',
-            'containers.*.chasis_type' => 'nullable|string|max:255',
-            'containers.*.chasis_vendor' => 'nullable|string|max:255',
-            'containers.*.isLoaded' => 'nullable|string|max:255',
+            //'containers' => 'nullable|array',
+            'container.*' => 'nullable|string|max:255',
+            'container_size.*' => 'nullable|string|max:255',
+            'container_type.*' => 'nullable|string|max:255',
+            'container_number.*' => 'nullable|string|max:255',
+            'chasis.*' => 'nullable|string|max:255',
+            'chasis_size.*' => 'nullable|string|max:255',
+            'chasis_type.*' => 'nullable|string|max:255',
+            'chasis_vendor.*' => 'nullable|string|max:255',
+            'isLoaded.*' => 'nullable|string|max:255',
 
             //billto starts here
             
-            'bill_tos' => 'nullable|array',
-            'bill_tos.*.bill_to' => 'nullable|string|max:255',
-            'bill_tos.*.quick_note' => 'nullable|integer|min:1',
-            'bill_tos.*.branch_id' => 'nullable|integer|exists:branches,id',
-            'bill_tos.*.customer_id' => 'nullable|integer|exists:customers,id',
-            'bill_tos.*.driver_id' => 'nullable|integer|exists:drivers,id',
-            'bill_tos.*.carrier_id' => 'nullable|integer|exists:carriers,id',
+            //'bill_tos' => 'nullable|array',
+            'bill_to.*' => 'nullable|string|max:255',
+            'quick_note.*' => 'nullable|integer|min:1',
+            'customer_id.*' => 'nullable|integer|exists:customers,id',
+            'driver_id.*' => 'nullable|integer|exists:drivers,id',
+            'carrier_id.*' => 'nullable|integer|exists:carriers,id',
             
             //Ocean shipment
             'shipment_type' => 'nullable|string',
@@ -164,11 +163,10 @@ class StoreShipmentRequest extends FormRequest
             'shipped_on_board_date' => 'nullable|date',
             //'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
             //'signature' => 'nullable|string',
-            'goods' => 'nullable|array',
-            'goods.*.goods_name' => 'nullable|string|max:255',
-            'goods.*.branch_id' => 'nullable|integer|exists:branches,id',
-            'goods.*.ocean_vin' => 'nullable|string|max:255',
-            'goods.*.ocean_weight' => 'nullable|string|max:255',
+            //'goods' => 'nullable|array',
+            'goods_name.*' => 'nullable|string|max:255',
+            'ocean_vin.*' => 'nullable|string|max:255',
+            'ocean_weight.*' => 'nullable|string|max:255',
 
 
             // 'file_path' => 'nullable', 

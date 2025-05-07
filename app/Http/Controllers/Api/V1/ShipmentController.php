@@ -281,9 +281,24 @@ class ShipmentController extends Controller
             //     }
             // }
 
-            if($request->has('containers')) {
+            if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
                 //dd($request->containers);
-                foreach($request->containers as $container) {
+                $containers = [];
+                for ($i = 0; $i < count($validatedData['container_type']); $i++) {
+                    $containers[] = [
+                        'container_type' => $validatedData['container_type'][$i],
+                        'container_number' => $validatedData['container_number'][$i] ?? 0,
+                        'container_size' => $validatedData['container_size'][$i] ?? 0,
+                        'container' => $validatedData['container'][$i] ?? null,  // Changed from 'rate'
+                        'isLoaded' => $validatedData['isLoaded'][$i] ?? null,
+                        'chasis_size' => $validatedData['chasis_size'][$i] ?? null,
+                        'chasis_type' => $validatedData['chasis_type'][$i] ?? null,
+                        'chasis_vendor' => $validatedData['chasis_vendor'][$i] ?? null,
+                        'chasis' => isset($validatedData['expense_disputechasisd'][$i]) ? 1 : 0,
+                    ];
+                }
+
+                foreach($containers as $container) {
                     ShipmentContainer::create([
                         'shipment_id' => $shipment->id,
                         'container_number' => $container['container_number'],
@@ -300,11 +315,22 @@ class ShipmentController extends Controller
             }
 
 
-            if($request->has('billtos')){
-                foreach($request->billtos as $billto){
+            
+            if (!empty($validatedData['bill_to']) && is_array($validatedData['bill_to'])) {
+                $biltos = [];
+                for ($i = 0; $i < count($validatedData['bill_to']); $i++) {
+                    $biltos[] = [
+                        'bill_to' => $validatedData['bill_to'][$i],
+                        'carrier_id' => $validatedData['carrier_id'][$i] ?? null,
+                        'driver_id' => $validatedData['driver_id'][$i] ?? null,
+                        'customer_id' => $validatedData['customer_id'][$i] ?? null,
+                    ];
+                }
+
+                foreach($biltos as $billto){
                     BillTo::create([
                         'shipment_id' => $shipment->id,
-                        'branch_id' => $billto['branch_id'] ?? null,
+                        'branch_id' => $branchId ?? null,
                         'bill_to' => $billto['bill_to'],
                         'carrier_id' => $billto['carrier_id'],
                         'driver_id' => $billto['driver_id'],
