@@ -387,11 +387,11 @@ class ShipmentController extends Controller
                 }
             
                 // Update the shipment with these totals
-                $shipment->update([
-                    'expense_total' => $expense_total,
-                    'credit_total' => $credit_total,
-                    'net_expense' => $net_total
-                ]);
+                // $shipment->update([
+                //     'expense_total' => $expense_total,
+                //     'credit_total' => $credit_total,
+                //     'net_expense' => $net_total
+                // ]);
             }
 
 
