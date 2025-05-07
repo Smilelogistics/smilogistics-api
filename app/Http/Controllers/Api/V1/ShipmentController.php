@@ -686,6 +686,13 @@ class ShipmentController extends Controller
         }
     
         $validatedData = $validator->validated();
+
+        $total_miles = $validatedData['total_miles'];
+        $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
+        $mpg = $user->branch->mpg ?? 1;
+
+        $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+        
         $arrayFields = [
             'overweight_hazmat' => $request->input('overweight_hazmat', []),
         ];
