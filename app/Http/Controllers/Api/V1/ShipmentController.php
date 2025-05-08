@@ -814,6 +814,11 @@ class ShipmentController extends Controller
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
                     $this->processCharges($shipment, $validatedData, $branchId);
                 }
+
+                // Handle cont
+                if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
+                    $this->processContainers($shipment, $validatedData, $branchId);
+                }
         
                 // Handle expenses
                 if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
@@ -837,32 +842,57 @@ class ShipmentController extends Controller
     }
 
     protected function processCharges($shipment, $validatedData, $branchId)
-{
-    $total = 0;
-    $totalDiscount = 0;
-    
-    ShipmentCharge::where('shipment_id', $shipment->id)->delete();
-
-    foreach ($validatedData['charge_type'] as $i => $chargeType) {
-        $amount = (float)($validatedData['amount'][$i] ?? 0);
-        $discount = (float)($validatedData['discount'][$i] ?? 0);
+    {
+        $total = 0;
+        $totalDiscount = 0;
         
-        $total += $amount;
-        $totalDiscount += $discount;
+        ShipmentCharge::where('shipment_id', $shipment->id)->delete();
 
-        ShipmentCharge::create([
-            'shipment_id' => $shipment->id,
-            'branch_id' => $branchId,
-            'charge_type' => $chargeType,
-            'comment' => $validatedData['comment'][$i] ?? null,
-            'units' => $validatedData['units'][$i] ?? null,
-            'rate' => $validatedData['rate'][$i] ?? null,
-            'amount' => $amount,
-            'discount' => $discount,
-            'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
-        ]);
+        foreach ($validatedData['charge_type'] as $i => $chargeType) {
+            $amount = (float)($validatedData['amount'][$i] ?? 0);
+            $discount = (float)($validatedData['discount'][$i] ?? 0);
+            
+            $total += $amount;
+            $totalDiscount += $discount;
+
+            ShipmentCharge::create([
+                'shipment_id' => $shipment->id,
+                'branch_id' => $branchId,
+                'charge_type' => $chargeType,
+                'comment' => $validatedData['comment'][$i] ?? null,
+                'units' => $validatedData['units'][$i] ?? null,
+                'rate' => $validatedData['rate'][$i] ?? null,
+                'amount' => $amount,
+                'discount' => $discount,
+                'total' => $total,
+                'net_total' => $total - $totalDiscount,
+                'total_discount' => $totalDiscount,
+                'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
+            ]);
+        }
     }
-}
+
+    protected function processContainers($shipment, $validatedData, $branchId)
+    {
+        
+        ShipmentContainer::where('shipment_id', $shipment->id)->delete();
+
+        foreach ($validatedData['container_type'] as $i => $container) {
+        
+                ShipmentContainer::create([
+                    'shipment_id' => $shipment->id,
+                    'container_number' => $container['container_number'],
+                    'container_type' => $container['container_type'],
+                    'container_size' => $container['container_size'],
+                    'container' => $container['container'],
+                    'isLoaded' => $container['isLoaded'],
+                    'chasis_size' => $container['chasis_size'],
+                    'chasis_type' => $container['chasis_type'],
+                    'chasis_vendor' => $container['chasis_vendor'],
+                    'chasis' => $container['chasis'],
+                ]);
+        }
+    }
 
 protected function processExpenses($shipment, $validatedData, $branchId)
 {
