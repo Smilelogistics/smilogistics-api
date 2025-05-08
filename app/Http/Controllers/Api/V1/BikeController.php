@@ -16,7 +16,9 @@ class BikeController extends Controller
     {
         $user = auth()->user();
         $branchId = $user->branch ? $user->branch->id : null;
-        $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->latest()->get();
+        $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')
+        ->where('branch_id', $branchId)
+        ->latest()->get();
         return response()->json(['bikes' => $bikes], 200);
     }
 
