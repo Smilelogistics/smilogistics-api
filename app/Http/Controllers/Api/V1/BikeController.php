@@ -12,13 +12,44 @@ use App\Http\Requests\CreateBikeRequest;
 
 class BikeController extends Controller
 {
-    public function index()
-    {
-        $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
-        $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->latest()->get();
-        return response()->json(['bikes' => $bikes], 200);
-    }
+    // public function index()
+    // {
+    //     $user = auth()->user();
+    //     $branchId = $user->branch ? $user->branch->id : null;
+    //     $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->latest()->get();
+    //     return response()->json(['bikes' => $bikes], 200);
+    // }
+
+    // In your BikeController
+public function index(Request $request)
+{
+    $user = auth()->user();
+    $branchId = $user->branch ? $user->branch->id : null;
+    $query = Bike::with(['customer','driver.user', 'bikeDocs'])
+        ->where('branch_id', $branchId)
+        ->when($request->search, function($q) use ($request) {
+            $q->where(function($query) use ($request) {
+                $query->where('license_plate_number', 'like', '%'.$request->search.'%')
+                      ->orWhere('bike_type', 'like', '%'.$request->search.'%')
+                      ->orWhere('bike_office', 'like', '%'.$request->search.'%')
+                      ->orWhereHas('driver.user', function($q) use ($request) {
+                          $q->where('fname', 'like', '%'.$request->search.'%')
+                            ->orWhere('lname', 'like', '%'.$request->search.'%');
+                      });
+            });
+        })
+        ->orderBy('created_at', 'desc');
+
+    $perPage = $request->per_page ?? 10;
+    $bikes = $query->paginate($perPage);
+
+    return response()->json([
+        'data' => $bikes->items(),
+        'current_page' => $bikes->currentPage(),
+        'last_page' => $bikes->lastPage(),
+        'total' => $bikes->total(),
+    ]);
+}
 
     public function show($id)    
     {
