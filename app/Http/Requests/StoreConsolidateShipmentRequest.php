@@ -63,7 +63,7 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'charges.*.rate' => 'nullable|numeric|min:0',
             'charges.*.amount' => 'nullable|numeric|min:0',
             'charges.*.discount' => 'nullable|numeric|min:0|max:100',
-            'charges.*.internal_notes' => 'nullable|string|max:500',
+            'charges.*.internal_notes_charges' => 'nullable|string|max:500',
             'charges.*.billed' => 'nullable|boolean',
             'charges.*.invoice_number' => 'nullable|string|unique:invoices,invoice_number|max:50',
             'charges.*.invoice_date' => 'nullable|date',
