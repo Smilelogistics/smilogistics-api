@@ -43,8 +43,8 @@ class StoreConsolidateShipmentRequest extends FormRequest
             // Logistics & Routing
             'origin_warehouse' => 'nullable|string|max:255',
             'destination_warehouse' => 'nullable|string|max:255',
-            'expected_departure_date' => 'nullable|date',
-            'expected_arrival_date' => 'nullable|date|after_or_equal:expected_departure_date',
+            'expected_departure_date' => 'nullable|string',
+            'expected_arrival_date' => 'nullable|string',
 
             // Cost & Payment
             'total_weight' => 'nullable|numeric|min:0',
