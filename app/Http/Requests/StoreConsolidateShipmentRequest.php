@@ -63,7 +63,7 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'charges.*.rate' => 'nullable|numeric|min:0',
             'charges.*.amount' => 'nullable|numeric|min:0',
             'charges.*.discount' => 'nullable|numeric|min:0|max:100',
-            'charges.*.internal_notes_charges' => 'nullable|string|max:500',
+            'charges.*.internal_notes_charges' => 'nullable|string',
             'charges.*.billed' => 'nullable|boolean',
             'charges.*.invoice_number' => 'nullable|string|unique:invoices,invoice_number|max:50',
             'charges.*.invoice_date' => 'nullable|date',
@@ -76,7 +76,7 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'file_path' => 'sometimes|array',
             'proof_of_delivery_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
             'invoice_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
-            'internal_notes' => 'nullable|string|max:500',
+            'internal_notes' => 'nullable|string',
 
         ];
     }
