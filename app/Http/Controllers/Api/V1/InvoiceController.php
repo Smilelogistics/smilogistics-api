@@ -162,15 +162,29 @@ class InvoiceController extends Controller
             ]);
 
             if ($request->charge_type) {
+                $total = 0;
+                $totalDiscount = 0;
                 foreach ($request->charge_type as $index => $type) {
+                    $amount = (float)($validatedData['amount'][$i] ?? 0);
+                    $discount = (float)($validatedData['discount'][$i] ?? 0);
+                    
+                    $total += $amount;
+                    $totalDiscount += $discount;
                     InvoiceCharge::create([
                         'invoice_id' => $invoice->id,
                         'charge_type' => $type,
                         'units' => $request->units[$index] ?? null,
                         'unit_rate' => $request->unit_rate[$index] ?? null,
                         'amount' => $request->amount[$index] ?? null,
+                        'total_discount' => $totalDiscount,
+                        'net_total' => $total - $totalDiscount
                     ]);
                 }
+                $invoice->update([
+                    //'total' => $total,
+                    'total_discount' => $totalDiscount,
+                    'net_total' => $total - $totalDiscount
+                ]);
             }
 
             // Insert into InvoiceDoc
