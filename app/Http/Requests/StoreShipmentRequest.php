@@ -126,7 +126,7 @@ class StoreShipmentRequest extends FormRequest
             
             //'bill_tos' => 'nullable|array',
             'bill_to.*' => 'nullable|string|max:255',
-            'quick_note.*' => 'nullable|integer|min:1',
+            'quick_note.*' => 'nullable|string',
             'customer_id.*' => 'nullable|integer|exists:customers,id',
             'driver_id.*' => 'nullable|integer|exists:drivers,id',
             'carrier_id.*' => 'nullable|integer|exists:carriers,id',
