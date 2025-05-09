@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Models\Driver;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +32,11 @@ class Shipment extends Model
 
     public function driver()
     {
-        return $this->belongsTo(User::class, 'driver_id');
+        return $this->belongsTo(Driver::class, 'driver_id');
+    }
+    public function creatorDriver()
+    {
+        return $this->belongsTo(Driver::class, 'created_by_driver_id');
     }
     public function shipmentTrack() {
         return $this->hasMany(ShipmentTrack::class, 'shipment_id');

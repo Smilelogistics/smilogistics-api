@@ -86,7 +86,7 @@ class StoreInvoiceRequest extends FormRequest
                 // 'total.*' => 'nullable|numeric',
              
                  // Invoice Documents (single & array support)
-                 'file' => 'nullable|array',
+                 'file' => 'nullable',
                  'file.*' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
                  'file_title' => 'nullable|array',
                  'file_title.*' => 'nullable|string|max:255',
