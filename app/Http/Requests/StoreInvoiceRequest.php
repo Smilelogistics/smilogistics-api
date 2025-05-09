@@ -40,7 +40,7 @@ class StoreInvoiceRequest extends FormRequest
                  'invoice_due_date' => 'nullable|date',
                  'attention_invoice_to' => 'nullable|string|max:255',
                  'note_bill_to_party' => 'nullable|string',
-                 'loads_on_invoice' => 'nullable|integer',
+                 'loads_on_invoice' => 'nullable|string|max:255',
                  'reference_number' => 'nullable|string|max:255',
                  'po_number' => 'nullable|string|max:255',
                  'booking_number' => 'nullable|string|max:255',
