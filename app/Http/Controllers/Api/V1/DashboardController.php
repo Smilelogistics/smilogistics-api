@@ -85,10 +85,26 @@ class DashboardController extends Controller
 
             
             $myShipments = Shipment::where('branch_id', $branchId)
-            ->where('driver_id', $user->driver->id)
+            ->where('created_by_driver_id', $user->driver->id)
             ->count();
             $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
-            ->where('driver_id', $user->driver->id)
+            ->where('created_by_driver_id', $user->driver->id)
+            ->count();
+        }
+        elseif($user->hasRole('customer')) {
+            // When you need the totals later:
+            // $totals = ShipmentExpense::where('shipment_id', $shipment->id)
+            // ->selectRaw('SUM(amount) as expense_total, SUM(credit_reimbursement_amount) as credit_total')
+            // ->first();
+            // $net_total = $totals->expense_total - $totals->credit_total;
+
+
+            
+            $myShipments = Shipment::where('branch_id', $branchId)
+            ->where('customer_id', $user->customer->id)
+            ->count();
+            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
+            ->where('customer_id', $user->customer->id)
             ->count();
         }
         
