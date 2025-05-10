@@ -60,13 +60,13 @@ class DashboardController extends Controller
             }
            // $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
            // Get recent shipments (assuming they have a created_at field)
-            $shipments = $branch->shipments()
+            $shipments = $branch->shipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
 
             // Get recent consolidated shipments
-            $consolidatedShipments = $branch->consolidatedShipments()
+            $consolidatedShipments = $branch->consolidateShipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);
@@ -94,11 +94,11 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
-            $shipments = $driver->shipments()
+            $shipments = $driver->shipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
-            $consolidatedShipments = $driver->consolidatedShipments()
+            $consolidatedShipments = $driver->consolidateShipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);
@@ -155,13 +155,13 @@ class DashboardController extends Controller
             // ->count();
         }
         elseif($user->hasRole('customer')) {
-            $shipments = $customer->shipments()
+            $shipments = $customer->shipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
 
             // Get recent consolidated shipments
-            $consolidatedShipments = $customer->consolidatedShipments()
+            $consolidatedShipments = $customer->consolidatedShipment()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);

@@ -27,6 +27,10 @@ class Customer extends Model
     {
         return $this->hasMany(ConsolidateShipment::class);
     }
+    public function shipment()
+    {
+        return $this->hasMany(Shipment::class);
+    }
     
     public function branch()
     {
