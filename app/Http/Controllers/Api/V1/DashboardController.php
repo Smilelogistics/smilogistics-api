@@ -60,7 +60,7 @@ class DashboardController extends Controller
             }
            // $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
            // Get recent shipments (assuming they have a created_at field)
-            $shipments = $user->shipments()
+            $shipments = $branch->shipments()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
@@ -98,7 +98,7 @@ class DashboardController extends Controller
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
-            $consolidatedShipments = $branch->consolidatedShipments()
+            $consolidatedShipments = $driver->consolidatedShipments()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);
@@ -155,7 +155,7 @@ class DashboardController extends Controller
             // ->count();
         }
         elseif($user->hasRole('customer')) {
-            $shipments = $user->shipments()
+            $shipments = $customer->shipments()
             ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
