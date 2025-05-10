@@ -11,6 +11,7 @@ use App\Models\Shipment;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Helpers\NumberFormatter;
+use Illuminate\Support\Facades\DB;
 use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
 
@@ -57,7 +58,24 @@ class DashboardController extends Controller
                 $totalDrivers = 0;
                 $userCount = 0;
             }
-            $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
+           // $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
+           // Get recent shipments (assuming they have a created_at field)
+            $shipments = $user->shipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->latest()
+            ->take(10);
+
+            // Get recent consolidated shipments
+            $consolidatedShipments = $branch->consolidatedShipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
+            ->latest()
+            ->take(10);
+
+            // Combine and sort the results
+            $recentTransactions = $shipments->union($consolidatedShipments)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
             $cardTransactions = Transaction::where('user_id', $user->id)
             ->where('status', 'success')
             ->sum('amount');
@@ -76,6 +94,51 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
+            $shipments = $driver->shipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->latest()
+            ->take(10);
+            $consolidatedShipments = $branch->consolidatedShipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
+            ->latest()
+            ->take(10);
+
+            $recentTransactions = $shipments->union($consolidatedShipments)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+
+            $shipments = Shipment::with(['expenses', 'charges'])
+            ->where('branch_id', $branchId)
+            ->where('driver_id', $user->driver->id)
+            ->get();
+    
+        // Count of shipments
+        $shipmentCount = $shipments->count();
+        $consolidatedCount = ConsolidateShipment::where('branch_id', $branchId)->count();
+        $grandFuelCost = $shipments->sum('total_fuel_cost');
+    
+        $grandExpenseTotal = $shipments->sum(function ($shipment) {
+            return $shipment->expenses->sum('amount') - $shipment->expenses->sum('credit_reimbursement_amount');
+        });
+    
+        $grandChargesTotal = $shipments->sum(function ($shipment) {
+            return $shipment->charges->sum('net_total');
+        });
+    
+        $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
+    
+        // Return response
+        return response()->json([
+            'myShipmentCount' => $shipmentCount,
+            'myConsolidatedCount' => $consolidatedCount,
+            'grand_fuel_cost' => $grandFuelCost,
+            'grand_expense_total' => $grandExpenseTotal,
+            'grand_charges_total' => $grandChargesTotal,
+            'grand_total_amount' => $grandTotalAmount,
+            'recentTransactions' => $recentTransactions
+        ]);
+            
             // When you need the totals later:
             // $totals = ShipmentExpense::where('shipment_id', $shipment->id)
             // ->selectRaw('SUM(amount) as expense_total, SUM(credit_reimbursement_amount) as credit_total')
@@ -84,28 +147,68 @@ class DashboardController extends Controller
 
 
             
-            $myShipments = Shipment::where('branch_id', $branchId)
-            ->where('created_by_driver_id', $user->driver->id)
-            ->count();
-            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
-            ->where('created_by_driver_id', $user->driver->id)
-            ->count();
+            // $myShipments = Shipment::where('branch_id', $branchId)
+            // ->where('created_by_driver_id', $user->driver->id)
+            // ->count();
+            // $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
+            // ->where('created_by_driver_id', $user->driver->id)
+            // ->count();
         }
         elseif($user->hasRole('customer')) {
-            // When you need the totals later:
-            // $totals = ShipmentExpense::where('shipment_id', $shipment->id)
-            // ->selectRaw('SUM(amount) as expense_total, SUM(credit_reimbursement_amount) as credit_total')
-            // ->first();
-            // $net_total = $totals->expense_total - $totals->credit_total;
+            $shipments = $user->shipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->latest()
+            ->take(10);
+
+            // Get recent consolidated shipments
+            $consolidatedShipments = $customer->consolidatedShipments()
+            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
+            ->latest()
+            ->take(10);
+
+            // Combine and sort the results
+            $recentTransactions = $shipments->union($consolidatedShipments)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
 
 
+            $shipments = Shipment::with(['expenses', 'charges'])
+            ->where('branch_id', $branchId)
+            ->where('customer_id', $user->customer->id)
+            ->get();
+    
+        // Count of shipments
+        $shipmentCount = $shipments->count();
+    
+        // Count of consolidated shipments
+        $consolidatedCount = ConsolidateShipment::where('branch_id', $branchId)->count();
+    
+        // Totals
+        $grandFuelCost = $shipments->sum('total_fuel_cost');
+    
+        $grandExpenseTotal = $shipments->sum(function ($shipment) {
+            return $shipment->expenses->sum('amount') - $shipment->expenses->sum('credit_reimbursement_amount');
+        });
+    
+        $grandChargesTotal = $shipments->sum(function ($shipment) {
+            return $shipment->charges->sum('net_total');
+        });
+    
+        $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
+    
+        // Return response
+        return response()->json([
+            'myShipmentCount' => $shipmentCount,
+            'myConsolidatedCount' => $consolidatedCount,
+            'grand_fuel_cost' => $grandFuelCost,
+            'grand_expense_total' => $grandExpenseTotal,
+            'grand_charges_total' => $grandChargesTotal,
+            'grand_total_amount' => $grandTotalAmount,
+            'recentTransactions' => $recentTransactions
+        ]);
             
-            $myShipments = Shipment::where('branch_id', $branchId)
-            ->where('customer_id', $user->customer->id)
-            ->count();
-            $myConsolidated = ConsolidateShipment::where('branch_id', $branchId)
-            ->where('customer_id', $user->customer->id)
-            ->count();
+           
         }
         
     }
