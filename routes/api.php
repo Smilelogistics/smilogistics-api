@@ -234,6 +234,7 @@ Route::prefix('v1')->group(function () {
 
         Route::prefix('delivery')->group(function () {
             Route::post('/create', [DeliveryController::class, 'makeRequest'])->name('delivery.makeRequest');
+            Route::get('/my-deliveries', [DeliveryController::class, 'getMyDeliveries']);
             Route::get('/driver-shipments/{driver}', [DeliveryController::class, 'getShipments']);
             Route::post('/update-shipment-status/{shipment}', [DeliveryController::class, 'updateStatus']);
         });

@@ -4,11 +4,20 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Bike;
+use Illuminate\Support\Facades\DB;
+
 
 class DeliveryController extends Controller
 {
-    use App\Models\Bike;
-use Illuminate\Support\Facades\DB;
+public function getMyDeliveries()	
+{
+    $user = auth()->user();
+    $branchId = $user->branch ? $user->branch->id : null;
+    $driverId = $user->driver ? $user->driver->id : null;
+    $myDeliveries = Delivery::where('driver_id', $driverId)->where('branch_id', $branchId)->get();
+    return response()->json(['deliveries' => $myDeliveries], 200);
+}
 
 public function makeRequest(Request $request)
 {
@@ -47,6 +56,7 @@ public function makeRequest(Request $request)
 
         if ($driver) {
             break;
+
         }
     }
 
