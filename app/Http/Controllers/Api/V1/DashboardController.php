@@ -61,13 +61,13 @@ class DashboardController extends Controller
            // $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
            // Get recent shipments (assuming they have a created_at field)
             $shipments = $branch->shipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
 
             // Get recent consolidated shipments
             $consolidatedShipments = $branch->consolidateShipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
+            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);
 
@@ -95,11 +95,11 @@ class DashboardController extends Controller
             ]);
         }elseif($user->hasRole('driver')) {
             $shipments = $driver->shipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
             $consolidatedShipments = $driver->consolidateShipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
+            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
             ->latest()
             ->take(10);
 
