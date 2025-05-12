@@ -174,7 +174,7 @@ class InvoiceController extends Controller
                         'invoice_id' => $invoice->id,
                         'charge_type' => $type,
                         'units' => $request->units[$index] ?? null,
-                        'unit_rate' => $request->unit_rate[$index] ?? null,
+                        'unit_rate' => $request->rate[$index] ?? null,
                         'amount' => $request->amount[$index] ?? null,
                         'total_discount' => $totalDiscount,
                         'net_total' => $total - $totalDiscount
@@ -292,7 +292,7 @@ class InvoiceController extends Controller
         $charges = [
             'charge_type' => (array)$request->charge_type,
             'units' => (array)($request->units ?? []),
-            'unit_rate' => (array)($request->unit_rate ?? []),
+            'rate' => (array)($request->unit_rate ?? []),
             'amount' => (array)($request->amount ?? []),
             'discount' => (array)($request->discount ?? [])
         ];
@@ -306,7 +306,7 @@ class InvoiceController extends Controller
         foreach ($charges['charge_type'] as $index => $type) {
             // Calculate values
             $units = $charges['units'][$index] ?? 0;
-            $rate = $charges['unit_rate'][$index] ?? 0;
+            $rate = $charges['rate'][$index] ?? 0;
             $discount = $charges['discount'][$index] ?? 0;
             
             $net_total += $units * $rate;
@@ -323,7 +323,6 @@ class InvoiceController extends Controller
             ]);
         }
 
-        // Update invoice totals ONCE after all charges processed
         $invoice->update([
             'net_total' => $net_total,
             'total_discount' => $total_discount
