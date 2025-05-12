@@ -61,27 +61,62 @@ class InvoiceController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
-        $customerId = $user->customer ? $user->customer->id : null;
+        
+        $invoice = Invoice::with([
+            'customer', 
+            'user', 
+            'invoicedocs', 
+            'invoicepayments', 
+            'invoicecharges', 
+            'branch'
+        ]);
 
         if ($user->hasRole('businessadministrator')) {
-            $invoice = Invoice::where('branch_id', $branchId)
-                            ->with('customer', 'user', 'invoicedocs', 'invoicepayments', 'invoicecharges', 'branch')
-                            ->latest()
-                            ->findOrFail($id);
-        }
-        elseif ($user->hasRole('customer')) {
-            $invoice = Invoice::where('customer_id', $customerId)
-                            ->with('branch', 'user', 'invoicedocs', 'invoicepayments', 'invoicecharges')
-                            ->latest()
-                            ->findOrFail($id);
-        } else {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            if ($user->branch) {
+                $invoice->where('branch_id', $user->branch->id);
+            }
+            // Admins can see all invoices (or filtered by branch)
+        } 
+        elseif ($user->hasRole('customer') && $user->customer) {
+            $invoice->where('customer_id', $user->customer->id);
+        } 
+        else {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        // $invoice = Invoice::with(['charges', 'docs', 'payments'])->findOrFail($id);
-        return response()->json(['invoice' => $invoice], 200);
+        try {
+            $invoice = $invoice->findOrFail($id);
+            return response()->json(['invoice' => $invoice]);
+            
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json(['message' => 'Invoice not found'], 404);
+        }
     }
+
+    // public function show($id)
+    // {
+    //     $user = auth()->user();
+    //     $branchId = $user->branch ? $user->branch->id : null;
+    //     $customerId = $user->customer ? $user->customer->id : null;
+
+    //     if ($user->hasRole('businessadministrator')) {
+    //         $invoice = Invoice::where('branch_id', $branchId)
+    //                         ->with('customer', 'user', 'invoicedocs', 'invoicepayments', 'invoicecharges', 'branch')
+    //                         ->latest()
+    //                         ->findOrFail($id);
+    //     }
+    //     elseif ($user->hasRole('customer')) {
+    //         $invoice = Invoice::where('customer_id', $customerId)
+    //                         ->with('branch', 'user', 'invoicedocs', 'invoicepayments', 'invoicecharges')
+    //                         ->latest()
+    //                         ->findOrFail($id);
+    //     } else {
+    //         return response()->json(['message' => 'Unauthorized'], 401);
+    //     }
+
+    //     // $invoice = Invoice::with(['charges', 'docs', 'payments'])->findOrFail($id);
+    //     return response()->json(['invoice' => $invoice], 200);
+    // }
 
     public function search(Request $request)
     {
