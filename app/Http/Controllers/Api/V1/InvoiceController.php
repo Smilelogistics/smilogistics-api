@@ -289,13 +289,12 @@ class InvoiceController extends Controller
         if (!$request->has('charge_type')) return;
 
         // Convert all fields to arrays consistently
-        $charges = [
-            'charge_type' => (array)$request->charge_type,
-            'units' => (array)($request->units ?? []),
-            'rate' => (array)($request->rate ?? []),
-            'amount' => (array)($request->amount ?? []),
-            'discount' => (array)($request->discount ?? [])
-        ];
+       $charges = [
+        'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
+        'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
+        'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
+        'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+    ];
 
         // Delete existing charges
         InvoiceCharge::where('invoice_id', $invoiceId)->delete();
