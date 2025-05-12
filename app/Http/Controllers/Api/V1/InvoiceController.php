@@ -75,7 +75,6 @@ class InvoiceController extends Controller
             if ($user->branch) {
                 $invoice->where('branch_id', $user->branch->id);
             }
-            // Admins can see all invoices (or filtered by branch)
         } 
         elseif ($user->hasRole('customer') && $user->customer) {
             $invoice->where('customer_id', $user->customer->id);

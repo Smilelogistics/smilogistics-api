@@ -61,18 +61,18 @@ class DashboardController extends Controller
            // $recentTransactions = Transaction::where('user_id', $user->id)->latest()->take(10)->get();
            // Get recent shipments (assuming they have a created_at field)
             $shipments = $branch->shipment()
-            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'shipment' as type"))
+            ->select('id', 'created_at', 'shipment_status', 'total_fuel_cost', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
 
             // Get recent consolidated shipments
-            $consolidatedShipments = $branch->consolidateShipment()
-            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
-            ->latest()
-            ->take(10);
+            // $consolidatedShipments = $branch->consolidateShipment()
+            // ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
+            // ->latest()
+            // ->take(10);
 
             // Combine and sort the results
-            $recentTransactions = $shipments->union($consolidatedShipments)
+            $recentTransactions = Shipment::where('branch_id', $branchId)
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();
@@ -94,19 +94,19 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
-            $shipments = $driver->shipment()
-            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'shipment' as type"))
-            ->latest()
-            ->take(10);
-            $consolidatedShipments = $driver->consolidateShipment()
-            ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
-            ->latest()
-            ->take(10);
+            // $shipments = $driver->shipment()
+            // ->select('id', 'created_at', 'shipment_status', 'total_fuel_cost', DB::raw("'shipment' as type"))
+            // ->latest()
+            // ->take(10);
+            // $consolidatedShipments = $driver->consolidateShipment()
+            // ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
+            // ->latest()
+            // ->take(10);
 
-            $recentTransactions = $shipments->union($consolidatedShipments)
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
+            // $recentTransactions = $shipments->union($consolidatedShipments)
+            // ->orderBy('created_at', 'desc')
+            // ->take(10)
+            // ->get();
 
             $shipments = Shipment::with(['expenses', 'charges'])
             ->where('branch_id', $branchId)
@@ -114,8 +114,8 @@ class DashboardController extends Controller
             ->get();
     
         // Count of shipments
-        $shipmentCount = $shipments->count();
-        $consolidatedCount = ConsolidateShipment::where('branch_id', $branchId)->count();
+        $shipmentCount = $driver->shipment()->count();
+        $consolidatedCount = ConsolidateShipment::where('driver_id', $user->driver->id)->count();
         $grandFuelCost = $shipments->sum('total_fuel_cost');
     
         $grandExpenseTotal = $shipments->sum(function ($shipment) {
@@ -132,10 +132,10 @@ class DashboardController extends Controller
         return response()->json([
             'myShipmentCount' => $shipmentCount,
             'myConsolidatedCount' => $consolidatedCount,
-            'grand_fuel_cost' => $grandFuelCost,
-            'grand_expense_total' => $grandExpenseTotal,
-            'grand_charges_total' => $grandChargesTotal,
-            'grand_total_amount' => $grandTotalAmount,
+            // 'grand_fuel_cost' => $grandFuelCost,
+            // 'grand_expense_total' => $grandExpenseTotal,
+            // 'grand_charges_total' => $grandChargesTotal,
+            // 'grand_total_amount' => $grandTotalAmount,
             'recentTransactions' => $recentTransactions
         ]);
             
@@ -156,7 +156,7 @@ class DashboardController extends Controller
         }
         elseif($user->hasRole('customer')) {
             $shipments = $customer->shipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'shipment' as type"))
+            ->select('id', 'created_at', 'shipment_status', 'amount', DB::raw("'shipment' as type"))
             ->latest()
             ->take(10);
 
@@ -201,10 +201,10 @@ class DashboardController extends Controller
         return response()->json([
             'myShipmentCount' => $shipmentCount,
             'myConsolidatedCount' => $consolidatedCount,
-            'grand_fuel_cost' => $grandFuelCost,
-            'grand_expense_total' => $grandExpenseTotal,
-            'grand_charges_total' => $grandChargesTotal,
-            'grand_total_amount' => $grandTotalAmount,
+            // 'grand_fuel_cost' => $grandFuelCost,
+            // 'grand_expense_total' => $grandExpenseTotal,
+            // 'grand_charges_total' => $grandChargesTotal,
+            // 'grand_total_amount' => $grandTotalAmount,
             'recentTransactions' => $recentTransactions
         ]);
             
