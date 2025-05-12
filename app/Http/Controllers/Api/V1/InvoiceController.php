@@ -359,7 +359,6 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
             'amount' => $charges['amount'][$index] ?? null,
             'discount' => $charges['discount'][$index] ?? null
         ]);
-        $invoice->update(['net_total' => $net_total ?? null, 'total_discount' => $total_discount ?? null]);
     }
      $invoice->update([
             'net_total' => $net_total,
