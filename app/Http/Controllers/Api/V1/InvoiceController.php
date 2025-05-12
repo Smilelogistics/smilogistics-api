@@ -267,7 +267,7 @@ class InvoiceController extends Controller
         $invoice->update($request->all());
 
         // Handle Charges (single or array)
-        $this->handleCharges($request, $id);
+        $this->handleCharges($request, $id, $invoice);
 
         // Handle Documents (single or array)
         $this->handleDocuments($request, $id);
@@ -284,7 +284,7 @@ class InvoiceController extends Controller
     }
 }
 
-protected function handleCharges(Request $request, $invoiceId)
+protected function handleCharges(Request $request, $invoiceId, $invoice)
 {
     if (!$request->has('charge_type')) return;
 
@@ -297,8 +297,17 @@ protected function handleCharges(Request $request, $invoiceId)
     ];
 
     InvoiceCharge::where('invoice_id', $invoiceId)->delete();
+    
+        $net_total = 0;
+        $total_discount = 0;
 
     foreach ($charges['charge_type'] as $index => $type) {
+         $units = (float)($charges['units'][$index] ?? 0);
+            $rate = (float)($charges['rate'][$index] ?? 0);
+            $discount = (float)($charges['discount'][$index] ?? 0);
+            
+            $net_total += $units * $rate;
+            $total_discount += $discount;
         InvoiceCharge::create([
             'invoice_id' => $invoiceId,
             'charge_type' => $type,
@@ -307,6 +316,10 @@ protected function handleCharges(Request $request, $invoiceId)
             'amount' => $charges['amount'][$index] ?? null,
         ]);
     }
+     $invoice->update([
+            'net_total' => $net_total,
+            'total_discount' => $total_discount
+        ]);
 }
 
 protected function handleDocuments(Request $request, $invoiceId)
