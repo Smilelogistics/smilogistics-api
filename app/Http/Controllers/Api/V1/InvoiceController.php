@@ -292,7 +292,7 @@ class InvoiceController extends Controller
         $charges = [
             'charge_type' => (array)$request->charge_type,
             'units' => (array)($request->units ?? []),
-            'rate' => (array)($request->unit_rate ?? []),
+            'rate' => (array)($request->rate ?? []),
             'amount' => (array)($request->amount ?? []),
             'discount' => (array)($request->discount ?? [])
         ];
