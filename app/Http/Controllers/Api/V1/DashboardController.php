@@ -87,7 +87,7 @@ class DashboardController extends Controller
                 'message' => 'Dashboard data retrieved successfully',
                 'data' => [
                     'userCount' => $userCount,
-                    'recentTransactions' => $recentTransactions,
+                    'recentTransactions' => $recentTransactions, 
                     'myShipments' => $myShipments,
                     'myConsolidated' => $myConsolidated,
                     'cardTransactions' => $cardTransactions
