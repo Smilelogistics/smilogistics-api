@@ -174,7 +174,7 @@ class InvoiceController extends Controller
                         'invoice_id' => $invoice->id,
                         'charge_type' => $type,
                         'units' => $request->units[$index] ?? null,
-                        'unit_rate' => $request->rate[$index] ?? null,
+                        'unit_rate' => $request->unit_rate[$index] ?? null,
                         'amount' => $request->amount[$index] ?? null,
                         'total_discount' => $totalDiscount,
                         'net_total' => $total - $totalDiscount
@@ -259,79 +259,36 @@ class InvoiceController extends Controller
      */
 
      public function update(Request $request, $id)
-    {
-        $invoice = Invoice::findOrFail($id);
+{
+    $invoice = Invoice::findOrFail($id);
 
-        DB::beginTransaction();
-        try {
-            $invoice->update($request->all());
+    DB::beginTransaction();
+    try {
+        $invoice->update($request->all());
 
-            // Handle Charges (single or array)
-            $this->handleCharges($request, $id, $invoice);
+        // Handle Charges (single or array)
+        $this->handleCharges($request, $id);
 
-            // Handle Documents (single or array)
-            $this->handleDocuments($request, $id);
+        // Handle Documents (single or array)
+        $this->handleDocuments($request, $id);
 
-            // Handle Payments (single or array)
-            $this->handlePayments($request, $id);
+        // Handle Payments (single or array)
+        $this->handlePayments($request, $id);
 
-            DB::commit();
-            return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
+        DB::commit();
+        return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
 
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
-        }
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
     }
+}
 
-    // protected function handleCharges(Request $request, $invoiceId, $invoice)
-    // {
-    //     if (!$request->has('charge_type')) return;
-
-    //     // Convert all fields to arrays consistently
-    //    $charges = [
-    //     'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
-    //     'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
-    //     'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
-    //     'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
-    // ];
-
-    //     // Delete existing charges
-    //     InvoiceCharge::where('invoice_id', $invoiceId)->delete();
-
-    //     $net_total = 0;
-    //     $total_discount = 0;
-
-    //     foreach ($charges['charge_type'] as $index => $type) {
-    //         // Calculate values
-    //         $units = $charges['units'][$index] ?? 0;
-    //         $rate = $charges['rate'][$index] ?? 0;
-    //         $discount = $charges['discount'][$index] ?? 0;
-            
-    //         $net_total += $units * $rate;
-    //         $total_discount += $discount;
-
-    //         // Create new charge record
-    //         InvoiceCharge::create([
-    //             'invoice_id' => $invoiceId,
-    //             'charge_type' => $type,
-    //             'units' => $units,
-    //             'unit_rate' => $rate,
-    //             'amount' => $charges['amount'][$index] ?? null,
-    //             'discount' => $discount
-    //         ]);
-    //     }
-
-    //     $invoice->update([
-    //         'net_total' => $net_total,
-    //         'total_discount' => $total_discount
-    //     ]);
-    // }
-
-protected function handleCharges(Request $request, $invoiceId, $invoice)
+protected function handleCharges(Request $request, $invoiceId)
 {
     if (!$request->has('charge_type')) return;
 
+    // Convert single item to array for consistent processing
     $charges = [
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
@@ -340,30 +297,16 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
     ];
 
     InvoiceCharge::where('invoice_id', $invoiceId)->delete();
-        $net_total = 0;
-        $total_discount = 0;
+
     foreach ($charges['charge_type'] as $index => $type) {
-
-            $units = $charges['units'][$index] ?? 0;
-            $rate = $charges['rate'][$index] ?? 0;
-            $discount = $charges['discount'][$index] ?? 0;
-            
-            $net_total += $units * $rate;
-            $total_discount += $discount;
-
         InvoiceCharge::create([
             'invoice_id' => $invoiceId,
             'charge_type' => $type,
             'units' => $charges['units'][$index] ?? null,
             'unit_rate' => $charges['rate'][$index] ?? null,
             'amount' => $charges['amount'][$index] ?? null,
-            'discount' => $charges['discount'][$index] ?? null
         ]);
     }
-     $invoice->update([
-            'net_total' => $net_total,
-            'total_discount' => $total_discount
-        ]);
 }
 
 protected function handleDocuments(Request $request, $invoiceId)
