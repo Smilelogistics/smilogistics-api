@@ -370,60 +370,95 @@ protected function handleDocuments(Request $request, $invoiceId)
 
 protected function handlePayments(Request $request, $invoiceId)
 {
-    if (!$request->has('invoicepayments')) {
+    if (!$request->has('credit_amount')) {
         return;
     }
+    $payments = [
+        'credit_amount' => is_array($request->credit_amount) ? $request->credit_amount : [$request->credit_amount],
+        'credit_memo' => is_array($request->credit_memo ?? []) ? $request->credit_memo : [$request->credit_memo],
+        'credit_note' => is_array($request->credit_note ?? []) ? $request->credit_note : [$request->credit_note],
+        'credit_date' => is_array($request->credit_date ?? []) ? $request->credit_date : [$request->credit_date],
+        'check_number' => is_array($request->check_number ?? []) ? $request->check_number : [$request->check_number],
+        'notes' => is_array($request->notes ?? []) ? $request->notes : [$request->notes],
+        'payment_date' => is_array($request->payment_date ?? []) ? $request->payment_date : [$request->payment_date],
+        'payment_method' => is_array($request->payment_method ?? []) ? $request->payment_method : [$request->payment_method],
+        'processing_fee_flate_rate' => is_array($request->processing_fee_flate_rate ?? []) ? $request->processing_fee_flate_rate : [$request->processing_fee_flate_rate],
+        'processing_fee_percent' => is_array($request->processing_fee_percent ?? []) ? $request->processing_fee_percent : [$request->processing_fee_percent],
+        //'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+    ];
+
+    InvoicePaymentRecieved::where('invoice_id', $invoiceId)->delete();
+
+     foreach ($payments['credit_amount'] as $index => $type) {
+        InvoicePaymentRecieved::create([
+            'invoice_id' => $invoiceId,
+            'credit_memo' => $payments['credit_memo'][$index] ?? null,
+            'credit_amount' => $payments['credit_amount'][$index] ?? null,
+            'credit_note' => $payments['credit_note'][$index] ?? null,
+            'credit_date' => !empty($payments['credit_date'][$index]) 
+                ? Carbon::createFromFormat('m/d/Y', $payments['credit_date'][$index])->format('Y-m-d')
+                : null,
+            'check_number' => $payments['check_number'][$index] ?? null,
+            'notes' => $payments['notes'][$index] ?? null,
+            'payment_date' => !empty($payments['payment_date'][$index]) 
+                ? Carbon::createFromFormat('m/d/Y', $payments['payment_date'][$index])->format('Y-m-d')
+                : null,
+            'payment_method' => $payments['payment_method'][$index] ?? null,
+            'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index] ?? null,
+            'processing_fee_percent' => $payments['processing_fee_percent'][$index] ?? null,
+        ]);
+     }
 
     // Get all payments data
-    $payments = $request->invoicepayments;
+    // $payments = $request->invoicepayments;
     
-    // If we get a single payment (not in array format), convert to array
-    if (isset($payments['credit_memo'])) {
-        $payments = [$payments];
-    }
+    // // If we get a single payment (not in array format), convert to array
+    // if (isset($payments['credit_memo'])) {
+    //     $payments = [$payments];
+    // }
 
-    // Process each payment
-    foreach ($payments as $index => $payment) {
-        // Skip if essential data is missing
-        if (empty($payment['credit_memo'])) {
-            continue;
-        }
+    // // Process each payment
+    // foreach ($payments as $index => $payment) {
+    //     // Skip if essential data is missing
+    //     if (empty($payment['credit_memo'])) {
+    //         continue;
+    //     }
 
-        $paymentData = [
-            'invoice_id' => $invoiceId,
-            'credit_memo' => $payment['credit_memo'] ?? null,
-            'credit_amount' => $payment['credit_amount'] ?? 0,
-            'credit_note' => $payment['credit_note'] ?? null,
-            'credit_date' => !empty($payment['credit_date']) 
-                ? Carbon::createFromFormat('m/d/Y', $payment['credit_date'])->format('Y-m-d')
-                : null,
-            'check_number' => $payment['check_number'] ?? null,
-            'notes' => $payment['notes'] ?? null,
-            'payment_date' => $payment['payment_date'] ?? null,
-            'payment_method' => $payment['payment_method'] ?? null,
-            'processing_fee_flate_rate' => $payment['processing_fee_flate_rate'] ?? 0,
-            'processing_fee_percent' => $payment['processing_fee_percent'] ?? 0,
-        ];
+    //     $paymentData = [
+    //         'invoice_id' => $invoiceId,
+    //         'credit_memo' => $payment['credit_memo'] ?? null,
+    //         'credit_amount' => $payment['credit_amount'] ?? 0,
+    //         'credit_note' => $payment['credit_note'] ?? null,
+    //         'credit_date' => !empty($payment['credit_date']) 
+    //             ? Carbon::createFromFormat('m/d/Y', $payment['credit_date'])->format('Y-m-d')
+    //             : null,
+    //         'check_number' => $payment['check_number'] ?? null,
+    //         'notes' => $payment['notes'] ?? null,
+    //         'payment_date' => $payment['payment_date'] ?? null,
+    //         'payment_method' => $payment['payment_method'] ?? null,
+    //         'processing_fee_flate_rate' => $payment['processing_fee_flate_rate'] ?? 0,
+    //         'processing_fee_percent' => $payment['processing_fee_percent'] ?? 0,
+    //     ];
 
-        // Update existing or create new
-        if (!empty($payment['id'])) {
-            InvoicePaymentRecieved::where('id', $payment['id'])
-                ->update($paymentData);
-        } else {
-            InvoicePaymentRecieved::create($paymentData);
-        }
-    }
+    //     // Update existing or create new
+    //     if (!empty($payment['id'])) {
+    //         InvoicePaymentRecieved::where('id', $payment['id'])
+    //             ->update($paymentData);
+    //     } else {
+    //         InvoicePaymentRecieved::create($paymentData);
+    //     }
+    // }
 
-    // Handle deleted payments
-    if ($request->has('deleted_payment_ids')) {
-        $deletedIds = is_array($request->deleted_payment_ids) 
-            ? $request->deleted_payment_ids 
-            : explode(',', $request->deleted_payment_ids);
+    // // Handle deleted payments
+    // if ($request->has('deleted_payment_ids')) {
+    //     $deletedIds = is_array($request->deleted_payment_ids) 
+    //         ? $request->deleted_payment_ids 
+    //         : explode(',', $request->deleted_payment_ids);
             
-        InvoicePaymentRecieved::where('invoice_id', $invoiceId)
-            ->whereIn('id', $deletedIds)
-            ->delete();
-    }
+    //     InvoicePaymentRecieved::where('invoice_id', $invoiceId)
+    //         ->whereIn('id', $deletedIds)
+    //         ->delete();
+    // }
 }
     public function destroy($id)
     {
