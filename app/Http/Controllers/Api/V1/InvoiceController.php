@@ -328,6 +328,8 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
         'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
         'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+        'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
+        'internal_notes' => is_array($request->internal_notes ?? []) ? $request->internal_notes : [$request->internal_notes],
     ];
 
     InvoiceCharge::where('invoice_id', $invoiceId)->delete();
@@ -348,6 +350,8 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
             'units' => $charges['units'][$index] ?? null,
             'unit_rate' => $charges['rate'][$index] ?? null,
             'amount' => $charges['amount'][$index] ?? null,
+            'comment' => $charges['comment'][$index] ?? null,
+            'internal_notes' => $charges['internal_notes'][$index] ?? null
         ]);
     }
      $invoice->update([
