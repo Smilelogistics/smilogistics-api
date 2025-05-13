@@ -407,41 +407,113 @@ protected function handlePayments(Request $request, $invoiceId)
     if (!$request->has('credit_amount')) {
         return;
     }
+
+    // Convert all inputs to arrays consistently
     $payments = [
-        'credit_amount' => is_array($request->credit_amount) ? $request->credit_amount : [$request->credit_amount],
-        'credit_memo' => is_array($request->credit_memo ?? []) ? $request->credit_memo : [$request->credit_memo],
-        'credit_note' => is_array($request->credit_note ?? []) ? $request->credit_note : [$request->credit_note],
-        'credit_date' => is_array($request->credit_date ?? []) ? $request->credit_date : [$request->credit_date],
-        'check_number' => is_array($request->check_number ?? []) ? $request->check_number : [$request->check_number],
-        'notes' => is_array($request->notes ?? []) ? $request->notes : [$request->notes],
-        'payment_date' => is_array($request->payment_date ?? []) ? $request->payment_date : [$request->payment_date],
-        'payment_method' => is_array($request->payment_method ?? []) ? $request->payment_method : [$request->payment_method],
-        'processing_fee_flate_rate' => is_array($request->processing_fee_flate_rate ?? []) ? $request->processing_fee_flate_rate : [$request->processing_fee_flate_rate],
-        'processing_fee_percent' => is_array($request->processing_fee_percent ?? []) ? $request->processing_fee_percent : [$request->processing_fee_percent],
-        //'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+        'credit_amount' => (array)$request->credit_amount,
+        'credit_memo' => (array)($request->credit_memo ?? []),
+        'credit_note' => (array)($request->credit_note ?? []),
+        'credit_date' => (array)($request->credit_date ?? []),
+        'check_number' => (array)($request->check_number ?? []),
+        'notes' => (array)($request->notes ?? []),
+        'payment_date' => (array)($request->payment_date ?? []),
+        'payment_method' => (array)($request->payment_method ?? []),
+        'processing_fee_flate_rate' => (array)($request->processing_fee_flate_rate ?? []),
+        'processing_fee_percent' => (array)($request->processing_fee_percent ?? []),
     ];
 
-    InvoicePaymentRecieved::where('invoice_id', $invoiceId)->delete();
+    // Ensure all arrays have the same length
+    $paymentCount = count($payments['credit_amount']);
+    $payments = array_map(function ($item) use ($paymentCount) {
+        return array_pad($item, $paymentCount, null);
+    }, $payments);
 
-     foreach ($payments['credit_amount'] as $index => $type) {
-        InvoicePaymentRecieved::create([
-            'invoice_id' => $invoiceId,
-            'credit_memo' => $payments['credit_memo'][$index] ?? null,
-            'credit_amount' => $payments['credit_amount'][$index] ?? null,
-            'credit_note' => $payments['credit_note'][$index] ?? null,
-            'credit_date' => !empty($payments['credit_date'][$index]) 
-                ? Carbon::createFromFormat('m/d/Y', $payments['credit_date'][$index])->format('Y-m-d')
-                : null,
-            'check_number' => $payments['check_number'][$index] ?? null,
-            'notes' => $payments['notes'][$index] ?? null,
-            'payment_date' => !empty($payments['payment_date'][$index]) 
-                ? Carbon::createFromFormat('m/d/Y', $payments['payment_date'][$index])->format('Y-m-d')
-                : null,
-            'payment_method' => $payments['payment_method'][$index] ?? null,
-            'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index] ?? null,
-            'processing_fee_percent' => $payments['processing_fee_percent'][$index] ?? null,
-        ]);
-     }
+    DB::beginTransaction();
+    try {
+        InvoicePaymentRecieved::where('invoice_id', $invoiceId)->delete();
+
+        foreach ($payments['credit_amount'] as $index => $amount) {
+            $paymentData = [
+                'invoice_id' => $invoiceId,
+                'credit_memo' => $payments['credit_memo'][$index],
+                'credit_amount' => $amount,
+                'credit_note' => $payments['credit_note'][$index],
+                'check_number' => $payments['check_number'][$index],
+                'notes' => $payments['notes'][$index],
+                'payment_method' => $payments['payment_method'][$index],
+                'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index],
+                'processing_fee_percent' => $payments['processing_fee_percent'][$index],
+            ];
+
+            // Handle date formatting safely
+            if (!empty($payments['credit_date'][$index])) {
+                try {
+                    $paymentData['credit_date'] = Carbon::createFromFormat('m/d/Y', $payments['credit_date'][$index])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Log error or handle invalid date
+                    $paymentData['credit_date'] = null;
+                }
+            }
+
+            if (!empty($payments['payment_date'][$index])) {
+                try {
+                    $paymentData['payment_date'] = Carbon::createFromFormat('m/d/Y', $payments['payment_date'][$index])->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Log error or handle invalid date
+                    $paymentData['payment_date'] = null;
+                }
+            }
+
+            InvoicePaymentRecieved::create($paymentData);
+        }
+
+        DB::commit();
+    } catch (\Exception $e) {
+        DB::rollBack();
+        throw $e;
+    }
+}
+
+// protected function handlePayments(Request $request, $invoiceId)
+// {
+//     if (!$request->has('credit_amount')) {
+//         return;
+//     }
+//     $payments = [
+//         'credit_amount' => is_array($request->credit_amount) ? $request->credit_amount : [$request->credit_amount],
+//         'credit_memo' => is_array($request->credit_memo ?? []) ? $request->credit_memo : [$request->credit_memo],
+//         'credit_note' => is_array($request->credit_note ?? []) ? $request->credit_note : [$request->credit_note],
+//         'credit_date' => is_array($request->credit_date ?? []) ? $request->credit_date : [$request->credit_date],
+//         'check_number' => is_array($request->check_number ?? []) ? $request->check_number : [$request->check_number],
+//         'notes' => is_array($request->notes ?? []) ? $request->notes : [$request->notes],
+//         'payment_date' => is_array($request->payment_date ?? []) ? $request->payment_date : [$request->payment_date],
+//         'payment_method' => is_array($request->payment_method ?? []) ? $request->payment_method : [$request->payment_method],
+//         'processing_fee_flate_rate' => is_array($request->processing_fee_flate_rate ?? []) ? $request->processing_fee_flate_rate : [$request->processing_fee_flate_rate],
+//         'processing_fee_percent' => is_array($request->processing_fee_percent ?? []) ? $request->processing_fee_percent : [$request->processing_fee_percent],
+//         //'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+//     ];
+
+//     InvoicePaymentRecieved::where('invoice_id', $invoiceId)->delete();
+
+//      foreach ($payments['credit_amount'] as $index => $type) {
+//         InvoicePaymentRecieved::create([
+//             'invoice_id' => $invoiceId,
+//             'credit_memo' => $payments['credit_memo'][$index] ?? null,
+//             'credit_amount' => $payments['credit_amount'][$index] ?? null,
+//             'credit_note' => $payments['credit_note'][$index] ?? null,
+//             'credit_date' => !empty($payments['credit_date'][$index]) 
+//                 ? Carbon::createFromFormat('m/d/Y', $payments['credit_date'][$index])->format('Y-m-d')
+//                 : null,
+//             'check_number' => $payments['check_number'][$index] ?? null,
+//             'notes' => $payments['notes'][$index] ?? null,
+//             'payment_date' => !empty($payments['payment_date'][$index]) 
+//                 ? Carbon::createFromFormat('m/d/Y', $payments['payment_date'][$index])->format('Y-m-d')
+//                 : null,
+//             'payment_method' => $payments['payment_method'][$index] ?? null,
+//             'processing_fee_flate_rate' => $payments['processing_fee_flate_rate'][$index] ?? null,
+//             'processing_fee_percent' => $payments['processing_fee_percent'][$index] ?? null,
+//         ]);
+//      }
 
     // Get all payments data
     // $payments = $request->invoicepayments;
@@ -493,7 +565,7 @@ protected function handlePayments(Request $request, $invoiceId)
     //         ->whereIn('id', $deletedIds)
     //         ->delete();
     // }
-}
+//}
     public function destroy($id)
     {
         $invoice = Invoice::findOrFail($id);
