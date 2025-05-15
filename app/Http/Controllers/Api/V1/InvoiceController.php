@@ -199,7 +199,7 @@ class InvoiceController extends Controller
                 $total = 0;
                 $totalDiscount = 0;
                 foreach ($request->charge_type as $index => $type) {
-                    $amount = (float)($request->$amount[$indexi] ?? 0);
+                    $amount = (float)($request->amount[$indexi] ?? 0);
                     $discount = (float)($request->discount[$index] ?? 0);
                     
                     $total += $amount;
