@@ -858,7 +858,7 @@ class ShipmentController extends Controller
             ShipmentCharge::create([
                 'shipment_id' => $shipment->id,
                 'branch_id' => $branchId,
-                'charge_type' => $chargeType,
+                'charge_type' => $validateData['charge_type'][$i] ?? null,
                 'comment' => $validatedData['comment'][$i] ?? null,
                 'units' => $validatedData['units'][$i] ?? null,
                 'rate' => $validatedData['rate'][$i] ?? null,
