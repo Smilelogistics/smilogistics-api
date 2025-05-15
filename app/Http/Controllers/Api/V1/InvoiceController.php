@@ -334,7 +334,7 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
 
     InvoiceCharge::where('invoice_id', $invoiceId)->delete();
     
-        $net_total = 0;
+        $total = 0;
         $total_discount = 0;
 
     foreach ($charges['charge_type'] as $index => $type) {
