@@ -411,9 +411,7 @@ protected function handleDocuments(Request $request, $invoiceId)
 
 protected function handlePayments(Request $request, $invoiceId)
 {
-    if (!$request->has('credit_amount')) {
-        return;
-    }
+     if (!$request->has('credit_amount')) return;
 
     // Convert all inputs to arrays consistently
     $payments = [
