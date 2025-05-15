@@ -341,21 +341,22 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
          $units = (float)($charges['units'][$index] ?? 0);
             $rate = (float)($charges['rate'][$index] ?? 0);
             $discount = (float)($charges['discount'][$index] ?? 0);
+            $amounts = (float)($charges['amount'][$index] ?? 0);
             
-            $net_total += $units * $rate;
+            $total += $amounts;
             $total_discount += $discount;
         InvoiceCharge::create([
             'invoice_id' => $invoiceId,
             'charge_type' => $type,
             'units' => $charges['units'][$index] ?? null,
             'unit_rate' => $charges['rate'][$index] ?? null,
-            'amount' => $charges['amount'][$index] ?? null,
+            'amount' =>  $amounts ?? null, //$charges['amount'][$index] ?? null,
             'comment' => $charges['comment'][$index] ?? null,
             'internal_notes' => $charges['internal_notes'][$index] ?? null
         ]);
     }
      $invoice->update([
-            'net_total' => $net_total,
+            'net_total' => $total - $total_discount,
             'total_discount' => $total_discount
         ]);
 }
