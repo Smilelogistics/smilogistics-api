@@ -247,11 +247,11 @@ class ShipmentController extends Controller
                 }
             
                 // Update shipment with calculated totals
-                // $shipment->update([
-                //     'total' => $total,
-                //     'total_discount' => $totalDiscount,
-                //     'net_total' => $total - $totalDiscount
-                // ]);
+                $shipment->update([
+                    //'total' => $total,
+                    'total_discount' => $totalDiscount,
+                    'net_total' => $total - $totalDiscount
+                ]);
             }
 
             
@@ -393,11 +393,11 @@ class ShipmentController extends Controller
                 }
             
                 // Update the shipment with these totals
-                // $shipment->update([
-                //     'expense_total' => $expense_total,
-                //     'credit_total' => $credit_total,
-                //     'net_expense' => $net_total
-                // ]);
+                $shipment->update([
+                    'expense_total' => $expense_total,
+                    'credit_total' => $credit_total,
+                    'net_expense' => $net_total
+                ]);
             }
 
 
@@ -870,6 +870,11 @@ class ShipmentController extends Controller
                 'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
             ]);
         }
+
+        $shipment->update([
+                'net_total_charges' => $total - $totalDiscount,
+                'total_discount_charges' => $totalDiscount,
+        ]);
     }
 
     protected function processContainers($shipment, $validatedData, $branchId)
@@ -892,6 +897,7 @@ class ShipmentController extends Controller
                     'chasis' => $container['chasis'],
                 ]);
         }
+
     }
 
 protected function processExpenses($shipment, $validatedData, $branchId)
@@ -917,7 +923,7 @@ protected function processExpenses($shipment, $validatedData, $branchId)
 
         $expense_total += $expense['amount'];
         $credit_total += $expense['credit_reimbursement_amount'];
-
+        $net_total = $expense_total - $credit_total;
         ShipmentExpense::create([
             'shipment_id' => $shipment->id,
             'branch_id' => $branchId,
@@ -933,6 +939,12 @@ protected function processExpenses($shipment, $validatedData, $branchId)
             'paid' => $expense['paid'],
         ]);
     }
+
+    $shipment->update([
+        'expense_total' => $expense_total,
+        'credit_total' => $credit_total,
+        'net_expenses' => $net_total
+    ]);
 }
 
 protected function processUploads($shipment, $uploads)
