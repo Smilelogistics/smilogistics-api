@@ -328,6 +328,7 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
         'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
         'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+        'discount' => is_array($request->discount ?? []) ? $request->discount : [$request->discount],
         'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
         'internal_notes' => is_array($request->internal_notes ?? []) ? $request->internal_notes : [$request->internal_notes],
     ];
@@ -352,6 +353,7 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
             'unit_rate' => $charges['rate'][$index] ?? null,
             'amount' =>  $amounts ?? null, //$charges['amount'][$index] ?? null,
             'comment' => $charges['comment'][$index] ?? null,
+            'discount' => $charges['discount'][$index] ?? null,
             'internal_notes' => $charges['internal_notes'][$index] ?? null
         ]);
     }
