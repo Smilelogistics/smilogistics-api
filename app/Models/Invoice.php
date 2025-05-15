@@ -42,6 +42,8 @@ class Invoice extends Model
         'from_address',
         'to_address',
         'stop_address',
+        'net_total',
+        'total_discount',
       
     ];
 
