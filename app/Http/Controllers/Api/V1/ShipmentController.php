@@ -248,11 +248,12 @@ class ShipmentController extends Controller
             
                 // Update shipment with calculated totals
                 $shipment->update([
-                    //'total' => $total,
-                    'total_discount' => $totalDiscount,
-                    'net_total' => $total - $totalDiscount
+                    'total_charges' => $total,
+                    'total_discount_charges' => $totalDiscount,
+                    'net_total_charges' => $total - $totalDiscount
                 ]);
             }
+
 
             
             // if (isset($validatedData['charges'])) {
