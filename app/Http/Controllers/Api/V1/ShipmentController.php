@@ -943,7 +943,7 @@ protected function processExpenses($shipment, $validatedData, $branchId)
     $shipment->update([
         'expense_total' => $expense_total,
         'credit_total' => $credit_total,
-        'net_expenses' => $net_total
+        'net_expense' => $net_total
     ]);
 }
 
