@@ -841,41 +841,71 @@ class ShipmentController extends Controller
         }
     }
 
-    protected function processCharges($shipment, $validatedData, $branchId)
+protected function processCharges($shipment, $validatedData, $branchId)
 {
+    // Debug the incoming data
+    \Log::debug('Processing charges with data:', [
+        'charge_type' => $validatedData['charge_type'] ?? null,
+        'rate' => $validatedData['rate'] ?? null,
+        'amount' => $validatedData['amount'] ?? null,
+        'units' => $validatedData['units'] ?? null,
+    ]);
+
     $total = 0;
     $totalDiscount = 0;
     
     // Delete existing charges
     ShipmentCharge::where('shipment_id', $shipment->id)->delete();
 
-    // Ensure all charge fields are arrays and have the same length
-    $chargeTypes = (array)($validatedData['charge_type'] ?? []);
-    $comments = (array)($validatedData['comment'] ?? []);
-    $units = (array)($validatedData['units'] ?? []);
-    $rates = (array)($validatedData['rate'] ?? []);
-    $amounts = (array)($validatedData['amount'] ?? []);
-    $discounts = (array)($validatedData['discount'] ?? []);
-    $internalNotes = (array)($validatedData['internal_notes'] ?? []);
+    // Convert all fields to arrays and ensure consistent length
+    $chargeData = [
+        'charge_type' => array_values((array)($validatedData['charge_type'] ?? [])),
+        'comment' => array_values((array)($validatedData['comment'] ?? [])),
+        'units' => array_values((array)($validatedData['units'] ?? [])),
+        'rate' => array_values((array)($validatedData['rate'] ?? [])),
+        'amount' => array_values((array)($validatedData['amount'] ?? [])),
+        'discount' => array_values((array)($validatedData['discount'] ?? [])),
+        'internal_notes' => array_values((array)($validatedData['internal_notes'] ?? [])),
+    ];
 
-    foreach ($chargeTypes as $index => $chargeType) {
-        $amount = (float)($amounts[$index] ?? 0);
-        $discount = (float)($discounts[$index] ?? 0);
-        
-        $total += $amount;
-        $totalDiscount += $discount;
+    // Get the count based on charge_type (assuming it's the primary field)
+    $chargeCount = count($chargeData['charge_type']);
 
-        ShipmentCharge::create([
-            'shipment_id' => $shipment->id,
-            'branch_id' => $branchId,
-            'charge_type' => $chargeType,
-            'comment' => $comments[$index] ?? null,
-            'units' => $units[$index] ?? null,
-            'rate' => $rates[$index] ?? null,
-            'amount' => $amount,
-            'discount' => $discount,
-            'internal_notes' => $internalNotes[$index] ?? null,
-        ]);
+    // Process each charge
+    for ($i = 0; $i < $chargeCount; $i++) {
+        try {
+            $amount = (float)($chargeData['amount'][$i] ?? 0);
+            $discount = (float)($chargeData['discount'][$i] ?? 0);
+            
+            $total += $amount;
+            $totalDiscount += $discount;
+
+            $charge = ShipmentCharge::create([
+                'shipment_id' => $shipment->id,
+                'branch_id' => $branchId,
+                'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                'comment' => $chargeData['comment'][$i] ?? null,
+                'units' => $chargeData['units'][$i] ?? null,
+                'rate' => $chargeData['rate'][$i] ?? null,
+                'amount' => $amount,
+                'discount' => $discount,
+                'internal_notes' => $chargeData['internal_notes'][$i] ?? null,
+            ]);
+
+            \Log::debug('Created charge:', $charge->toArray());
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to create charge:', [
+                'index' => $i,
+                'error' => $e->getMessage(),
+                'data' => [
+                    'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                    'rate' => $chargeData['rate'][$i] ?? null,
+                    'amount' => $chargeData['amount'][$i] ?? null,
+                ]
+            ]);
+            continue;
+        }
     }
 
     // Update shipment totals
@@ -884,8 +914,13 @@ class ShipmentController extends Controller
         'total_discount_charges' => $totalDiscount,
         'total_charges' => $total
     ]);
-}
 
+    \Log::debug('Updated shipment totals:', [
+        'net_total_charges' => $total - $totalDiscount,
+        'total_discount_charges' => $totalDiscount,
+        'total_charges' => $total
+    ]);
+}
     // protected function processCharges($shipment, $validatedData, $branchId)
     // {
     //     $total = 0;
