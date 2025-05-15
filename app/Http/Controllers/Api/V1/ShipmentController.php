@@ -842,40 +842,85 @@ class ShipmentController extends Controller
     }
 
     protected function processCharges($shipment, $validatedData, $branchId)
-    {
-        $total = 0;
-        $totalDiscount = 0;
+{
+    $total = 0;
+    $totalDiscount = 0;
+    
+    // Delete existing charges
+    ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+
+    // Ensure all charge fields are arrays and have the same length
+    $chargeTypes = (array)($validatedData['charge_type'] ?? []);
+    $comments = (array)($validatedData['comment'] ?? []);
+    $units = (array)($validatedData['units'] ?? []);
+    $rates = (array)($validatedData['rate'] ?? []);
+    $amounts = (array)($validatedData['amount'] ?? []);
+    $discounts = (array)($validatedData['discount'] ?? []);
+    $internalNotes = (array)($validatedData['internal_notes'] ?? []);
+
+    foreach ($chargeTypes as $index => $chargeType) {
+        $amount = (float)($amounts[$index] ?? 0);
+        $discount = (float)($discounts[$index] ?? 0);
         
-        ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+        $total += $amount;
+        $totalDiscount += $discount;
 
-        foreach ($validatedData['charge_type'] as $i => $chargeType) {
-            $amount = (float)($validatedData['amount'][$i] ?? 0);
-            $discount = (float)($validatedData['discount'][$i] ?? 0);
-            
-            $total += $amount;
-            $totalDiscount += $discount;
-
-            ShipmentCharge::create([
-                'shipment_id' => $shipment->id,
-                'branch_id' => $branchId,
-                'charge_type' => $validateData['charge_type'][$i] ?? null,
-                'comment' => $validatedData['comment'][$i] ?? null,
-                'units' => $validatedData['units'][$i] ?? null,
-                'rate' => $validatedData['rate'][$i] ?? null,
-                'amount' => $amount,
-                'discount' => $discount,
-                'total' => $total,
-                'net_total' => $total - $totalDiscount,
-                'total_discount' => $totalDiscount,
-                'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
-            ]);
-        }
-
-        $shipment->update([
-                'net_total_charges' => $total - $totalDiscount,
-                'total_discount_charges' => $totalDiscount,
+        ShipmentCharge::create([
+            'shipment_id' => $shipment->id,
+            'branch_id' => $branchId,
+            'charge_type' => $chargeType,
+            'comment' => $comments[$index] ?? null,
+            'units' => $units[$index] ?? null,
+            'rate' => $rates[$index] ?? null,
+            'amount' => $amount,
+            'discount' => $discount,
+            'internal_notes' => $internalNotes[$index] ?? null,
         ]);
     }
+
+    // Update shipment totals
+    $shipment->update([
+        'net_total_charges' => $total - $totalDiscount,
+        'total_discount_charges' => $totalDiscount,
+        'total_charges' => $total
+    ]);
+}
+
+    // protected function processCharges($shipment, $validatedData, $branchId)
+    // {
+    //     $total = 0;
+    //     $totalDiscount = 0;
+        
+    //     ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+
+    //     foreach ($validatedData['charge_type'] as $i => $chargeType) {
+    //         $amount = (float)($validatedData['amount'][$i] ?? 0);
+    //         $discount = (float)($validatedData['discount'][$i] ?? 0);
+            
+    //         $total += $amount;
+    //         $totalDiscount += $discount;
+
+    //         ShipmentCharge::create([
+    //             'shipment_id' => $shipment->id,
+    //             'branch_id' => $branchId,
+    //             'charge_type' => $validateData['charge_type'][$i] ?? null,
+    //             'comment' => $validatedData['comment'][$i] ?? null,
+    //             'units' => $validatedData['units'][$i] ?? null,
+    //             'rate' => $validatedData['rate'][$i] ?? null,
+    //             'amount' => $amount,
+    //             'discount' => $discount,
+    //             'total' => $total,
+    //             'net_total' => $total - $totalDiscount,
+    //             'total_discount' => $totalDiscount,
+    //             'internal_notes' => $validatedData['internal_notes'][$i] ?? null,
+    //         ]);
+    //     }
+
+    //     $shipment->update([
+    //             'net_total_charges' => $total - $totalDiscount,
+    //             'total_discount_charges' => $totalDiscount,
+    //     ]);
+    // }
 
     protected function processContainers($shipment, $validatedData, $branchId)
     {
