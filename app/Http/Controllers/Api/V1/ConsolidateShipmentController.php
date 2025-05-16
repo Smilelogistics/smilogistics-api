@@ -101,7 +101,7 @@ class ConsolidateShipmentController extends Controller
             
                     // Create charge record
                     ConsolidateShipmentCharges::create([
-                        'shipment_id' => $consolidateShipment->id,
+                        'consolidate_shipment_id' => $consolidateShipment->id,
                         'branch_id' => $branchId ?? null,
                         'charge_type' => $chargeType,
                         'comment' => $validatedData['comment'][$i] ?? null,
@@ -336,7 +336,7 @@ class ConsolidateShipmentController extends Controller
         $totalDiscount = 0;
         
         // Delete existing charges
-        ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+        ShipmentCharge::where('consolidate_shipment_id', $shipment->id)->delete();
 
         // Convert all fields to arrays and ensure consistent length
         $chargeData = [
@@ -362,7 +362,7 @@ class ConsolidateShipmentController extends Controller
                 $totalDiscount += $discount;
 
                 $charge = ConsolidateShipmentCharges::create([
-                    'shipment_id' => $shipment->id,
+                    'consolidate_shipment_id' => $shipment->id,
                     'branch_id' => $branchId,
                     'charge_type' => $chargeData['charge_type'][$i] ?? null,
                     'comment' => $chargeData['comment'][$i] ?? null,
