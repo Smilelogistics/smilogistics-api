@@ -215,7 +215,7 @@ class InvoiceController extends Controller
                     ]);
                 }
                 $invoice->update([
-                    //'total' => $total,
+                    //'total' => $total, 
                     'total_discount' => $totalDiscount,
                     'net_total' => $total - $totalDiscount
                 ]);
