@@ -39,6 +39,7 @@ class StoreShipmentRequest extends FormRequest
             'load_type' => 'nullable|string|max:255',
             'load_type_note' => 'nullable|string|max:255',
             'brokered' => 'nullable|string|max:255',
+            'load_type_note_r' => 'nullable|string|max:255',
             'shipment_image' => 'nullable|string|max:255',
             'reference_number' => 'nullable|string|max:255',
             'bill_of_laden_number' => 'nullable|string|max:255',

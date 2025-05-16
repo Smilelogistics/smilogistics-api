@@ -199,6 +199,7 @@ public function updateGeneral(Request $request)
             'mpg' => 'sometimes|integer',
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
+            'handling_fee' => 'nullable|numeric',
 
         ]);
 

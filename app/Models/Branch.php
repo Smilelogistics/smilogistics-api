@@ -52,6 +52,7 @@ class Branch extends Model
         'mpg',
         'base_rate',
         'base_fee',
+        'handling_fee',
         'business_status',
         'subscription_count',
         'subscription_end_date',

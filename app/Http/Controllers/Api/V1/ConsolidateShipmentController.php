@@ -55,6 +55,8 @@ class ConsolidateShipmentController extends Controller
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = $user->branch ? $user->branch->id : null;
         $customerId = $user->customer ? $user->customer->id : null;
+        $handling_fee = $user->branch->handling_fee;
+        $total_shipping_cost = $validatedData['total_weight'] * $handling_fee;
         
     	//dd(ConsolidateShipment::generateTrackingNumber());
         $consolidateShipment = ConsolidateShipment::create([
@@ -77,13 +79,20 @@ class ConsolidateShipmentController extends Controller
             'expected_departure_date' => $validatedData['expected_departure_date'],
             'expected_arrival_date' => $validatedData['expected_arrival_date'],
             'total_weight' => $validatedData['total_weight'],
-            'total_shipping_cost' => $validatedData['total_shipping_cost'],
+            'total_shipping_cost' => $total_shipping_cost,
             'payment_status' => $validatedData['payment_status'],
             'payment_method' => $validatedData['payment_method'],
         ]);
 
         if ($request->has('charges')) {
             foreach ($request->charges as $charge) {
+                 $amount = (float)($charge['amount'][$i] ?? 0);
+                $discount = (float)($charge['discount'][$i] ?? 0);
+                
+                $total += $amount;
+                $totalDiscount += $discount;
+                $net_total = $total - $totalDiscount;
+                
                 ConsolidateShipmentCharges::create([
                     'consolidate_shipment_id' => $consolidateShipment->id,
                     'branch_id' => $branchId ?? null,
@@ -101,6 +110,11 @@ class ConsolidateShipmentController extends Controller
                     'net_total' => $net_total ?? null,
                 ]);
             }
+            $consolidateShipment->update([
+                'consolidate_total_charges' => $total,
+                'consolidate_net_total_charges' => $net_total,
+                'consolidate_total_discount_charges' => $totalDiscount
+            ]);
         }
 
        // dd($consolidateShipment);
@@ -232,28 +246,94 @@ class ConsolidateShipmentController extends Controller
                 'payment_method' => $validatedShipment['payment_method'],
             ]);
 
-            if ($request->has('charges')) {
-                foreach ($request->charges as $charge) {
-                    ConsolidateShipmentCharges::updateOrCreate([
-                        'consolidate_shipment_id' => $consolidateShipment->id], 
-                        [
-                            
-                        'branch_id' => $branchId ?? null,
-                        'charge_type' => $charge['charge_type'] ?? null,
-                        'comment' => $charge['comment'] ?? null,
-                        'units' => $charge['units'] ?? null,
-                        'rate' => $charge['rate'] ?? null,
-                        'amount' => $charge['amount'] ?? null,
-                        'discount' => $charge['discount'] ?? null,
-                        'internal_notes' => $charge['internal_notes_charges'] ?? null,
-                        'billed' => $charge['billed'] ?? null,
-                        'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
-                        'invoice_date' => $charge['invoice_date'] ?? null,
-                        'total' => $total ?? null,
-                        'net_total' => $net_total ?? null,
+            $total = 0;
+            $totalDiscount = 0;
+            
+            // Delete existing charges
+            ConsolidateShipmentCharges::where('shipment_id', $shipment->id)->delete();
+
+            // Convert all fields to arrays and ensure consistent length
+            $chargeData = [
+                'charge_type' => array_values((array)($validatedData['charge_type'] ?? [])),
+                'comment' => array_values((array)($validatedData['comment'] ?? [])),
+                'units' => array_values((array)($validatedData['units'] ?? [])),
+                'rate' => array_values((array)($validatedData['rate'] ?? [])),
+                'amount' => array_values((array)($validatedData['amount'] ?? [])),
+                'discount' => array_values((array)($validatedData['discount'] ?? [])),
+                'internal_notes' => array_values((array)($validatedData['internal_notes'] ?? [])),
+            ];
+
+            // Get the count based on charge_type (assuming it's the primary field)
+            $chargeCount = count($chargeData['charge_type']);
+
+            // Process each charge
+            for ($i = 0; $i < $chargeCount; $i++) {
+                try {
+                    $amount = (float)($chargeData['amount'][$i] ?? 0);
+                    $discount = (float)($chargeData['discount'][$i] ?? 0);
+                    
+                    $total += $amount;
+                    $totalDiscount += $discount;
+
+                    $charge = ConsolidateShipmentCharges::create([
+                        'shipment_id' => $shipment->id,
+                        'branch_id' => $branchId,
+                        'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                        'comment' => $chargeData['comment'][$i] ?? null,
+                        'units' => $chargeData['units'][$i] ?? null,
+                        'rate' => $chargeData['rate'][$i] ?? null,
+                        'amount' => $amount,
+                        'discount' => $discount,
+                        'internal_notes' => $chargeData['internal_notes'][$i] ?? null,
                     ]);
+
+                    \Log::debug('Created charge:', $charge->toArray());
+
+                } catch (\Exception $e) {
+                    \Log::error('Failed to create charge:', [
+                        'index' => $i,
+                        'error' => $e->getMessage(),
+                        'data' => [
+                            'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                            'rate' => $chargeData['rate'][$i] ?? null,
+                            'amount' => $chargeData['amount'][$i] ?? null,
+                        ]
+                    ]);
+                    continue;
                 }
             }
+
+            // Update shipment totals
+            $consolidateShipment->update([
+                'consolidate_net_total_charges' => $total - $totalDiscount,
+                'consolidate_total_discount_charges' => $totalDiscount,
+                'consolidate_total_charges' => $total
+            ]);
+
+        
+
+            // if ($request->has('charges')) {
+            //     foreach ($request->charges as $charge) {
+            //         ConsolidateShipmentCharges::updateOrCreate([
+            //             'consolidate_shipment_id' => $consolidateShipment->id], 
+            //             [
+                            
+            //             'branch_id' => $branchId ?? null,
+            //             'charge_type' => $charge['charge_type'] ?? null,
+            //             'comment' => $charge['comment'] ?? null,
+            //             'units' => $charge['units'] ?? null,
+            //             'rate' => $charge['rate'] ?? null,
+            //             'amount' => $charge['amount'] ?? null,
+            //             'discount' => $charge['discount'] ?? null,
+            //             'internal_notes' => $charge['internal_notes_charges'] ?? null,
+            //             'billed' => $charge['billed'] ?? null,
+            //             'invoice_number' => $charge['invoice_number'] . $branch_prfx ?? null,
+            //             'invoice_date' => $charge['invoice_date'] ?? null,
+            //             'total' => $total ?? null,
+            //             'net_total' => $net_total ?? null,
+            //         ]);
+            //     }
+            // }
 
             if ($request->hasFile('proof_of_delivery_path')) {
                 $uploadedFile = Cloudinary::upload($request->file('proof_of_delivery_path')->getRealPath(), [

@@ -998,8 +998,8 @@ protected function processExpenses($shipment, $validatedData, $branchId)
             'vendor_invoice_number' => $validatedData['vendor_invoice_number'][$i] ?? null,
             'payment_reference_note' => $validatedData['payment_reference_note'][$i] ?? null,
             'disputed_note' => $validatedData['disputed_note'][$i] ?? null,
-            'expense_disputed' => !empty($validatedData['expense_disputed'][$i]),
-            'paid' => !empty($validatedData['paid'][$i]),
+            'expense_disputed' => !empty($validatedData['expense_disputed'][$i]) ? true : false,
+            'paid' => !empty($validatedData['paid'][$i]) ? true : false
         ];
 
         $expense_total += $expense['amount'];
