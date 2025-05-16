@@ -385,7 +385,7 @@ class ShipmentController extends Controller
                         'vendor_invoice_number' => $expense['vendor_invoice_number'],
                         'payment_reference_note' => $expense['payment_reference_note'],
                         'disputed_note' => $expense['disputed_note'],
-                        'expense_disputed' => $expense['expense_disputed'],
+                        'billed' => $expense['expense_disputed'],
                         'paid' => $expense['paid'],
                         'credit_total' => $credit_total,
                         'expense_total' => $expense_total,
@@ -1016,7 +1016,7 @@ protected function processExpenses($shipment, $validatedData, $branchId)
             'vendor_invoice_number' => $expense['vendor_invoice_number'],
             'payment_reference_note' => $expense['payment_reference_note'],
             'disputed_note' => $expense['disputed_note'],
-            'expense_disputed' => $expense['expense_disputed'],
+            'billed' => $expense['expense_disputed'],
             'paid' => $expense['paid'],
         ]);
     }
