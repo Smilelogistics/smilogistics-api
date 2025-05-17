@@ -133,15 +133,29 @@ class DashboardController extends Controller
         $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
     
         // Return response
-        return response()->json([
-            'myShipmentCount' => $shipmentCount,
-            'myConsolidatedCount' => $consolidatedCount,
-            // 'grand_fuel_cost' => $grandFuelCost,
-            // 'grand_expense_total' => $grandExpenseTotal,
-            // 'grand_charges_total' => $grandChargesTotal,
-            'grand_total_amount' => $grandTotalAmount,
-            'recentTransactions' => $recentTransactions
-        ]);
+        // return response()->json([
+        //     'myShipmentCount' => $shipmentCount,
+        //     'myConsolidatedCount' => $consolidatedCount,
+        //     // 'grand_fuel_cost' => $grandFuelCost,
+        //     // 'grand_expense_total' => $grandExpenseTotal,
+        //     // 'grand_charges_total' => $grandChargesTotal,
+        //     'grand_total_amount' => $grandTotalAmount,
+        //     'recentTransactions' => $recentTransactions
+        // ]);
+
+         return response()->json([
+                'status' => 'success',
+                'message' => 'Dashboard data retrieved successfully',
+                'data' => [
+                    'myShipmentCount' => $shipmentCount,
+                    'myConsolidatedCount' => $consolidatedCount,
+                    // 'grand_fuel_cost' => $grandFuelCost,
+                    // 'grand_expense_total' => $grandExpenseTotal,
+                    // 'grand_charges_total' => $grandChargesTotal,
+                    'grand_total_amount' => $grandTotalAmount,
+                    'recentTransactions' => $recentTransactions
+                ]
+            ]);
             
             // When you need the totals later:
             // $totals = ShipmentExpense::where('shipment_id', $shipment->id)
@@ -189,15 +203,28 @@ class DashboardController extends Controller
         $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
     
         // Return response
-        return response()->json([
-            'myShipmentCount' => $shipmentCount,
-            'myConsolidatedCount' => $consolidatedCount,
-            // 'grand_fuel_cost' => $grandFuelCost,
-            // 'grand_expense_total' => $grandExpenseTotal,
-            // 'grand_charges_total' => $grandChargesTotal,
-            'grand_total_amount' => $grandTotalAmount,
-            'recentTransactions' => $recentTransactions
-        ]);
+          return response()->json([
+                'status' => 'success',
+                'message' => 'Dashboard data retrieved successfully',
+                'data' => [
+                    'myShipmentCount' => $shipmentCount,
+                    'myConsolidatedCount' => $consolidatedCount,
+                    // 'grand_fuel_cost' => $grandFuelCost,
+                    // 'grand_expense_total' => $grandExpenseTotal,
+                    // 'grand_charges_total' => $grandChargesTotal,
+                    'grand_total_amount' => $grandTotalAmount,
+                    'recentTransactions' => $recentTransactions
+                ]
+            ]);
+        // return response()->json([
+        //     'myShipmentCount' => $shipmentCount,
+        //     'myConsolidatedCount' => $consolidatedCount,
+        //     // 'grand_fuel_cost' => $grandFuelCost,
+        //     // 'grand_expense_total' => $grandExpenseTotal,
+        //     // 'grand_charges_total' => $grandChargesTotal,
+        //     'grand_total_amount' => $grandTotalAmount,
+        //     'recentTransactions' => $recentTransactions
+        // ]);
             
            
         }
