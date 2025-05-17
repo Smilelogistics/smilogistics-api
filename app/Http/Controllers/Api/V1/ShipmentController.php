@@ -45,6 +45,7 @@ class ShipmentController extends Controller
         $branchId = auth()->user()->getBranchId();
         $shipments = Shipment::with(['branch','customer', 'billTo', 'shipmentContainers', 'shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])
             ->where('branch_id', $branchId)
+            ->where('user_id', $user->id)
             ->latest()
             ->get();
         return response()->json(['shipments' => $shipments]);

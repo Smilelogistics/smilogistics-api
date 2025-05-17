@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Customer;
+use App\Models\Delivery;
 use App\Models\Shipment;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
@@ -94,65 +95,33 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
-            // $shipments = $driver->shipment()
-            // ->select('id', 'created_at', 'shipment_status', 'total_fuel_cost', DB::raw("'shipment' as type"))
-            // ->latest()
-            // ->take(10);
-            // $consolidatedShipments = $driver->consolidateShipment()
-            // ->select('id', 'created_at', 'status', 'total_fuel_cost', DB::raw("'consolidated' as type"))
-            // ->latest()
-            // ->take(10);
-
-            // $recentTransactions = $shipments->union($consolidatedShipments)
-            // ->orderBy('created_at', 'desc')
-            // ->take(10)
-            // ->get();
-
-            $shipments = Shipment::with(['expenses', 'charges'])
-            ->where('branch_id', $branchId)
-            ->where('driver_id', $user->driver->id)
-            ->get();
+            $shipmentRevenue = Shipment::where('driver_id', $user->driver->id)->sum('net_total_charges');
+            $consolidatedRevenue = ConsolidateShipment::where('driver_id', $user->driver->id)->sum('total_shipping_cost');
+            $grandFuelCost = Shipment::where('driver_id', $user->driver->id)->sum('total_fuel_cost');
+            $totalRevenue = $shipmentRevenue + $consolidatedRevenue + $grandFuelCost;
     
         // Count of shipments
-        $shipmentCount = Shipment::where('created_by_driver_id', $user->creatorDriver->id)->count();
-        $consolidatedCount = ConsolidateShipment::where('created_by_driver_id', $user->creatorDriver->id)->count();
-        $grandFuelCost = $shipments->sum('total_fuel_cost');
+        $shipmentCount = Shipment::where('driver_id', $user->driver->id)->count();
+        $consolidatedCount = ConsolidateShipment::where('driver_id', $user->driver->id)->count();
+        $deliveryCount = Delivery::where('driver_id', $user->driver->id)->count();
 
         $recentTransactions = Shipment::where('created_by_driver_id', $user->creatorDriver->id)
         ->orderBy('created_at', 'desc')
         ->take(10);
     
-        $grandExpenseTotal = $shipments->sum(function ($shipment) {
-            return $shipment->expenses->sum('amount') - $shipment->expenses->sum('credit_reimbursement_amount');
-        });
-    
-        $grandChargesTotal = $shipments->sum(function ($shipment) {
-            return $shipment->charges->sum('net_total');
-        });
-    
-        $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
-    
+        
         // Return response
-        // return response()->json([
-        //     'myShipmentCount' => $shipmentCount,
-        //     'myConsolidatedCount' => $consolidatedCount,
-        //     // 'grand_fuel_cost' => $grandFuelCost,
-        //     // 'grand_expense_total' => $grandExpenseTotal,
-        //     // 'grand_charges_total' => $grandChargesTotal,
-        //     'grand_total_amount' => $grandTotalAmount,
-        //     'recentTransactions' => $recentTransactions
-        // ]);
-
          return response()->json([
                 'status' => 'success',
                 'message' => 'Dashboard data retrieved successfully',
                 'data' => [
                     'myShipmentCount' => $shipmentCount,
                     'myConsolidatedCount' => $consolidatedCount,
+                    'myDeliveryCount' => $deliveryCount,
                     // 'grand_fuel_cost' => $grandFuelCost,
                     // 'grand_expense_total' => $grandExpenseTotal,
                     // 'grand_charges_total' => $grandChargesTotal,
-                    'grand_total_amount' => $grandTotalAmount,
+                    'grand_total_amount' => $totalRevenue,
                     'recentTransactions' => $recentTransactions
                 ]
             ]);
@@ -178,29 +147,17 @@ class DashboardController extends Controller
         $consolidatedCount = ConsolidateShipment::where('customer_id', $user->customer->id)->count();
         //dd($shipmentCount, $consolidatedCount);
           
-
-            $shipments = Shipment::with(['expenses', 'charges'])
-            ->where('branch_id', $branchId)
-            ->where('customer_id', $user->customer->id)
-            ->get();
-
             
         $recentTransactions = Shipment::where('customer_id', $user->customer->id)
         ->orderBy('created_at', 'desc')
         ->take(10);
     
         // Totals
-        $grandFuelCost = $shipments->sum('total_fuel_cost');
+       $shipmentRevenue = Shipment::where('customer_id', $user->customer->id)->sum('net_total_charges');
+            $consolidatedRevenue = ConsolidateShipment::where('customer_id', $user->customer->id)->sum('total_shipping_cost');
+            $grandFuelCost = Shipment::where('customer_id', $user->customer->id)->sum('total_fuel_cost');
+            $totalRevenue = $shipmentRevenue + $consolidatedRevenue + $grandFuelCost;
     
-        $grandExpenseTotal = $shipments->sum(function ($shipment) {
-            return $shipment->expenses->sum('amount') - $shipment->expenses->sum('credit_reimbursement_amount');
-        });
-    
-        $grandChargesTotal = $shipments->sum(function ($shipment) {
-            return $shipment->charges->sum('net_total');
-        });
-    
-        $grandTotalAmount = $grandFuelCost + $grandExpenseTotal + $grandChargesTotal;
     
         // Return response
           return response()->json([
@@ -212,7 +169,7 @@ class DashboardController extends Controller
                     // 'grand_fuel_cost' => $grandFuelCost,
                     // 'grand_expense_total' => $grandExpenseTotal,
                     // 'grand_charges_total' => $grandChargesTotal,
-                    'grand_total_amount' => $grandTotalAmount,
+                    'grand_total_amount' => $totalRevenue,
                     'recentTransactions' => $recentTransactions
                 ]
             ]);

@@ -25,6 +25,7 @@ class ConsolidateShipmentController extends Controller
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
         $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)
+        ->where('user_id', $user->id)
         ->with('customer.user', 'carrier', 'driver.user')
         ->latest()
         ->get();
@@ -388,6 +389,7 @@ protected function handleFileUploads($request, $consolidateShipment)
     public function getPendingConslidatedDelivery()
     {
         $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
         $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'pending')->first();
 
         return response()->json([
@@ -400,7 +402,9 @@ protected function handleFileUploads($request, $consolidateShipment)
     public function getAcceptedConslidatedDelivery()
     {
         $user = auth()->user();
-        $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'accepted')->get();
+        $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'accepted')
+        ->where('branch_id', $branchId)
+        ->get();
 
         return response()->json([
             'success' => true,
