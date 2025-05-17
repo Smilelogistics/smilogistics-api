@@ -29,7 +29,7 @@ class CarrierController extends Controller
     {
         // return response()->json(['invoices' => $invoices], 200);
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $customerId = $user->customer ? $user->customer->id : null;
         //dd($branchId, $customerId);
         if ($user->hasRole('businessadministrator')) {
@@ -63,7 +63,7 @@ class CarrierController extends Controller
     public function store(Request $request)
 {
     $authUser = auth()->user();
-    $branchId = $authUser->branch->id ?? null;
+    $branchId = auth()->user()->getBranchId();
     $customerId = $authUser->role === 'customer' ? $authUser->customer->id : null;
     $openAccount = false;
     

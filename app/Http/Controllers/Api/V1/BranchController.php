@@ -16,7 +16,7 @@ class BranchController extends Controller
     public function getMPG()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
 
         $mpg = Branch::where('id', $branchId)->value('mpg');
         return response()->json($mpg);

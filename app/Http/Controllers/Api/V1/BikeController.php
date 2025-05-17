@@ -15,7 +15,7 @@ class BikeController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $bikes = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')
         ->where('branch_id', $branchId)
         ->latest()->get();
@@ -56,7 +56,7 @@ class BikeController extends Controller
     public function show($id)    
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $bike = Bike::where('branch_id', $branchId)->with('customer', 'driver.user', 'bikeDocs')->findOrFail($id);
         return response()->json(['bike' => $bike], 200);
     }
@@ -64,7 +64,7 @@ class BikeController extends Controller
     {
         $validatedData = $request->validated();
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
 
         try {
             DB::beginTransaction();

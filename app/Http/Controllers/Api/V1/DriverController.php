@@ -29,7 +29,7 @@ class DriverController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $driver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
         ->where('branch_id', $branchId)
         ->get();
@@ -39,7 +39,7 @@ class DriverController extends Controller
     public function getTruckDrivers()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $truckDriver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
         ->where('branch_id', $branchId)
         ->where('transport_type', '1')
@@ -50,7 +50,7 @@ class DriverController extends Controller
     public function getBikeDrivers()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $bikeDriver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
         ->where('branch_id', $branchId)
         ->where('transport_type', '2')
@@ -183,7 +183,7 @@ class DriverController extends Controller
             DB::beginTransaction();
 
             $authUser = Auth::user();
-            $branchId = $authUser->branch ? $authUser->branch->id : null;
+            $branchId = auth()->user()->getBranchId();
             //return $authUser;
             Log::info('Authenticated User Branch ID:', ['branch_id' => $branchId]);
 

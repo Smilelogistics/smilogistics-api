@@ -13,7 +13,7 @@ class DeliveryController extends Controller
 public function getMyDeliveries()	
 {
     $user = auth()->user();
-    $branchId = $user->branch ? $user->branch->id : null;
+    $branchId = auth()->user()->getBranchId();
     $driverId = $user->driver ? $user->driver->id : null;
     $myDeliveries = Delivery::where('driver_id', $driverId)->where('branch_id', $branchId)->get();
     return response()->json(['deliveries' => $myDeliveries], 200);

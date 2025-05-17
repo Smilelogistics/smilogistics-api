@@ -90,6 +90,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Driver::class);
     }
 
+    public function creatorDriver() {
+        return $this->hasOne(Driver::class);
+    }
+
     public function agency() {
         return $this->hasOne(Agency::class);
     }
@@ -104,5 +108,44 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
 
-    
+    public function getBranchId()
+    {
+        if ($this->branch) {
+            return $this->branch->id;
+        } elseif ($this->customer) {
+            return $this->customer->branch_id;
+        } elseif ($this->driver) {
+            return $this->driver->branch_id;
+        }
+        
+        return null;
+    }
+
+    public function getBranchHandlingFee()
+    {
+        if ($this->branch) {
+            return $this->branch->handling_fee;
+        } elseif ($this->customer) {
+            return optional($this->customer->branch)->handling_fee;
+        } elseif ($this->driver) {
+            return optional($this->driver->branch)->handling_fee;
+        }
+
+        return null;
+    }
+
+
+    public function getMPG()
+    {
+        if ($this->branch) {
+            return $this->branch->mpg;
+        } elseif ($this->customer) {
+            return optional($this->customer->branch)->mpg;
+        } elseif ($this->driver) {
+            return optional($this->driver->branch)->mpg;
+        }
+
+        return null;
+    }
+
 }

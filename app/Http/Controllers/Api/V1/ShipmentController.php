@@ -42,7 +42,7 @@ class ShipmentController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $shipments = Shipment::with(['branch','customer', 'billTo', 'shipmentContainers', 'shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads'])
             ->where('branch_id', $branchId)
             ->latest()
@@ -69,9 +69,10 @@ class ShipmentController extends Controller
         $branch = Branch::where('user_id', $user->id)->first();
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $driverId = $user->driver ? $user->driver->id : null;
         $checkSubscription = false;
+        $creatorDriver = $user->driver ? $user->driver->id : null;
 
        
 
@@ -127,6 +128,7 @@ class ShipmentController extends Controller
             'branch_id' => $branchId ?? null,
             'driver_id' => $validateData['driver_id'] ?? null,
             'user_id' => $user->id ?? null,
+            'created_by_driver_id' => $creatorDriver,
             'carrier_id' => $validatedData['carrier_id'] ?? null,
             'truck_id' => $validatedData['truck_id'] ?? null,
             'bike_id' => $validatedData['bike_id'] ?? null,
@@ -550,7 +552,7 @@ class ShipmentController extends Controller
     public function update(Request $request, $id)
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $shipment = Shipment::findOrFail($id);
     
         $validator = Validator::make($request->all(), [
@@ -690,7 +692,7 @@ class ShipmentController extends Controller
 
         $total_miles = $validatedData['total_miles'];
         $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
-        $mpg = $user->branch->mpg ?? 1;
+        $mpg = auth()->user()->getMPG();
 
         $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
 
@@ -1115,7 +1117,7 @@ protected function processUploads($shipment, $uploads)
         $user = auth()->user();
     
         // Check if the user has a related branch
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         
         if (!$branchId) {
             return response()->json(['error' => 'User does not have an associated branch.'], 400);
@@ -1163,7 +1165,7 @@ protected function processUploads($shipment, $uploads)
 
     public function getAgency(Request $request) {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         if (!$branchId) {
             return response()->json(['error' => 'User does not have an associated branch.'], 400);
         }

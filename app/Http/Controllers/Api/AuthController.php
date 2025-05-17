@@ -78,7 +78,7 @@ class AuthController extends Controller
              } elseif ($user->user_type == 'customer') {
                 $authuser = auth()->user();
                 //dd($authuser);
-                $branchId = $authuser->branch ? $authuser->branch->id : null; 
+                $branchId = auth()->user()->getBranchId();
                  Customer::create([
                      'user_id' => $user->id,
                      'branch_id' => $branchId
@@ -87,7 +87,7 @@ class AuthController extends Controller
      
              } elseif ($user->user_type == 'driver') {
                 $authuser = auth()->user();
-                $branchId = $authuser->branch ? $authuser->branch->id : null; 
+                $branchId = auth()->user()->getBranchId();
                  Driver::create([
                      'user_id' => $user->id,
                      'branch_id' => $branchId

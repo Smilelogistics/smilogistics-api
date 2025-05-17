@@ -20,7 +20,7 @@ class DashboardController extends Controller
     public function dashboardStats()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         if($user->hasRole('superadministrator')) {
             $totalincome = Transaction::where('status', 'success')->sum('amount');
             $userCount = User::count();
@@ -114,9 +114,13 @@ class DashboardController extends Controller
             ->get();
     
         // Count of shipments
-        $shipmentCount = $driver->shipment()->count();
-        $consolidatedCount = ConsolidateShipment::where('driver_id', $user->driver->id)->count();
+        $shipmentCount = Shipment::where('created_by_driver_id', $user->creatorDriver->id)->count();
+        $consolidatedCount = ConsolidateShipment::where('created_by_driver_id', $user->creatorDriver->id)->count();
         $grandFuelCost = $shipments->sum('total_fuel_cost');
+
+        $recentTransactions = Shipment::where('created_by_driver_id', $user->creatorDriver->id)
+        ->orderBy('created_at', 'desc')
+        ->take(10);
     
         $grandExpenseTotal = $shipments->sum(function ($shipment) {
             return $shipment->expenses->sum('amount') - $shipment->expenses->sum('credit_reimbursement_amount');
@@ -135,7 +139,7 @@ class DashboardController extends Controller
             // 'grand_fuel_cost' => $grandFuelCost,
             // 'grand_expense_total' => $grandExpenseTotal,
             // 'grand_charges_total' => $grandChargesTotal,
-            // 'grand_total_amount' => $grandTotalAmount,
+            'grand_total_amount' => $grandTotalAmount,
             'recentTransactions' => $recentTransactions
         ]);
             
@@ -155,34 +159,21 @@ class DashboardController extends Controller
             // ->count();
         }
         elseif($user->hasRole('customer')) {
-            $shipments = $customer->shipment()
-            ->select('id', 'created_at', 'shipment_status', 'amount', DB::raw("'shipment' as type"))
-            ->latest()
-            ->take(10);
-
-            // Get recent consolidated shipments
-            $consolidatedShipments = $customer->consolidatedShipment()
-            ->select('id', 'created_at', 'status', 'amount', DB::raw("'consolidated' as type"))
-            ->latest()
-            ->take(10);
-
-            // Combine and sort the results
-            $recentTransactions = $shipments->union($consolidatedShipments)
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
-
+           //dd($user->customer->id);
+        $shipmentCount = Shipment::where('customer_id', $user->customer->id)->count();
+        $consolidatedCount = ConsolidateShipment::where('customer_id', $user->customer->id)->count();
+        //dd($shipmentCount, $consolidatedCount);
+          
 
             $shipments = Shipment::with(['expenses', 'charges'])
             ->where('branch_id', $branchId)
             ->where('customer_id', $user->customer->id)
             ->get();
-    
-        // Count of shipments
-        $shipmentCount = $shipments->count();
-    
-        // Count of consolidated shipments
-        $consolidatedCount = ConsolidateShipment::where('branch_id', $branchId)->count();
+
+            
+        $recentTransactions = Shipment::where('customer_id', $user->customer->id)
+        ->orderBy('created_at', 'desc')
+        ->take(10);
     
         // Totals
         $grandFuelCost = $shipments->sum('total_fuel_cost');
@@ -204,7 +195,7 @@ class DashboardController extends Controller
             // 'grand_fuel_cost' => $grandFuelCost,
             // 'grand_expense_total' => $grandExpenseTotal,
             // 'grand_charges_total' => $grandChargesTotal,
-            // 'grand_total_amount' => $grandTotalAmount,
+            'grand_total_amount' => $grandTotalAmount,
             'recentTransactions' => $recentTransactions
         ]);
             
@@ -217,7 +208,7 @@ class DashboardController extends Controller
     public function countBranches()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         if($user->hasRole('superadministrator')){
             $branches = Branch::all()->count();
             return response()->json([

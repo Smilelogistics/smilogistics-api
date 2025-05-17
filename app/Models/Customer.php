@@ -21,7 +21,12 @@ class Customer extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }   
+    }
+      
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
 
     public function consolidatedShipment()
     {
@@ -30,11 +35,6 @@ class Customer extends Model
     public function shipment()
     {
         return $this->hasMany(Shipment::class);
-    }
-    
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class);
     }
 
     public function carrier()

@@ -34,7 +34,7 @@ class InvoiceController extends Controller
         // $invoices = Invoice::with(['charges', 'docs', 'payments'])->get();
         // return response()->json(['invoices' => $invoices], 200);
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $customerId = $user->customer ? $user->customer->id : null;
         //dd($branchId, $customerId);
         if ($user->hasRole('businessadministrator')) {
@@ -182,7 +182,7 @@ class InvoiceController extends Controller
         }
 
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $invoicePrefx = $user->branch ? $user->branch->invoice_prefix : null;
         $invoiceNumber = $invoicePrefx . Invoice::generateInvoiceNumber();
         DB::beginTransaction();

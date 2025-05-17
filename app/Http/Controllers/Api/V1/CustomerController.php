@@ -19,7 +19,7 @@ class CustomerController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $customers = Customer::with(['branch', 'user', 'documents'])
             ->latest()
             ->where('branch_id', $branchId)
@@ -36,7 +36,7 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $validatedData = $request->validated();
 
         DB::beginTransaction();

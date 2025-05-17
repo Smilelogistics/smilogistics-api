@@ -26,6 +26,11 @@ class ConsolidateShipment extends Model
         return $this->belongsTo(User::class, 'driver_id');
     }
 
+      public function creatorDriver()
+        {
+            return $this->belongsTo(Driver::class, 'created_by_driver_id');
+        }
+
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }

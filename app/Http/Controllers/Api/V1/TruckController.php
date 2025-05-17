@@ -22,7 +22,7 @@ class TruckController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         $trucks = Truck::with(['truckDocs', 'TruckDriver.driver.user', 'branch'])
         ->where('branch_id', $branchId)
         ->latest()
@@ -32,7 +32,7 @@ class TruckController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        $branchId = $user->branch ? $user->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         try {
             $truck = Truck::with(['truckDocs', 'TruckDriver.driver.user'])
             ->where('branch_id', $branchId)
@@ -46,7 +46,7 @@ class TruckController extends Controller
     {
 
         $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
         //dd($branchId);
         try {
             $validateTruck = Validator::make($request->all(), [
@@ -196,7 +196,7 @@ class TruckController extends Controller
     public function update(Request $request, $id)
     {
         $authUser = auth()->user();
-        $branchId = $authUser->branch ? $authUser->branch->id : null;
+        $branchId = auth()->user()->getBranchId();
 
         //return response()->json(['request_data' => $request->all()], 200);
 
