@@ -43,7 +43,8 @@ class invoiceStatusNotification extends Notification
             ->line('Invoice Number: ' . $this->invoice->invoice_number)
             ->line('Previous Status: ' . ucfirst($this->previousStatus))
             ->line('New Status: ' . ucfirst($this->invoice->status))
-            ->action('View Invoice', url('/invoices/' . $this->invoice->id))
+            ->action('View Invoice', env('FRONTEND_URL') . '/view_invoice_single.html?id=' . base64_encode($this->invoice->id))
+            //->action('View Invoice', url('/invoices/' . $this->invoice->id))
             ->line('Thank you for using our application!');
     }
 

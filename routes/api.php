@@ -213,6 +213,7 @@ Route::prefix('v1')->group(function () {
             Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
             Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
             Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
+            Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
         })->middleware('role:businessadministrator');
 
         

@@ -38,5 +38,12 @@ class UnivController extends Controller
             'drivers' => $drivers,
         ]);
     }
+            
+    public function destroyUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+        return response()->json(['message' => 'User deleted successfully']);
+    }
 
 }

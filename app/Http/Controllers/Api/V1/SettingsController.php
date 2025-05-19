@@ -200,6 +200,7 @@ public function updateGeneral(Request $request)
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
+            'invoice_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
         ]);
 
@@ -207,7 +208,7 @@ public function updateGeneral(Request $request)
         $logoPaths = [];
 
         // Handle file uploads to Cloudinary
-        foreach (['logo1', 'logo2', 'logo3', 'favicon'] as $logoField) {
+        foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
             if ($request->hasFile($logoField)) {
                 $file = $request->file($logoField);
                 
@@ -218,6 +219,17 @@ public function updateGeneral(Request $request)
                     
                     $logoPaths[$logoField] = $uploadedFile->getSecurePath();
                 }
+            }
+        }
+        if($request->hasFile('invoice_logo')) {
+            $file = $request->file('invoice_logo');
+            
+            if ($file->isValid()) {
+                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    'folder' => 'Smile_logistics/Branch_Logos',
+                ]);
+                
+                $logoPaths['invoice_logo'] = $uploadedFile->getSecurePath();
             }
         }
 
@@ -434,15 +446,30 @@ public function updateGeneral(Request $request)
             'toll_free' => 'sometimes|nullable|string|max:10',
             'note' => 'sometimes|nullable|string|max:255',
             'internal_note' => 'sometimes|nullable|string|min:5',
-            'tag' => 'sometimes|nullable|string|min:5',
+            //'tag' => 'sometimes|nullable',
             'flash_note_for_drivers' => 'sometimes|nullable|string|min:5',
             'flash_note_for_accounting' => 'sometimes|nullable|string|min:5',
             'other_notes' => 'sometimes|nullable|string|min:5',
             'start_date' => 'sometimes|nullable|string|min:5',
             'credit_limit' => 'sometimes|nullable|string|min:1',
+            'alert_percentage' => 'sometimes|nullable|string|min:1|max:100',
         ]);
     
         DB::beginTransaction();
+        //  if (isset($validated['tags'])) {
+        //     if (is_string($validated['tags'])) {
+        //         $tagsArray = explode(',', $validated['tags']);
+        //     } 
+        //     elseif (is_string($validated['tags']) && json_decode($validated['tags'])) {
+        //         $tagsArray = json_decode($validated['tags'], true);
+        //     }
+        //     else {
+        //         $tagsArray = $validated['tags'];
+        //     }
+            
+        //     $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
+        //     $validated['tags'] = !empty($tagsArray) ? $tagsArray : null;
+        // }
     
         try {
             if ($user->hasRole('customer')) {
