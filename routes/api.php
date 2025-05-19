@@ -28,6 +28,15 @@ use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
+Route::get('/test-db', function (Request $request) {
+    try {
+        DB::connection()->getPdo();
+        return response()->json(['message' => '✅ Database connected successfully!']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => '❌ Database not connected', 'details' => $e->getMessage()], 500);
+    }
+});
+
 
 Route::get('/email/verify', function () {
     return response()->json(['message' => 'Please verify your email address.'], 403);
