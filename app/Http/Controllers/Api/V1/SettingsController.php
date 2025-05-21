@@ -200,7 +200,7 @@ public function updateGeneral(Request $request)
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
-            'invoice_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',
 
         ]);
 

@@ -50,7 +50,7 @@ Route::post('/email/resend', function (Request $request) {
     }
 
     $request->user()->sendEmailVerificationNotification();
-    return response()->json(['message' => 'Verification email resent.']);
+    return response()->json(['message' => 'Verification email sent.']);
 })->middleware(['auth:sanctum']);
 
 // ✅ Verify email when user clicks the link
