@@ -179,6 +179,14 @@ class SettingsController extends Controller
 //     }
 // }
 
+/*************  ✨ Windsurf Command ⭐  *************/
+        /**
+         * Update general settings of a branch
+         * 
+         * @param  \Illuminate\Http\Request  $request
+         * @return \Illuminate\Http\Response
+         */
+/*******  e8fc2dd1-211e-46d8-a64e-91a043e06446  *******/
 public function updateGeneral(Request $request)
 {
     try {
@@ -192,15 +200,15 @@ public function updateGeneral(Request $request)
             'invoice_prefix' => 'nullable|string|max:10',
             'currency' => 'nullable|string|size:3',
             'copyright' => 'nullable|string|min:5|max:100',
-            'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo1' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo2' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'logo3' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             //'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'mpg' => 'sometimes|integer',
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
-            'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg,doc,docx|max:2048',
+            //'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
 
         ]);
 
