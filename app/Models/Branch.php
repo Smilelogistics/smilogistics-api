@@ -118,5 +118,9 @@ class Branch extends Model
     {
         return $this->hasMany(ConsolidateShipment::class);
     }
+    public function settlement()
+    {
+        return $this->hasMany(Settlement::class);
+    }
 
 }

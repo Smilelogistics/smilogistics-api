@@ -96,6 +96,11 @@ class Truck extends Model
     {
         return $this->hasMany(TruckDoc::class);
     }
+    
+    public function settlement()
+    {
+        return $this->hasMany(Settlement::class);
+    }
 
     // protected static function booted()
     // {

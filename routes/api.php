@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\V1\DeliveryController;
 use App\Http\Controllers\Api\V1\SettingsController;
 use App\Http\Controllers\Api\V1\ShipmentController;
 use App\Http\Controllers\Api\V1\DashboardController;
+use App\Http\Controllers\Api\V1\SettlementController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\TransactionsController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
@@ -116,7 +117,7 @@ Route::prefix('v1')->group(function () {
     });
      
     
-    Route::middleware('auth:sanctum', 'verified')->group(function () {
+    Route::middleware('auth:sanctum', 'verified', 'check.subscription')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -247,6 +248,14 @@ Route::prefix('v1')->group(function () {
             Route::get('/my-deliveries', [DeliveryController::class, 'getMyDeliveries']);
             Route::get('/driver-shipments/{driver}', [DeliveryController::class, 'getShipments']);
             Route::post('/update-shipment-status/{shipment}', [DeliveryController::class, 'updateStatus']);
+        });
+
+        Route::prefix('settlements')->group(function () {
+            Route::get('/settlements', [SettlementController::class, 'index']);
+            Route::get('/settlement/{id}', [SettlementController::class, 'show']);
+            Route::post('/settlements', [SettlementController::class, 'store']);
+            Route::put('/settlements/{id}', [SettlementController::class, 'update']);
+            Route::delete('/settlements/{id}', [SettlementController::class, 'destroy']);
         });
         
         Route::prefix('notification')->group(function () {

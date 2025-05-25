@@ -108,6 +108,10 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Transaction::class);
     }
 
+    public function settlement()
+    {
+        return $this->hasMany(Settlement::class);
+    }
     public function getBranchId()
     {
         if ($this->branch) {
@@ -146,6 +150,11 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         return null;
+    }
+
+    public function isSubscribed(): bool
+    {
+        return $this->branch && $this->branch->isSubscribed == 1;
     }
 
 }

@@ -91,4 +91,8 @@ class Driver extends Model
     {
         return $this->hasMany(AppIntegration::class);
     }
+    public function settlement()
+    {
+        return $this->hasMany(Settlement::class);
+    }
 }
