@@ -87,24 +87,24 @@ class SettlementController extends Controller
         try
         {
             $settlement = Settlement::create([
-                'branch_id' => $branchId,
+                'branch_id' => $branchId ?? null,
                 //'customer_id' => $validatedData['customer_id'],
-                'carrier_id' => $validatedData['carrier_id'],
-                'truck_id' => $validatedData['truck_id'],
-                'driver_id' => $validatedData['driver_id'],
-                'office' => $validatedData['office'],
-                'settlement_date' => $validatedData['settlement_date'],
-                'settlement_type' => $validatedData['settlement_type'],
-                'week_from' => $validatedData['week_from'],
-                'week_to' => $validatedData['week_to'],
-                'payee' => $validatedData['payee'],
-                'payee_note' => $validatedData['payee_note'],
-                'payment_method' => $validatedData['payment_method'],
-                'check_payment_reference' => $validatedData['check_payment_reference'],
-                'payment_date' => $validatedData['payment_date'],
-                'payment_note' => $validatedData['payment_note'],
-                'internal_notes' => $validatedData['internal_notes'],
-                'tags' => $validatedData['tags']
+                'carrier_id' => $validatedData['carrier_id'] ?? null,
+                'truck_id' => $validatedData['truck_id'] ?? null,
+                'driver_id' => $validatedData['driver_id'] ?? null,
+                'office' => $validatedData['office'] ?? null,
+                'settlement_date' => $validatedData['settlement_date'] ?? null,
+                'settlement_type' => $validatedData['settlement_type'] ?? null,
+                'week_from' => $validatedData['week_from'] ?? null,
+                'week_to' => $validatedData['week_to'] ?? null,
+                'payee' => $validatedData['payee'] ?? null,
+                'payee_note' => $validatedData['payee_note'] ?? null,
+                'payment_method' => $validatedData['payment_method'] ?? null,
+                'check_payment_reference' => $validatedData['check_payment_reference'] ?? null,
+                'payment_date' => $validatedData['payment_date'] ?? null,
+                'payment_note' => $validatedData['payment_note'] ?? null,
+                'internal_notes' => $validatedData['internal_notes'] ?? null,
+                'tags' => $validatedData['tags'] ?? null,
             ]);
             
 
