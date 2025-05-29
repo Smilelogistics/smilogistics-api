@@ -30,6 +30,10 @@ class CheckSubscription
     {
         $user = $request->user();
 
+         if ($user->hasRole('superadministrator')) {
+                return $next($request);
+            }
+
         if (!$user) {
             return response()->json([
                 'error' => 'Authentication required to access this resource.'
