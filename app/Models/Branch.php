@@ -124,4 +124,9 @@ class Branch extends Model
         return $this->hasMany(Settlement::class);
     }
 
+    public function isSubscribed(): bool
+    {
+        return $this->isSubscribed == 1;
+    }
+
 }
