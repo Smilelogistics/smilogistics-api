@@ -18,12 +18,14 @@ class SettingsController extends Controller
     public function index() {
         
         $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
         if ($user->hasRole('customer')) {
-            $data = Customer::with('branch')->where('user_id', $user->id)->get();
+            $data = Customer::with('branch', 'user')->where('user_id', $user->id)
+            ->where('branch_id', $branchId)->get();
             return response()->json($data);
         }
         elseif ($user->hasRole('businessadministrator')) {
-            $data = Branch::where('user_id', $user->id)->get();
+            $data = Branch::with('user')->where('user_id', $user->id)->get();
             return response()->json($data);
         }
         
@@ -208,6 +210,7 @@ public function updateGeneral(Request $request)
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
+            'price_per_mile' => 'nullable|numeric',
             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
 
         ]);

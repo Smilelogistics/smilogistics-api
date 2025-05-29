@@ -60,6 +60,7 @@ class Branch extends Model
         'subscription_type',
         'subscription_date',
         'isSubscribed',
+        'price_per_mile',
     ];
     protected static function boot()
     {
