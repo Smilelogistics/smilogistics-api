@@ -63,12 +63,12 @@ class InvoiceController extends Controller
         $user = auth()->user();
         
         $invoice = Invoice::with([
-            'customer', 
+            'customer.user', 
             'user', 
             'invoicedocs', 
             'invoicepayments', 
             'invoicecharges', 
-            'branch'
+            'branch.user'
         ]);
 
         if ($user->hasRole('businessadministrator')) {
