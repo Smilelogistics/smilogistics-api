@@ -91,6 +91,9 @@ Route::get('/email/check', function (Request $request) {
 
 Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/otp/send', [AuthController::class, 'sendOtp']);
+    Route::post('/otp/verify', [AuthController::class, 'verifyOtp']);
+    Route::post('/otp/resend', [AuthController::class, 'resendOtp']);
     
     Route::post('/guest-register', [AuthController::class, 'guestRegister']);
     Route::post('/send-reset-link', function (Request $request) {

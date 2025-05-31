@@ -8,21 +8,27 @@ use App\Models\Driver;
 use App\Models\Customer;
 use App\Mail\newBranchMail;
 use App\Mail\newDriverMail;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\newCustomerMail;
 use App\Services\AuthService;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use App\Notifications\OtpNotification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\NewBranchNotification;
 
 class AuthController extends Controller
 {
+     protected $otpExpiryMinutes = 5; // OTP expires after 5 minutes
+    protected $resendCooldown = 1; // 1 minute cooldown for resend
+
      // User Registration
      //super admin token
      //4|Bo6rLmYLskMnDhSzhaSiXfIA32z7KJCHorDaAPRaef6af829
@@ -183,16 +189,142 @@ class AuthController extends Controller
         $result = AuthService::attemptLogin($request->all());
 
         if ($result['status'] === 'error') {
-            // Return error response for API clients
             return response()->json($result, isset($result['errors']) ? 422 : 401);
         }
 
+        $user = $result['user'];
+        $requiresOtp = false;
+
+        // Check OTP requirements based on user role
+        switch (true) {
+            case $user->hasRole('businessadministrator'):
+                $requiresOtp = $user->branch && $user->branch->enable_email_otp == 1;
+                break;
+                
+            case $user->hasRole('customer'):
+                $requiresOtp = $user->customer && $user->customer->enable_email_otp == 1;
+                break;
+                
+            case $user->hasRole('driver'):
+                $requiresOtp = $user->driver && $user->driver->otp == 1;
+                break;
+        }
+
+        if ($requiresOtp) {
+            // Generate and send OTP
+            $otp = Str::padLeft(rand(1, 999999), 6, '0');
+            $user->update([
+                'otp' => $otp,
+                'otp_expires_at' => now()->addMinutes(5),
+                'otp_last_sent_at' => now()
+            ]);
+
+            //Mail::to($user->email)->send(new OtpMail($otp, 5));
+            $user->notify(new OtpNotification($otp, 5));
+
+            return response()->json([
+                'status' => 'otp_required',
+                'message' => 'OTP verification required.',
+                'token' => $result['token'],
+                'user' => $user->only(['id', 'email', 'name']), // Only send necessary user data
+                'otp_expires_in' => 300 // 5 minutes in seconds
+            ]);
+        }
+
         return response()->json([
+            'status' => 'success',
             'message' => 'Login successful!',
-            'user'    => $result['user'],
-            'token'   => $result['token'],
+            'token' => $result['token'],
+            'user' => $user->only(['id', 'email', 'name']),
         ]);
     }
+
+    //  public function login(Request $request)
+    // {
+    //     $result = AuthService::attemptLogin($request->all());
+
+    //     if ($result['status'] === 'error') {
+    //         // Return error response for API clients
+    //         return response()->json($result, isset($result['errors']) ? 422 : 401);
+    //     }
+
+    //     return response()->json([
+    //         'message' => 'Login successful!',
+    //         'user'    => $result['user'],
+    //         'token'   => $result['token'],
+    //     ]);
+    // }
+
+     public function sendOtp(Request $request)
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+
+        $user = User::where('email', $request->email)->first();
+
+        // Check if we should allow resend
+        if ($user->otp_last_sent_at && 
+            now()->diffInMinutes($user->otp_last_sent_at) < $this->resendCooldown) {
+            return response()->json([
+                'message' => 'Please wait before requesting a new OTP',
+                'retry_after' => $this->resendCooldown * 60 - now()->diffInSeconds($user->otp_last_sent_at)
+            ], 429);
+        }
+
+        // Generate 6-digit OTP
+        $otp = Str::padLeft(rand(1, 999999), 6, '0');
+        $expiresAt = now()->addMinutes($this->otpExpiryMinutes);
+
+        // Update user record
+        $user->update([
+            'otp' => $otp,
+            'otp_expires_at' => $expiresAt,
+            'otp_last_sent_at' => now()
+        ]);
+
+        // Send OTP email
+        //Mail::to($user->email)->send(new OtpMail($otp, $this->otpExpiryMinutes));
+        $user->notify(new OtpNotification($otp, $this->otpExpiryMinutes));
+
+        return response()->json([
+            'message' => 'OTP sent successfully',
+            'expires_in' => $this->otpExpiryMinutes * 60
+        ]);
+    }
+
+    /**
+     * Verify OTP
+     */
+    public function verifyOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|digits:6'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        // Check if OTP matches and isn't expired
+        if ($user->otp === $request->otp && now()->lt($user->otp_expires_at)) {
+            // Clear OTP after successful verification
+            $user->update([
+                'otp' => null,
+                'otp_expires_at' => null
+            ]);
+
+            return response()->json(['message' => 'OTP verified successfully']);
+        }
+
+        return response()->json(['message' => 'Invalid or expired OTP'], 422);
+    }
+
+    /**
+     * Resend OTP (uses same logic as sendOtp)
+     */
+    public function resendOtp(Request $request)
+    {
+        return $this->sendOtp($request);
+    }
+
 
     public function login2(Request $request)
     {
