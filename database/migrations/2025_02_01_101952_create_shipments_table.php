@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('driver_id')->nullable()->constrained()->nullOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('shipment_tracking_number', 50)->nullable();
-            $table->string('shipment_status', 20)->nullable();
+            $table->string('shipment_status', 80)->nullable();
             $table->string('signature', 180)->nullable();
             $table->string('office', 30)->nullable();
             $table->string('load_type', 20)->nullable();
