@@ -24,6 +24,7 @@ class DashboardController extends Controller
         $branchId = auth()->user()->getBranchId();
         if($user->hasRole('superadministrator')) {
             $totalincome = Transaction::where('status', 'success')->sum('amount');
+            $userCount = User::count();
             $Totalsubsribers = Branch::where('isSubscribed', 1)->count();
             $recentTransactions = Transaction::latest()->take(10)->get();
             $plans = Plan::count();
