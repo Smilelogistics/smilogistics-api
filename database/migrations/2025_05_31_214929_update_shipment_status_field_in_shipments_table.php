@@ -33,7 +33,7 @@ return new class extends Migration
 
     // Copy data back - handle NULL values by providing a default
     DB::table('shipments')->update([
-        'shipment_status' => DB::raw('COALESCE(temps_shipment_status, "unknown")')
+        'shipment_status' => DB::raw("COALESCE(temp_shipment_status, 'unknown')")
     ]);
 
     // Now make the column NOT NULL if needed
