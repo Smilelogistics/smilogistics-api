@@ -9,16 +9,16 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+   public function up(): void
 {
     // First create a temporary column
     Schema::table('shipments', function (Blueprint $table) {
-        $table->text('temps_shipment_status')->nullable()->after('shipment_status');
+        $table->text('temp_shipment_status')->nullable()->after('shipment_status');
     });
 
     // Copy data to temporary column
     DB::table('shipments')->update([
-        'temps_shipment_status' => DB::raw('shipment_status')
+        'temp_shipment_status' => DB::raw('shipment_status')
     ]);
 
     // Remove the original column
@@ -28,13 +28,11 @@ return new class extends Migration
 
     // Recreate the column with desired type - make it nullable first
     Schema::table('shipments', function (Blueprint $table) {
-        $table->string('shipment_status', 80)->nullable()->after('temps_shipment_status');
+        $table->string('shipment_status', 80)->nullable()->after('temp_shipment_status');
     });
 
-    // Copy data back - handle NULL values by providing a default
-    DB::table('shipments')->update([
-        'shipment_status' => DB::raw("COALESCE(temp_shipment_status, 'unknown')")
-    ]);
+    // Copy data back - handle NULL values by providing a default (PostgreSQL syntax)
+    DB::statement('UPDATE shipments SET shipment_status = COALESCE(temp_shipment_status, \'unknown\')');
 
     // Now make the column NOT NULL if needed
     Schema::table('shipments', function (Blueprint $table) {
@@ -43,7 +41,7 @@ return new class extends Migration
 
     // Remove temporary column
     Schema::table('shipments', function (Blueprint $table) {
-        $table->dropColumn('temps_shipment_status');
+        $table->dropColumn('temp_shipment_status');
     });
 
     // Add user columns
