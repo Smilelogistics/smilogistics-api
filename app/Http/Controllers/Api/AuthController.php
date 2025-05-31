@@ -230,13 +230,16 @@ class AuthController extends Controller
                 'otp_expires_in' => 300 // 5 minutes in seconds
             ]);
         }
+        else
+        {
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Login successful!',
-            'token' => $result['token'],
-            'user' => $user->only(['id', 'email', 'name']),
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Login successful!',
+                'token' => $result['token'],
+                'user' => $user->only(['id', 'email', 'name']),
+            ]);
+        }
     }
 
     //  public function login(Request $request)
