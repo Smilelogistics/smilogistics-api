@@ -1072,6 +1072,10 @@ protected function processUploads($shipment, $uploads)
         }
 
         $shipment = Shipment::findOrFail($id);
+        $previousStatus = $shipment->shipment_status;
+        $first_notify_party_email = $shipment->first_notify_party_email;
+        $second_notify_party_email = $shipment->second_notify_party_email;
+
 
         $shipment->update([
             'shipment_status' => $request->shipment_status,
@@ -1085,6 +1089,15 @@ protected function processUploads($shipment, $uploads)
             'tracking_number' => $request->shipment_tracking_number,
             'driver_id' => $request->driver
         ]);
+
+          if ($first_notify_party_email) {
+                $first_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
+                //Mail::to($customerUser)->send(new invoiceStatusUpdateMail($invoice, $previousStatus));
+            }
+             if ($first_notify_party_email) {
+                $second_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
+                //Mail::to($customerUser)->send(new invoiceStatusUpdateMail($invoice, $previousStatus));
+            }
 
         // Simplified driver notification logic
         if ($request->filled('driver')) {
