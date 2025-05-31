@@ -39,6 +39,7 @@ class DashboardController extends Controller
                 'data' => [
                     'totalincome' => NumberFormatter::formatCount($totalincome),
                     'userCount' => $userCount,
+                    'branches' => $branches,
                     'Totalsubsribers' => $Totalsubsribers,
                     'recentTransactions' => $recentTransactions,
                     'plans' => $plans
