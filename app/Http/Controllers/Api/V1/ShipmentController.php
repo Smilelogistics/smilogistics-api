@@ -1103,24 +1103,16 @@ protected function processUploads($shipment, $uploads)
 
     public function trackShipment(Request $request, $id) 
     {
-        $validator = Validator::make($request->all(), [
-            'tracking_number' => 'nullable|string|max:255',
-        ]);
-
-        if ($validator->fails()) {    
-            return response()->json($validator->errors(), 422);
-        }
-
         $shipment = ShipmentTrack::with('shipment')->where('tracking_number', $id)->get();
 
-        if (!$shipment) {
+        if ($shipment->isEmpty()) {
             return response()->json(['message' => 'Shipment not found'], 404);
         }
 
-        return response()->json($shipment);
+        return response()->json([
+            'shipment_tracks' => $shipment->toArray()
+        ]);
     }
-
-
 
     public function storeAgency(Request $request) {
         //dd($request->all());
