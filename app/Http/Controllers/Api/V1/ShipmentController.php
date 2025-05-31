@@ -93,7 +93,7 @@ class ShipmentController extends Controller
         $mpg = $user->branch->mpg ?? 1;
         $price_per_mile = $user->branch->price_per_mile ?? 0;
 
-        $total_shipping_cost = ($total_miles * 2)* $price_per_mile;
+        $shipping_cost = ($total_miles * 2)* $price_per_mile;
 
         $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
 
@@ -137,7 +137,7 @@ class ShipmentController extends Controller
             'truck_id' => $validatedData['truck_id'] ?? null,
             'bike_id' => $validatedData['bike_id'] ?? null,
             'shipment_tracking_number' => $shipment_prefix . Shipment::generateTrackingNumber() ?? null,
-            'shipment_status' => $validatedData['shipment_status'] ?? null,
+            'shipment_status' => $validatedData['shipment_status'] ?? 'Shipment Created',
             'signature' => $validatedData['signature'] ?? null,
             'office' => $validatedData['office'] ?? null,
             'load_type' => $validatedData['load_type'] ?? null,
@@ -208,6 +208,8 @@ class ShipmentController extends Controller
             'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
             'signature' => null,
             'delivery_type' => $validatedData['delivery_type'] ?? null,
+            'shipping_cost' => $shipping_cost ?? 0.00,
+            'total_shipment_cost' => $shipping_cost ?? 0.00,
             //'comment' => $validatedData['comment'] ?? null,
             ]);
             
@@ -251,12 +253,15 @@ class ShipmentController extends Controller
                         'net_total' => $total - $totalDiscount
                     ]);
                 }
+
+                $net_totale = $total - $totalDiscount;
             
                 // Update shipment with calculated totals
                 $shipment->update([
                     'total_charges' => $total,
                     'total_discount_charges' => $totalDiscount,
-                    'net_total_charges' => $total - $totalDiscount
+                    'net_total_charges' => $net_totale,
+                    'total_shipment_cost' => $shipment->total_shipment_cost + $net_totale
                 ]);
             }
 
@@ -403,7 +408,8 @@ class ShipmentController extends Controller
                 $shipment->update([
                     'expense_total' => $expense_total,
                     'credit_total' => $credit_total,
-                    'net_expense' => $net_total
+                    'net_expense' => $net_total,
+                    'total_shipment_cost' => $shipment->total_shipment_cost + $net_total
                 ]);
             }
 
@@ -1095,17 +1101,17 @@ protected function processUploads($shipment, $uploads)
         ]);
     }
 
-    public function trackShipment(Request $request) 
+    public function trackShipment(Request $request, $id) 
     {
         $validator = Validator::make($request->all(), [
-            'tracking_number' => 'required|string|max:255',
+            'tracking_number' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {    
             return response()->json($validator->errors(), 422);
         }
 
-        $shipment = ShipmentTrack::with('shipment')->where('tracking_number', $request->tracking_number)->get();
+        $shipment = ShipmentTrack::with('shipment')->where('tracking_number', $id)->get();
 
         if (!$shipment) {
             return response()->json(['message' => 'Shipment not found'], 404);
