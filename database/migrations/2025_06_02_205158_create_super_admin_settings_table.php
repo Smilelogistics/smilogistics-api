@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('super_admin_settings', function (Blueprint $table) {
+        Schema::table('super_admin_settings', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_prefix', 10)->nullable();
             $table->string('invoice_logo')->nullable();
