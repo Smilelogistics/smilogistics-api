@@ -38,7 +38,7 @@ return new class extends Migration
             $table->integer('enable_recaptcha')->nullable();
             $table->string('logo1')->nullable();
             $table->timestamps();
-        });
+        }); 
     }
 
     /**
