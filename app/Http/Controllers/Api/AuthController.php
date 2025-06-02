@@ -34,7 +34,7 @@ class AuthController extends Controller
      //4|Bo6rLmYLskMnDhSzhaSiXfIA32z7KJCHorDaAPRaef6af829
      public function register(Request $request)
      {
-        //dd(env('DB_DATABASE'));
+        //dd(env('DB_DATABASE')); 
          $user = auth()->user();
         // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
 
