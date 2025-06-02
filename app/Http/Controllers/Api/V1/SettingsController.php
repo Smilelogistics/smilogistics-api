@@ -181,14 +181,12 @@ class SettingsController extends Controller
 //     }
 // }
 
-/*************  ✨ Windsurf Command ⭐  *************/
         /**
          * Update general settings of a branch
          * 
          * @param  \Illuminate\Http\Request  $request
          * @return \Illuminate\Http\Response
          */
-/*******  e8fc2dd1-211e-46d8-a64e-91a043e06446  *******/
 public function updateGeneral(Request $request)
 {
     try {

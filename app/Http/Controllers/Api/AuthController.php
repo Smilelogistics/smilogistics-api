@@ -35,7 +35,7 @@ class AuthController extends Controller
      public function register(Request $request)
      {
         //dd(env('DB_DATABASE'));
-        // $user = auth()->user();
+         $user = auth()->user();
         // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
 
         if ($user->user_type == 'businessadministrator' && $request->user_type == 'superadministrator') {
