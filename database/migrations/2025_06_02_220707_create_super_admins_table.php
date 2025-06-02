@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('super_admin_settings', function (Blueprint $table) {
+        Schema::create('super_admins', function (Blueprint $table) {
             $table->id();
             $table->string('invoice_prefix', 10)->nullable();
             $table->string('invoice_logo')->nullable();
@@ -46,6 +46,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('super_admin_settings');
+        Schema::dropIfExists('super_admins');
     }
 };
