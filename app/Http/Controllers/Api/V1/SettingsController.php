@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Customer;
+use App\Models\SuperAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -341,7 +342,7 @@ public function updateGeneral(Request $request)
 
             $user->branch->update($updateData);
         } elseif ($user->hasRole('superadministrator')) {
-            dd($updateData);
+            //dd($updateData);
             $user->superadmin->update($updateData);
         } else {
             return response()->json([
@@ -422,6 +423,25 @@ public function updateGeneral(Request $request)
                     return response()->json(['message' => 'Failed to update branch payment settings'], 500);
                 }
             }
+             
+            elseif ($user->hasRole('superadministrator')) {
+                // Ensure the user has an associated branch
+                // if (!$user->branch) {
+                //     return response()->json(['message' => 'Branch not found'], 404);
+                // }
+    
+                $superadmin = SuperAdmin::where('user_id', $user->id)->first();
+    
+                if (!$superadmin) {
+                    return response()->json(['message' => 'Branch not found'], 404);
+                }
+    
+                $superadmin->fill($validated);
+    
+                if (!$superadmin->save()) {
+                    return response()->json(['message' => 'Failed to update branch payment settings'], 500);
+                }
+            }
     
             return response()->json([
                 'message' => 'Payment settings updated successfully',
@@ -466,7 +486,18 @@ public function updateGeneral(Request $request)
                 if (!$branch->save()) {
                     throw new \Exception('Failed to update branch mail settings');
                 }
-            } else {
+            } 
+            
+            elseif ($user->hasRole('superadministrator')) {
+                $superadmin = SuperAdmin::where('user_id', $user->id)->firstOrFail();
+                $superadmin->fill($validated);
+                
+                if (!$superadmin->save()) {
+                    throw new \Exception('Failed to update branch mail settings');
+                }
+            } 
+            
+            else {
                 throw new \Exception('Unauthorized role');
             }
     
@@ -521,6 +552,21 @@ public function updateGeneral(Request $request)
             }
             
             $branch->fill($validated)->save();
+        }
+        
+        elseif ($user->hasRole('superadministrator')) {
+            //dd($user);
+            // if (!$user->branch) {
+            //     return response()->json(['message' => 'Branch not found'], 404);
+            // }
+            
+            $superadmin = SuperAdmin::where('user_id', $user->id)->first();
+            
+            if (!$superadmin) {
+                return response()->json(['message' => 'Branch not found'], 404);
+            }
+            
+            $superadmin->fill($validated)->save();
         }
     
         return response()->json([
