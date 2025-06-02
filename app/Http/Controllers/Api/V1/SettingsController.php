@@ -187,11 +187,111 @@ class SettingsController extends Controller
          * @param  \Illuminate\Http\Request  $request
          * @return \Illuminate\Http\Response
          */
+// public function updateGeneral(Request $request)
+// {
+//     try {
+//         $user = auth()->user();
+        
+//         // Validate input
+//         $validated = $request->validate([
+//             'phone' => 'nullable|string|max:20',
+//             'address' => 'nullable|string|min:10|max:255',
+//             'parcel_prefix' => 'nullable|string|max:10',
+//             'invoice_prefix' => 'nullable|string|max:10',
+//             'currency' => 'nullable|string|size:3',
+//             'copyright' => 'nullable|string|min:5|max:100',
+//             'logo1' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'logo2' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'logo3' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             //'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+//             'mpg' => 'sometimes|integer',
+//             'base_rate' => 'nullable|numeric',
+//             'base_fee' => 'nullable|numeric',
+//             'handling_fee' => 'nullable|numeric',
+//             'price_per_mile' => 'nullable|numeric',
+//             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
+
+//         ]);
+
+//         // Initialize logo paths array
+//         $logoPaths = [];
+
+//         // Handle file uploads to Cloudinary
+//         foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+//             if ($request->hasFile($logoField)) {
+//                 $file = $request->file($logoField);
+                
+//                 if ($file->isValid()) {
+//                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+//                         'folder' => 'Smile_logistics/Branch_Logos',
+//                     ]);
+                    
+//                     $logoPaths[$logoField] = $uploadedFile->getSecurePath();
+//                 }
+//             }
+//         }
+//         if($request->hasFile('invoice_logo')) {
+//             $file = $request->file('invoice_logo');
+            
+//             if ($file->isValid()) {
+//                 $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+//                     'folder' => 'Smile_logistics/Branch_Logos',
+//                 ]);
+                
+//                 $logoPaths['invoice_logo'] = $uploadedFile->getSecurePath();
+//             }
+//         }
+
+//         // Prepare update data
+//         $updateData = array_merge($validated, $logoPaths);
+//         $updateData = array_filter($updateData);
+
+//         if ($user->hasRole('businessadministrator')) {
+//             if (!$user->branch) {
+//                 return response()->json([
+//                     'message' => 'Branch not found',
+//                     'hint' => 'Contact administrator to assign you to a branch'
+//                 ], 404);
+//             }
+
+//             $branch = $user->branch;
+            
+//             // Update branch with new data
+//             $branch->update($updateData);
+
+//             return response()->json([
+//                 'message' => 'General Settings updated successfully',
+//                 'data' => $updateData,
+//                 'logo_urls' => $logoPaths
+//             ]);
+//         }
+
+//         return response()->json([
+//             'message' => 'Unauthorized action',
+//             'hint' => 'Your role cannot update these settings'
+//         ], 403);
+
+//     } catch (ValidationException $e) {
+//         return response()->json([
+//             'message' => 'Validation failed',
+//             'errors' => $e->errors()
+//         ], 422);
+        
+//     } catch (\Exception $e) {
+//         Log::error("Settings update failed: " . $e->getMessage());
+//         return response()->json([
+//             'message' => 'Update failed',
+//             'error' => $e->getMessage(),
+//             'hint' => 'Please try again or contact support'
+//         ], 500);
+//     }
+// }
+
 public function updateGeneral(Request $request)
 {
     try {
         $user = auth()->user();
-        
+
         // Validate input
         $validated = $request->validate([
             'phone' => 'nullable|string|max:20',
@@ -203,49 +303,34 @@ public function updateGeneral(Request $request)
             'logo1' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo2' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'logo3' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            //'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // 'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'mpg' => 'sometimes|integer',
             'base_rate' => 'nullable|numeric',
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
             'price_per_mile' => 'nullable|numeric',
             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
-
         ]);
 
-        // Initialize logo paths array
+        // Upload logos to Cloudinary
         $logoPaths = [];
-
-        // Handle file uploads to Cloudinary
-        foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
+        foreach (['logo1', 'logo2', 'logo3', 'invoice_logo'] as $logoField) {
             if ($request->hasFile($logoField)) {
                 $file = $request->file($logoField);
-                
                 if ($file->isValid()) {
                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
                         'folder' => 'Smile_logistics/Branch_Logos',
                     ]);
-                    
                     $logoPaths[$logoField] = $uploadedFile->getSecurePath();
                 }
             }
         }
-        if($request->hasFile('invoice_logo')) {
-            $file = $request->file('invoice_logo');
-            
-            if ($file->isValid()) {
-                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                    'folder' => 'Smile_logistics/Branch_Logos',
-                ]);
-                
-                $logoPaths['invoice_logo'] = $uploadedFile->getSecurePath();
-            }
-        }
 
-        // Prepare update data
+        // Merge and filter update data
         $updateData = array_merge($validated, $logoPaths);
-        $updateData = array_filter($updateData);
+        $updateData = array_filter($updateData, fn ($v) => $v !== null);
 
+        // Handle update based on user role
         if ($user->hasRole('businessadministrator')) {
             if (!$user->branch) {
                 return response()->json([
@@ -254,29 +339,28 @@ public function updateGeneral(Request $request)
                 ], 404);
             }
 
-            $branch = $user->branch;
-            
-            // Update branch with new data
-            $branch->update($updateData);
-
+            $user->branch->update($updateData);
+        } elseif ($user->hasRole('superadministrator')) {
+            $user->superadmin->update($updateData);
+        } else {
             return response()->json([
-                'message' => 'General Settings updated successfully',
-                'data' => $updateData,
-                'logo_urls' => $logoPaths
-            ]);
+                'message' => 'Unauthorized action',
+                'hint' => 'Your role cannot update these settings'
+            ], 403);
         }
 
         return response()->json([
-            'message' => 'Unauthorized action',
-            'hint' => 'Your role cannot update these settings'
-        ], 403);
+            'message' => 'General Settings updated successfully',
+            'data' => $updateData,
+            'logo_urls' => $logoPaths
+        ]);
 
     } catch (ValidationException $e) {
         return response()->json([
             'message' => 'Validation failed',
             'errors' => $e->errors()
         ], 422);
-        
+
     } catch (\Exception $e) {
         Log::error("Settings update failed: " . $e->getMessage());
         return response()->json([
@@ -286,6 +370,7 @@ public function updateGeneral(Request $request)
         ], 500);
     }
 }
+
 
     /**
      * Update payment settings for the authenticated user.

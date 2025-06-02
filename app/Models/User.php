@@ -80,6 +80,9 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->notify(new PasswordResetNotification($token));
     }
 
+    public function superadmin() {
+        return $this->hasOne(Superadmin::class);
+    }
 
     public function branch() {
         return $this->hasOne(Branch::class);
