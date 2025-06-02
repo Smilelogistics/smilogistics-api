@@ -323,7 +323,10 @@ class AuthController extends Controller
                 'otp_expires_at' => null
             ]);
 
-            return response()->json(['message' => 'OTP verified successfully']);
+            return response()->json([
+                'message' => 'OTP verified successfully',
+                'user' => $user
+            ]);
         }
 
         return response()->json(['message' => 'Invalid or expired OTP'], 422);
