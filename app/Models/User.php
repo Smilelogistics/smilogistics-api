@@ -35,9 +35,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'lname',
         'email',
         'user_type',
+        'otp',
+        'otp_expires_at',
+        'otp_last_sent_at',
         'password',
     ];
-
+ 
     /**
      * The attributes that should be hidden for serialization.
      *

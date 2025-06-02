@@ -278,11 +278,20 @@ class AuthController extends Controller
         $expiresAt = now()->addMinutes($this->otpExpiryMinutes);
 
         // Update user record
-        $user->update([
+       $update = $user->update([
             'otp' => $otp,
             'otp_expires_at' => $expiresAt,
             'otp_last_sent_at' => now()
         ]);
+
+        if(!$update)
+        {
+            return response()->json([
+                'message' => 'Failed to send OTP',
+            ], 500);
+        }
+
+        //dd($otp);
 
         // Send OTP email
         //Mail::to($user->email)->send(new OtpMail($otp, $this->otpExpiryMinutes));
