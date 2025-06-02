@@ -341,6 +341,7 @@ public function updateGeneral(Request $request)
 
             $user->branch->update($updateData);
         } elseif ($user->hasRole('superadministrator')) {
+            dd($updateData);
             $user->superadmin->update($updateData);
         } else {
             return response()->json([
