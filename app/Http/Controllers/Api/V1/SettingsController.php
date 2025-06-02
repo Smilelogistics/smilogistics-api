@@ -369,7 +369,7 @@ public function updateGeneral(Request $request)
             'hint' => 'Please try again or contact support'
         ], 500);
     }
-}
+} 
 
 
     /**
