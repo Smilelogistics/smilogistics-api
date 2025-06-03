@@ -154,6 +154,8 @@ class AuthController extends Controller
                  'user_type' => 'businessadministrator',
              ]);
 
+             setDynamicMailConfig();
+
                  Branch::create([
                      'user_id' => $user->id,
                      'branch_code' => 'SML-' . $user->id,
@@ -194,6 +196,8 @@ class AuthController extends Controller
 
         $user = $result['user'];
         $requiresOtp = false;
+
+        setDynamicMailConfig($user);
 
         // Check OTP requirements based on user role
         switch (true) {
@@ -264,7 +268,7 @@ class AuthController extends Controller
         $request->validate(['email' => 'required|email|exists:users,email']);
 
         $user = User::where('email', $request->email)->first();
-
+        setDynamicMailConfig($user);
         // Check if we should allow resend
         if ($user->otp_last_sent_at && 
             now()->diffInMinutes($user->otp_last_sent_at) < $this->resendCooldown) {
@@ -315,7 +319,7 @@ class AuthController extends Controller
         ]);
 
         $user = User::where('email', $request->email)->first();
-
+        setDynamicMailConfig($user);
         // Check if OTP matches and isn't expired
         if ($user->otp === $request->otp && now()->lt($user->otp_expires_at)) {
             // Clear OTP after successful verification
@@ -373,7 +377,7 @@ class AuthController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
-
+        setDynamicMailConfig();
         try {
             $status = Password::sendResetLink($request->only('email'));
 
@@ -420,7 +424,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'password' => 'required|min:8|confirmed',
         ]);
-    
+    setDynamicMailConfig();
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user, $password) {
@@ -450,6 +454,7 @@ class AuthController extends Controller
         }
 
         $user = auth()->user();
+        setDynamicMailConfig($user);
         $user->password = Hash::make($request->password);
         $user->save();
 
