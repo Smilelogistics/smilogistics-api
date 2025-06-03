@@ -468,7 +468,7 @@ public function updateGeneral(Request $request)
             'mail_encryption' => 'sometimes|nullable|string',
             'mail_username' => 'sometimes|nullable|string', // Increased from max:8
             'mail_password' => 'sometimes|nullable|string',
-            'mail_from' => 'sometimes|nullable|string',
+            'mail_from_address' => 'sometimes|nullable|string',
             'mail_from_name' => 'sometimes|nullable|string',
         ]);
     
