@@ -29,6 +29,10 @@ class SettingsController extends Controller
             $data = Branch::with('user')->where('user_id', $user->id)->get();
             return response()->json($data);
         }
+        elseif($user->hasRole('superadministrator')) {
+            $data = SuperAdmin::with('user')->where('user_id', $user->id)->get();
+            return response()->json($data);
+        }
         
     }
 
