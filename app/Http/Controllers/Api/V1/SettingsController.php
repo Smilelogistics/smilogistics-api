@@ -463,13 +463,13 @@ public function updateGeneral(Request $request)
         
         $validated = $request->validate([
             'mail_driver' => 'sometimes|nullable|string',
-            'mail_host' => 'sometimes|nullable|string|min:10',
-            'mail_port' => 'sometimes|nullable|integer|max:10',
-            'mail_encryption' => 'sometimes|nullable|string|max:10',
-            'mail_username' => 'sometimes|nullable|string|max:80', // Increased from max:8
-            'mail_password' => 'sometimes|nullable|string|min:5',
-            'mail_from' => 'sometimes|nullable|string|min:5',
-            'mail_from_name' => 'sometimes|nullable|string|min:5',
+            'mail_host' => 'sometimes|nullable|string',
+            'mail_port' => 'sometimes|nullable|integer',
+            'mail_encryption' => 'sometimes|nullable|string',
+            'mail_username' => 'sometimes|nullable|string', // Increased from max:8
+            'mail_password' => 'sometimes|nullable|string',
+            'mail_from' => 'sometimes|nullable|string',
+            'mail_from_name' => 'sometimes|nullable|string',
         ]);
     
         DB::beginTransaction();
