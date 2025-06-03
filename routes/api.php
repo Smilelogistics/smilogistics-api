@@ -136,7 +136,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
             Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
             Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('settings.payment.update');
-            Route::post('/mailer', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
+            Route::post('/sms', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
 
             Route::post('/basic', [SettingsController::class, 'updateBasic'])->name('settings.basic.update');
