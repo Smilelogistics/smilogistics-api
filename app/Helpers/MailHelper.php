@@ -1,5 +1,5 @@
 <?php
-namespace App\Helpers;
+//namespace App\Helpers;
 
 use Illuminate\Support\Facades\Config;
 
