@@ -1,5 +1,4 @@
 <?php
-//namespace App\Helpers;
 
 use Illuminate\Support\Facades\Config;
 
@@ -11,13 +10,10 @@ function setDynamicMailConfig($user = null)
     if ($user) {
         if ($user->hasRole('businessadministrator')) {
             $mail = \App\Models\Branch::where('user_id', $user->id)->first();
-
         } elseif ($user->hasRole('superadministrator')) {
             $mail = \App\Models\SuperAdmin::where('user_id', $user->id)->first();
-
         } elseif ($user->hasRole('customer') || $user->hasRole('driver')) {
             $branchId = $user->getBranchId();
-
             if ($branchId) {
                 $mail = \App\Models\Branch::find($branchId);
             }
@@ -29,7 +25,13 @@ function setDynamicMailConfig($user = null)
         $mail = \App\Models\SuperAdmin::first();
     }
 
-    if (!empty($mail)) {
+    // Check if mail config values are present before setting
+    if (
+        !empty($mail) &&
+        $mail->mail_host && $mail->mail_port && $mail->mail_username &&
+        $mail->mail_password && $mail->mail_encryption &&
+        $mail->mail_from_address && $mail->mail_from_name
+    ) {
         Config::set('mail.mailers.smtp.host', $mail->mail_host);
         Config::set('mail.mailers.smtp.port', $mail->mail_port);
         Config::set('mail.mailers.smtp.username', $mail->mail_username);
@@ -39,5 +41,3 @@ function setDynamicMailConfig($user = null)
         Config::set('mail.from.name', $mail->mail_from_name);
     }
 }
-
-
