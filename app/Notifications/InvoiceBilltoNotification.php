@@ -55,7 +55,7 @@ class InvoiceBilltoNotification extends Notification
             'invoice_id' => $this->invoice->id,
             'amount' => $this->invoice->total_amount ?? 0,
             'message' => 'A new invoice has been issued.',
-            'url' => url('/invoices/' . $this->invoice->id),
+            'link' => env('FRONTEND_URL') . '/view_invoice_single.html?id=' . base64_encode($this->invoice->id),
         ];
     }
 

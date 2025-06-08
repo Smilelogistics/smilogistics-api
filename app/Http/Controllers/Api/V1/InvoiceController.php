@@ -137,6 +137,7 @@ class InvoiceController extends Controller
 
         // Get customer and associated user
         //dd($invoice->customer_id);
+        
         $customer = Customer::find($invoice->customer_id);
 
         // Get the authenticated user who made the update
@@ -293,30 +294,30 @@ class InvoiceController extends Controller
      */
 
      public function update(Request $request, $id)
-{
-    $invoice = Invoice::findOrFail($id);
+    {
+        $invoice = Invoice::findOrFail($id);
 
-    DB::beginTransaction();
-    try {
-        $invoice->update($request->all());
+        DB::beginTransaction();
+        try {
+            $invoice->update($request->all());
 
-        // Handle Charges (single or array)
-        $this->handleCharges($request, $id, $invoice);
+            // Handle Charges (single or array)
+            $this->handleCharges($request, $id, $invoice);
 
-        // Handle Documents (single or array)
-        $this->handleDocuments($request, $id);
+            // Handle Documents (single or array)
+            $this->handleDocuments($request, $id);
 
-        // Handle Payments (single or array)
-        $this->handlePayments($request, $id);
+            // Handle Payments (single or array)
+            $this->handlePayments($request, $id);
 
-        DB::commit();
-        return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
+            DB::commit();
+            return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to update invoice', 'error' => $e->getMessage()], 500);
+        }
     }
-}
 
 protected function handleCharges(Request $request, $invoiceId, $invoice)
 {

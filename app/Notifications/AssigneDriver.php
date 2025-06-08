@@ -57,6 +57,7 @@ class AssigneDriver extends Notification
             'driver_name' => $this->driver->user->name,
             'driver_email' => $this->driver->user->email,
             'message' => "You have been assigned a new shipment (#{$this->shipment->id}).",
+            'link' => env('FRONTEND_URL') . '/view_loads_single.html?id=' . base64_encode($this->shipment->id),
         ];
     }
 }

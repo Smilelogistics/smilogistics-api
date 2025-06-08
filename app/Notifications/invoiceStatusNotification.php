@@ -60,7 +60,8 @@ class invoiceStatusNotification extends Notification
             'invoice_id' => $this->invoice->id,
             'invoice_number' => $this->invoice->invoice_number,
             'new_status' => $this->invoice->status,
-            'link' => '/invoices/' . $this->invoice->id
+            'link' => env('FRONTEND_URL') . '/view_invoice_single.html?id=' . base64_encode($this->invoice->id),
+            //'link' => '/invoices/' . $this->invoice->id
         ];
     }
 }

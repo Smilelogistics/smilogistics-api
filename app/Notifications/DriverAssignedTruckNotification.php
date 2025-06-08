@@ -42,6 +42,9 @@ class DriverAssignedTruckNotification extends Notification implements ShouldQueu
         return [
             'message' => 'You have been assigned to Truck #' . $this->truck->truck_number,
             'truck_id' => $this->truck->id,
+            'truck_number' => $this->truck->truck_number,
+            'license_plate_number' => $this->truck->license_plate_number,
+            'link' => env('FRONTEND_URL') . '/view_truck_single.html?id=' . base64_encode($this->truck->id),
         ];
     }
 }

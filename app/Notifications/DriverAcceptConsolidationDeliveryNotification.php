@@ -59,7 +59,8 @@ class DriverAcceptConsolidationDeliveryNotification extends Notification
             'driver_name' => $this->driver->fname . ' ' . $this->driver->last_name,
             'driver_phone' => $this->driver->phone ?? 'N/A',
             'tracking_number' => $this->consolidateShipment->consolidate_tracking_number,
-            'type' => 'consolidation_accepted'
+            'type' => 'consolidation_accepted',
+            'link' => env('FRONTEND_URL') . '/view_consolidated_single.html?id=' . base64_encode($this->consolidateShipment->id),
         ];
     }
 }

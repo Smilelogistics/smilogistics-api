@@ -59,7 +59,8 @@ class SettlementNotification extends Notification implements ShouldQueue
             'amount' => $this->settlement->payment_total,
             'branch_name' => $this->branch->name,
             'created_at' => $this->settlement->created_at,
-            'url' => url('/settlements/' . $this->settlement->id),
+            'link' => env('FRONTEND_URL') . '/view_settlement_single.html?id=' . base64_encode($this->settlement->id),
+            //'url' => url('/settlements/' . $this->settlement->id),
             'message' => 'A new settlement has been processed for you by ' . $this->branch->name . '.',
         ];
     }
