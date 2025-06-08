@@ -53,7 +53,7 @@ class NewShipmentCreated extends Notification
             'branch_id' => $this->shipment->branch_id,
             'message' => 'There is a new shipment',
             //'url' => route('shipments.show', $this->shipment->id),
-            'link' => env('FRONTEND_URL') . '/view_loads_single.html?id=' . $this->shipment->id,
+            'link' => env('FRONTEND_URL') . '/view_loads_single.html?id=' . base64_encode($this->shipment->id),
             //route('user.shipments.show', $this->shipment->id), 
             'shipep_at' => now(),
         ];
