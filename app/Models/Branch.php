@@ -61,6 +61,18 @@ class Branch extends Model
         'subscription_date',
         'isSubscribed',
         'price_per_mile',
+
+       'trucking_bank_name',
+      'trucking_account_name',
+      'trucking_account_number',
+      'trucking_routing',
+      'trucking_zelle',
+      'trucking_pay_cargo',
+      'ocean_bank_name',
+      'ocean_account_name',
+      'ocean_account_number',
+      'ocean_routing',
+      'ocean_zelle',
     ];
     protected static function boot()
     {

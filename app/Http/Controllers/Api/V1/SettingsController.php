@@ -457,6 +457,79 @@ public function updateGeneral(Request $request)
         }
     }
 
+    public function updateAccount(Request $request)
+    {
+        $user = auth()->user();
+        
+        $validated = $request->validate([
+            'trucking_bank_name' => 'sometimes|nullable|string',
+            'trucking_account_name' => 'sometimes|nullable|string',
+            'trucking_account_number' => 'sometimes|nullable|integer',
+            'trucking_routing' => 'sometimes|nullable|string',
+            'trucking_zelle' => 'sometimes|nullable|string', // Increased from max:8
+            'trucking_pay_cargo' => 'sometimes|nullable|string',
+            'ocean_bank_name' => 'sometimes|nullable|string',
+            'ocean_account_name' => 'sometimes|nullable|string',
+            'ocean_account_number' => 'sometimes|nullable|string',
+            'ocean_routing' => 'sometimes|nullable|string',
+            'ocean_zelle' => 'sometimes|nullable|string',
+        ]);
+
+        //dd($validated);
+
+        DB::beginTransaction();
+
+        try {
+            
+        if ($user->hasRole('customer')) {
+                $customer = Customer::where('user_id', $user->id)->firstOrFail();
+                $customer->fill($validated);
+                
+                if (!$customer->save()) {
+                    throw new \Exception('Failed to update customer account settings');
+                }
+            } 
+            elseif ($user->hasRole('businessadministrator')) {
+                $branch = Branch::where('user_id', $user->id)->firstOrFail();
+                $branch->fill($validated);
+                
+                if (!$branch->save()) {
+                    throw new \Exception('Failed to update branch account settings');
+                }
+            } 
+            
+            elseif ($user->hasRole('superadministrator')) {
+                $superadmin = SuperAdmin::where('user_id', $user->id)->firstOrFail();
+                $superadmin->fill($validated);
+                
+                if (!$superadmin->save()) {
+                    throw new \Exception('Failed to update branch account settings');
+                }
+            } 
+            
+            else {
+                throw new \Exception('Unauthorized role');
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Account settings updated successfully',
+                'data' => $validated
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update mail settings'
+            ], 500);
+        }
+    }
+
     public function updateMailer(Request $request)
     {
         $user = auth()->user();

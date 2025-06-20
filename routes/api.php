@@ -29,14 +29,14 @@ use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
-Route::get('/test-db', function (Request $request) {
-    try {
-        DB::connection()->getPdo();
-        return response()->json(['message' => '✅ Database connected successfully!']);
-    } catch (\Exception $e) {
-        return response()->json(['error' => '❌ Database not connected', 'details' => $e->getMessage()], 500);
-    }
-});
+// Route::get('/test-db', function (Request $request) {
+//     try {
+//         DB::connection()->getPdo();
+//         return response()->json(['message' => '✅ Database connected successfully!']);
+//     } catch (\Exception $e) {
+//         return response()->json(['error' => '❌ Database not connected', 'details' => $e->getMessage()], 500);
+//     }
+// });
 
 
 Route::get('/email/verify', function () {
@@ -135,6 +135,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/rates', [SettingsController::class, 'getRates'])->name('settings.rates');
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
             Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
+            Route::post('/account', [SettingsController::class, 'updateAccount'])->name('settings.account.update');
             Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('settings.payment.update');
             Route::post('/sms', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');
