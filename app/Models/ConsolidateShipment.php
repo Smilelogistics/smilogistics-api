@@ -46,8 +46,12 @@ class ConsolidateShipment extends Model
         return $this->hasMany(ConsolidateShipmentCharges::class);
     }
 
-     public function shipmentTrack() {
-        return $this->hasMany(ConsolidateShipmentTrack::class, 'consolidate_shipment_id');
+    //  public function shipmentTrack() {
+    //     return $this->hasMany(ConsolidateShipmentTrack::class, 'consolidate_shipment_id');
+    // }
+
+    public function shipmentTrack() {
+        return $this->hasMany(ShipmentTrack::class, 'consolidate_shipment_id');
     }
 
     // public static function generateTrackingNumber() {

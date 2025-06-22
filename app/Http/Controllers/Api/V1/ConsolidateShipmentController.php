@@ -174,12 +174,20 @@ class ConsolidateShipmentController extends Controller
             ]);
         }
 
-        ConsolidateShipmentTrack::create([
-                'shipment_id' => $consolidateShipment->id,
-                'user_id' => Auth::id(),
-                'status' => 'Shipment Created',
-                'tracking_number' => $consolidateShipment->shipment_tracking_number,
-            ]);
+        // ConsolidateShipmentTrack::create([
+        //         'shipment_id' => $consolidateShipment->id,
+        //         'user_id' => Auth::id(),
+        //         'status' => 'Shipment Created',
+        //         'tracking_number' => $consolidateShipment->shipment_tracking_number,
+        //     ]);
+
+             ShipmentTrack::create([
+            'consolidate_shipment_id' => $consolidateShipment->id,
+            'user_id' => Auth::id(),
+            'status' => 'Shipment Created',
+            'tracking_number' => $requconsolidateShipmentest->consolidate_tracking_number,
+            //'driver_id' => $consolidateShipment->driver
+        ]);
 
         if ($request->hasFile('file_path')) {
             //dd($request->file('file_path'));
@@ -493,6 +501,8 @@ protected function handleFileUploads($request, $consolidateShipment)
         $first_notify_party_email = $shipment->first_notify_party_email;
         $second_notify_party_email = $shipment->second_notify_party_email;
 
+        //dd($shipment);
+
 
         $shipment->update([
             'status' => $request->status,
@@ -500,12 +510,21 @@ protected function handleFileUploads($request, $consolidateShipment)
             'driver_id' => $request->driver
         ]);
 
-        ConsolidateShipmentTrack::create([
+        // ConsolidateShipmentTrack::create([
+        //     'consolidate_shipment_id' => $shipment->id,
+        //     'status' => $request->status,
+        //     'tracking_number' => $request->consolidate_tracking_number,
+        //     'driver_id' => $request->driver
+        // ]);
+
+        $done =  ShipmentTrack::create([
             'consolidate_shipment_id' => $shipment->id,
-            'status' => $request->status,
+            'status' => $request->shipment_status,
             'tracking_number' => $request->consolidate_tracking_number,
             'driver_id' => $request->driver
         ]);
+
+        //dd($done);
 
           if ($first_notify_party_email) {
                 $first_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
@@ -531,18 +550,18 @@ protected function handleFileUploads($request, $consolidateShipment)
         ]);
     }
 
-    public function trackShipment(Request $request, $id) 
-    {
-        $shipment = ConsolidateShipmentTrack::with('consolidate')->where('tracking_number', $id)->get();
+    // public function trackShipment(Request $request, $id) 
+    // {
+    //     $shipment = ConsolidateShipmentTrack::with('consolidate')->where('tracking_number', $id)->get();
 
-        if ($shipment->isEmpty()) {
-            return response()->json(['message' => 'Shipment not found'], 404);
-        }
+    //     if ($shipment->isEmpty()) {
+    //         return response()->json(['message' => 'Shipment not found'], 404);
+    //     }
 
-        return response()->json([
-            'shipment_tracks' => $shipment->toArray()
-        ]);
-    }
+    //     return response()->json([
+    //         'shipment_tracks' => $shipment->toArray()
+    //     ]);
+    // }
 
     
     public function destroy($id)

@@ -1116,7 +1116,7 @@ protected function processUploads($shipment, $uploads)
 
     public function trackShipment(Request $request, $id) 
     {
-        $shipment = ShipmentTrack::with('shipment')->where('tracking_number', $id)->get();
+        $shipment = ShipmentTrack::with('shipment', 'consolidateShipment')->where('tracking_number', $id)->get();
 
         if ($shipment->isEmpty()) {
             return response()->json(['message' => 'Shipment not found'], 404);
