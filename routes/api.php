@@ -243,6 +243,9 @@ Route::prefix('v1')->group(function () {
             Route::get('get-accepted-consolidated', [ConsolidateShipmentController::class, 'getAcceptedConslidatedDelivery'])->name('console.my.consolidate');
             Route::get('get-pending', [ConsolidateShipmentController::class, 'getPendingConslidatedDelivery']);
 
+            
+            Route::put('/updateShipmentStatus/{id}', [ConsolidateShipmentController::class, 'updateShipment'])->name('shipments.update');
+
             Route::delete('/delete/{id}', [ConsolidateShipmentController::class, 'destroy'])->name('console.shipments.destroy');
             
 

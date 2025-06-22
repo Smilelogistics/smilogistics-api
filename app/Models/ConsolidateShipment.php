@@ -46,11 +46,30 @@ class ConsolidateShipment extends Model
         return $this->hasMany(ConsolidateShipmentCharges::class);
     }
 
-    public static function generateTrackingNumber() {
-        do {
-            $trackingNumber = random_int(1000000000, 9999999999);
-        } while (DB::table('consolidate_shipments')->where('consolidate_tracking_number', $trackingNumber)->exists()); 
+     public function shipmentTrack() {
+        return $this->hasMany(ShipmentTrack::class, 'shipment_id');
+    }
+
+    // public static function generateTrackingNumber() {
+    //     do {
+    //         $trackingNumber = random_int(1000000000, 9999999999);
+    //     } while (DB::table('consolidate_shipments')->where('consolidate_tracking_number', $trackingNumber)->exists()); 
     
+    //     return $trackingNumber;
+    // }
+
+    public static function generateTrackingNumber()
+    {
+        $prefix = 'CNS-';
+
+        do {
+            $number = random_int(1000000000, 9999999999);
+            $trackingNumber = $prefix . $number;
+        } while (DB::table('consolidate_shipments')
+            ->where('consolidate_tracking_number', $trackingNumber)
+            ->exists());
+
         return $trackingNumber;
     }
+
 }

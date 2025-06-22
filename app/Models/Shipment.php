@@ -70,13 +70,25 @@ class Shipment extends Model
     {
         return $this->hasMany(BillTo::class, 'shipment_id');
     }
-    public static function generateTrackingNumber() {
-        do {
-            $trackingNumber = random_int(1000000000, 9999999999);
-        } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists()); 
+    // public static function generateTrackingNumber() {
+    //     do {
+    //         $trackingNumber = random_int(1000000000, 9999999999);
+    //     } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists()); 
     
-        return $trackingNumber;
-    }
+    //     return $trackingNumber;
+    // }
+
+    public static function generateTrackingNumber()
+{
+    $prefix = 'SHIP-';
+
+    do {
+        $number = random_int(1000000000, 9999999999);
+        $trackingNumber = $prefix . $number;
+    } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists());
+
+    return $trackingNumber;
+}
 
     protected static function booted()
     {

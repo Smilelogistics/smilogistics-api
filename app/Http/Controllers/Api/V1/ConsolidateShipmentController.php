@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Models\User;
 use App\Models\Branch;
 use Illuminate\Http\Request;
+use App\Models\ShipmentTrack;
 use Illuminate\Support\Facades\DB;
 use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
@@ -63,9 +64,11 @@ class ConsolidateShipmentController extends Controller
         //$mpg = auth()->user()->getMPG();
         $total_shipping_cost = $validatedData['total_weight'] * $handling_fee;
        // dd($handling_fee);
-        
-    	//dd(ConsolidateShipment::generateTrackingNumber());
-        $consolidateShipment = ConsolidateShipment::create([
+
+       try{
+           DB::beginTransaction();
+
+           $consolidateShipment = ConsolidateShipment::create([
             'user_id' => $user->id,
             'branch_id' => $branchId,
             'customer_id' => $customerId,
@@ -170,6 +173,13 @@ class ConsolidateShipmentController extends Controller
             ]);
         }
 
+        ShipmentTrack::create([
+                'shipment_id' => $consolidateShipment->id,
+                'user_id' => Auth::id(),
+                'status' => 'Shipment Created',
+                'tracking_number' => $consolidateShipment->shipment_tracking_number,
+            ]);
+
         if ($request->hasFile('file_path')) {
             //dd($request->file('file_path'));
             $files = $request->file('file_path');
@@ -195,11 +205,23 @@ class ConsolidateShipmentController extends Controller
         Mail::to($consolidateShipment->customer_email)->send(new ConsolidateShipmentCustomerMail($consolidateShipment, $branch));
         Mail::to($consolidateShipment->receiver_email)->send(new ConsolidateShipmentRecieverMail($consolidateShipment, $branch));
 
+        DB::commit();
+
         return response()->json([
             'success' => true,
             'message' => 'Consolidate Shipment created successfully',
             'data' => $consolidateShipment
         ]);
+
+
+       } catch(\Exception $e){
+           return response()->json([
+               'error' => $e->getMessage()
+           ]);
+       }
+        
+    	//dd(ConsolidateShipment::generateTrackingNumber());
+        
     }
 
     public function update(Request $request, $id)
@@ -466,14 +488,14 @@ protected function handleFileUploads($request, $consolidateShipment)
         }
 
         $shipment = ConsolidateShipment::findOrFail($id);
-        $previousStatus = $shipment->shipment_status;
+        $previousStatus = $shipment->status;
         $first_notify_party_email = $shipment->first_notify_party_email;
         $second_notify_party_email = $shipment->second_notify_party_email;
 
 
         $shipment->update([
-            'shipment_status' => $request->shipment_status,
-            'shipment_tracking_number' => $request->shipment_tracking_number,
+            'status' => $request->status,
+            'consolidate_tracking_number' => $request->consolidate_tracking_number,
             'driver_id' => $request->driver
         ]);
 
