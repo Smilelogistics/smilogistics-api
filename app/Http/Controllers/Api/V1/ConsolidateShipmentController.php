@@ -89,6 +89,7 @@ class ConsolidateShipmentController extends Controller
             'total_shipping_cost' => $total_shipping_cost,
             'payment_status' => $validatedData['payment_status'] ?? null,
             'payment_method' => $validatedData['payment_method'] ?? null,
+            'status' => 'Shipment Created',
         ]);
 
     
@@ -449,6 +450,61 @@ protected function handleFileUploads($request, $consolidateShipment)
             'success' => true,
             'message' => 'Consolidate Shipment fetched successfully',
             'data' => $payment
+        ]);
+    }
+
+    public function updateShipment(Request $request, $id) 
+    {
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|string|max:255',
+            'consolidate_tracking_number' => 'required|string|max:255',
+            'driver' => 'nullable|integer|exists:drivers,id'
+        ]);
+
+        if ($validator->fails()) {    
+            return response()->json($validator->errors(), 422);
+        }
+
+        $shipment = ConsolidateShipment::findOrFail($id);
+        $previousStatus = $shipment->shipment_status;
+        $first_notify_party_email = $shipment->first_notify_party_email;
+        $second_notify_party_email = $shipment->second_notify_party_email;
+
+
+        $shipment->update([
+            'shipment_status' => $request->shipment_status,
+            'shipment_tracking_number' => $request->shipment_tracking_number,
+            'driver_id' => $request->driver
+        ]);
+
+        ShipmentTrack::create([
+            'shipment_id' => $shipment->id,
+            'status' => $request->status,
+            'tracking_number' => $request->consolidate_tracking_number,
+            'driver_id' => $request->driver
+        ]);
+
+          if ($first_notify_party_email) {
+                $first_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
+                //Mail::to($customerUser)->send(new invoiceStatusUpdateMail($invoice, $previousStatus));
+            }
+             if ($first_notify_party_email) {
+                $second_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
+                //Mail::to($customerUser)->send(new invoiceStatusUpdateMail($invoice, $previousStatus));
+            }
+
+        // Simplified driver notification logic
+        if ($request->filled('driver')) {
+            $driver = Driver::with('user')->find($request->driver);
+            if ($driver && $driver->user && $driver->user->email) {
+                $driver->notify(new AssigneDriver($shipment, $driver));
+                Mail::to($driver->user->email)->send(new AssigneDriverMail($shipment, $driver));
+            }
+        }
+
+        return response()->json([
+            'message' => 'Shipment updated successfully',
+            'shipment' => $shipment->fresh()  // Get fresh data from database
         ]);
     }
 

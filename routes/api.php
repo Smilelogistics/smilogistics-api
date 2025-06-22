@@ -162,6 +162,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/get-consolidated-shipments', [ConsolidatedShipmentController::class, 'getConsolidatedShipment'])->name('get.consolidated.shipments');
         Route::get('/get-pending-consolidated-shipments', [ConsolidatedShipmentController::class, 'pendingConsolidatedShipment'])->name('get.pending.consolidated.shipments');
         Route::get('/get-consolidated-shipments-by-customer-email', [ConsolidatedShipmentController::class, 'getConsolidatedShipmentByCustomrEmail'])->name('email.consolidate');
+        Route::put('/consolidate-updateShipmentStatus/{id}', [ConsolidatedShipmentController::class, 'updateShipment'])->name('shipments.update');
         Route::get('/get-agency', [ShipmentController::class, 'getAgency'])->name('get.agency');
         // Route::get('/shipments', [ShipmentController::class, 'index']);
         // Route::get('/shipments/{id}', [ShipmentController::class, 'show']);
