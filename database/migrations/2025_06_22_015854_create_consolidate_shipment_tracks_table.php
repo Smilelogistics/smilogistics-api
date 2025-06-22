@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shipment_tracks', function (Blueprint $table) {
+        Schema::create('consolidate_shipment_tracks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('shipment_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('consolidate_shipment_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('driver_id')->nullable()->constrained()->onDelete('cascade');
+            $table->foreignId('carrier_id')->nullable()->constrained()->onDelete('cascade');
             $table->string('tracking_number', 100)->nullable();
             $table->string('status', 50)->nullable();
             $table->string('location')->nullable();
@@ -27,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shipment_tracks');
+        Schema::dropIfExists('consolidate_shipment_tracks');
     }
 };

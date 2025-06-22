@@ -245,6 +245,8 @@ Route::prefix('v1')->group(function () {
 
             
             Route::put('/updateShipmentStatus/{id}', [ConsolidateShipmentController::class, 'updateShipment'])->name('shipments.update');
+            
+            Route::get('/track/{id}', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
 
             Route::delete('/delete/{id}', [ConsolidateShipmentController::class, 'destroy'])->name('console.shipments.destroy');
             

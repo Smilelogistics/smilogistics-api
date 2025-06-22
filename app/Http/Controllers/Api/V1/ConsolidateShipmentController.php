@@ -11,6 +11,7 @@ use App\Models\ConsolidateShipment;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\Models\ConsolidateShipmentDoc;
+use App\Models\ConsolidateShipmentTrack;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ConsolidateShipmentCharges;
 use App\Mail\ConsolidateShipmentCustomerMail;
@@ -173,7 +174,7 @@ class ConsolidateShipmentController extends Controller
             ]);
         }
 
-        ShipmentTrack::create([
+        ConsolidateShipmentTrack::create([
                 'shipment_id' => $consolidateShipment->id,
                 'user_id' => Auth::id(),
                 'status' => 'Shipment Created',
@@ -499,8 +500,8 @@ protected function handleFileUploads($request, $consolidateShipment)
             'driver_id' => $request->driver
         ]);
 
-        ShipmentTrack::create([
-            'shipment_id' => $shipment->id,
+        ConsolidateShipmentTrack::create([
+            'consolidate_shipment_id' => $shipment->id,
             'status' => $request->status,
             'tracking_number' => $request->consolidate_tracking_number,
             'driver_id' => $request->driver
@@ -527,6 +528,19 @@ protected function handleFileUploads($request, $consolidateShipment)
         return response()->json([
             'message' => 'Shipment updated successfully',
             'shipment' => $shipment->fresh()  // Get fresh data from database
+        ]);
+    }
+
+    public function trackShipment(Request $request, $id) 
+    {
+        $shipment = ConsolidateShipmentTrack::with('consolidate')->where('tracking_number', $id)->get();
+
+        if ($shipment->isEmpty()) {
+            return response()->json(['message' => 'Shipment not found'], 404);
+        }
+
+        return response()->json([
+            'shipment_tracks' => $shipment->toArray()
         ]);
     }
 

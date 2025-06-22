@@ -14,8 +14,4 @@ class ShipmentTrack extends Model
         return $this->belongsTo(Shipment::class);
     }
 
-    public function consolidate()
-    {
-        return $this->belongsTo(ConsolidateShipment::class);
-    }
 }
