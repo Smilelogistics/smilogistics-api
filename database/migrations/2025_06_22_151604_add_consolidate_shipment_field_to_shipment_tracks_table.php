@@ -12,20 +12,24 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // First install doctrine/dbal if not already installed
+        // composer require doctrine/dbal
+
         Schema::table('shipment_tracks', function (Blueprint $table) {
-            // Make shipment_id nullable
-            $table->unsignedBigInteger('shipment_id')->nullable()->change();
+            // For PostgreSQL, we need to handle the column change differently
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id DROP NOT NULL');
+            } else {
+                $table->unsignedBigInteger('shipment_id')->nullable()->change();
+            }
 
             // Add consolidate_shipment_id as nullable foreign key
             $table->foreignId('consolidate_shipment_id')
                 ->after('shipment_id')
                 ->nullable()
-                ->constrained()
+                ->constrained('consolidate_shipments') // Make sure this matches your table name
                 ->onDelete('cascade');
         });
-
-        DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id SET NOT NULL');
-
     }
 
     /**
@@ -33,13 +37,17 @@ return new class extends Migration
      */
     public function down(): void
     {
-         Schema::table('shipment_tracks', function (Blueprint $table) {
-            // Make shipment_id NOT NULL again
-            $table->unsignedBigInteger('shipment_id')->nullable(false)->change();
-
-            // Drop the foreign key and column
+        Schema::table('shipment_tracks', function (Blueprint $table) {
+            // Drop the foreign key first
             $table->dropForeign(['consolidate_shipment_id']);
             $table->dropColumn('consolidate_shipment_id');
+
+            // Handle PostgreSQL column change
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id SET NOT NULL');
+            } else {
+                $table->unsignedBigInteger('shipment_id')->nullable(false)->change();
+            }
         });
     }
 };
