@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\Plan;
+use App\Models\Feature;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 
@@ -76,4 +79,104 @@ class PlansController extends Controller
         $plan->delete();
         return response()->json(['message' => 'Plan deleted successfully'], 200);
     }
+
+    public function getFeatures()
+    {
+        $features = Feature::all();
+        return response()->json($features);
+    }
+public function newPlan(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'slug' => 'required|string|unique:plans,slug',
+        'price' => 'required|numeric',
+        'interval' => 'required|string|in:monthly,yearly',
+        'description' => 'nullable|string',
+        'features' => 'array',
+        'features.*' => 'exists:features,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 422);
+    }
+
+        $validated = $validator->validated();
+
+        try{
+
+            DB::beginTransaction();
+            $plan = Plan::create([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'price' => $validated['price'],
+            'interval' => $validated['interval'],
+            'description' => $validated['description'] ?? '',
+            'is_active' => true,
+        ]);
+
+        $plan->features()->attach($validated['features'] ?? []);
+
+        DB::commit();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Plan created successfully',
+            'data' => $plan
+        ]);
+        
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function storeFeature(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+         'name' => 'required|string|max:255',
+         'slug' => 'required|string|max:255|unique:features,slug',
+         'description' => 'nullable|string'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $validator->errors()
+        ], 422);
+    }
+
+        $validated = $validator->validated();
+
+        try{
+
+            DB::beginTransaction();
+            $feature = Feature::create([
+            'name' => $validated['name'],
+            'slug' => $validated['slug'],
+            'description' => $validated['description'] ?? '',
+        ]);
+
+        DB::commit();
+
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Feature created successfully',
+            'data' => $feature
+        ]);
+        
+        }catch(\Exception $e){
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
+
 }

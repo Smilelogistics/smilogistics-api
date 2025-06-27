@@ -46,5 +46,9 @@ class Customer extends Model
     {
         return $this->hasMany(CustomerDocs::class);
     }
+    public function hasFeatureAccess(string $featureSlug): bool
+    {
+        return $this->branch->hasFeatureAccess($featureSlug);
+    }
 
 }

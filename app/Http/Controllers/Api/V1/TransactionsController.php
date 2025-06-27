@@ -338,22 +338,71 @@ class TransactionsController extends Controller
                     //'paid_at' => $responseData['data']['paid_at'] ?? null
                 ]);
 
-            $updateUser = User::where('id', $transaction->user_id)->first();
+           
+                // Get the user and branch
+                $user = User::findOrFail($transaction->user_id);
+                $branch = $user->branch;
 
-            $updateUser->update([
-                'isSubscribed' => 1,
-                'subscription_end_date' => now()->addDays(30),
-                'subscription_start_date' => now(),
-                'subscription_type' => $transaction->subscription_type,
-                'subscription_count' => $updateUser->subscription_count + 1
-            ]);
+                if (!$branch) {
+                    throw new \Exception('User is not associated with any branch');
+                }
 
-            DB::commit();
+                // Get the plan from the transaction
+                $plan = Plan::findOrFail($transaction->plan_id);
 
-            return response()->json([
-                'message' => 'Payment verified successfully',
-                'data' => $responseData,
-            ]);
+                // Calculate new end date (add to existing if subscription is active)
+                $currentSubscription = $branch->activeSubscription();
+                $startDate = now();
+                $endDate = $startDate->copy();
+
+                if ($currentSubscription && $currentSubscription->ends_at > now()) {
+                    // If existing subscription is still active, add to the remaining time
+                    $endDate = $currentSubscription->ends_at;
+                }
+
+                // Add the new subscription period
+                if ($plan->interval === 'yearly') {
+                    $endDate = $endDate->addYear();
+                } else {
+                    $endDate = $endDate->addMonth(); // Default to monthly
+                }
+
+                // Cancel any existing active subscription
+                $branch->subscriptions()->active()->update([
+                    'status' => 'canceled',
+                    'canceled_at' => now()
+                ]);
+
+                // Create new subscription
+                $subscription = $branch->subscriptions()->create([
+                    'plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    'transaction_id' => $transaction->id
+                ]);
+
+                // Update user details
+                $user->update([
+                    'isSubscribed' => true,
+                    'subscription_end_date' => $endDate,
+                    'subscription_start_date' => $startDate,
+                    'subscription_type' => $plan->slug,
+                    'subscription_count' => $user->subscription_count + 1
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Subscription payment processed successfully',
+                    'data' => [
+                        'user' => $user,
+                        'subscription' => $subscription,
+                        'plan' => $plan,
+                        'features' => $plan->allFeatures
+                    ]
+                ]);
         }
 
         return response()->json([

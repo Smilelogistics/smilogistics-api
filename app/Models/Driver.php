@@ -95,4 +95,9 @@ class Driver extends Model
     {
         return $this->hasMany(Settlement::class);
     }
+
+    public function hasFeatureAccess(string $featureSlug): bool
+    {
+        return $this->branch->hasFeatureAccess($featureSlug);
+    }
 }

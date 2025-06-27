@@ -13,7 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
-            'check.subscription' => \App\Http\Middleware\CheckSubscription::class,
+            'subscription' => \App\Http\Middleware\CheckSubscription::class,
+            //'feature' => \App\Http\Middleware\CheckBranchFeatureAccess::class,
+            'feature' => \App\Http\Middleware\CheckFeatureAccess::class,
             'set.dynamic.mail.config' => \App\Http\Middleware\SetDynamicMailConfig::class
         ]);
     })

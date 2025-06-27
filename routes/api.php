@@ -120,7 +120,7 @@ Route::prefix('v1')->group(function () {
     });
      
     
-    Route::middleware('auth:sanctum', 'verified', 'check.subscription')->group(function () {
+    Route::middleware('auth:sanctum', 'verified', 'subscription:premium')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
         Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -273,19 +273,24 @@ Route::prefix('v1')->group(function () {
             Route::get('/notifications/{id}', [NotificationController::class, 'show']);
             Route::post('/notifications/read/{id}', [NotificationController::class, 'viewNotification']);
         });
+    });
 
+    
+Route::middleware('auth:sanctum', 'verified')->group(function () {
+        Route::prefix('plans')->group(function () {
+            Route::get('/plans', [PlansController::class, 'index']);
+            Route::get('/plan/{id}', [PlansController::class, 'show']);
+            Route::post('/create-plan', [PlansController::class, 'store']);
+            Route::post('/store/new', [PlansController::class, 'newPlan'])->name('plans.store');
+            Route::post('/store-feature', [PlansController::class, 'storeFeature'])->name('plans.storeFeature');
+            Route::get('/get-features', [PlansController::class, 'getFeatures'])->name('plans.getFeatures');
+        });
         Route::prefix('payments')->group(function () {
             Route::post('/initialize', [TransactionsController::class, 'initialize']);
             //Route::post('/initialize-paystack', [TransactionsController::class, 'initiatePaystackPayment']);
             // Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment'])->withoutMiddleware(['auth:api']);
             Route::post('/initialize-flutterwave', [TransactionsController::class, 'initializePaymentFlutterwave']);
             Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
-        });
-
-        Route::prefix('plans')->group(function () {
-            Route::get('/plans', [PlansController::class, 'index']);
-            Route::get('/plan/{id}', [PlansController::class, 'show']);
-            Route::post('/create-plan', [PlansController::class, 'store']);
         });
     });
 });

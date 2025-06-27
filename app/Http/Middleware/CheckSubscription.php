@@ -3,11 +3,13 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class CheckSubscription
 {
+    // Heads we no longer use this mmidleware, its just here for future reference
     /**
      * Handle an incoming request.
      *
@@ -26,38 +28,34 @@ class CheckSubscription
     //     return $next($request);
     // }
 
-    public function handle(Request $request, Closure $next): Response
+    public function handle($request, Closure $next, $requiredPlan)
     {
         $user = $request->user();
+        
+        // Get the user's branch through different relationships
+        $branch = $user->branch ?? $user->customer?->branch ?? $user->driver?->branch;
+        
+        if (!$branch) {
+            return response()->json(['message' => 'No branch associated'], 403);
+        }
 
-         if ($user->hasRole('superadministrator')) {
-                return $next($request);
-            }
+        $subscription = $branch->activeSubscription();
+        
+        if (!$subscription) {
+            return response()->json(['message' => 'No active subscription'], 403);
+        }
 
-        if (!$user) {
+        // Get required plan level
+        $requiredPlanLevel = Plan::where('slug', $requiredPlan)->value('level');
+        
+        if ($subscription->plan->level < $requiredPlanLevel) {
             return response()->json([
-                'error' => 'Authentication required to access this resource.'
-            ], 401);
+                'message' => 'Upgrade to ' . $requiredPlan . ' plan to access this feature',
+                'required_plan' => $requiredPlan,
+                'current_plan' => $subscription->plan->slug
+            ], 403);
         }
 
-        // Check if user is directly subscribed (branch admin)
-        if ($user->isSubscribed()) {
-            return $next($request);
-        }
-
-        // Check subscription through customer's branch
-        if ($user->customer && $user->customer->branch && $user->customer->branch->isSubscribed()) {
-            return $next($request);
-        }
-
-        // Check subscription through driver's branch
-        if ($user->driver && $user->driver->branch && $user->driver->branch->isSubscribed()) {
-            return $next($request);
-        }
-
-        // If none of the above conditions are met
-        return response()->json([
-            'error' => 'Your branch subscription is required to access this resource.'
-        ], 403);
+        return $next($request);
     }
 }

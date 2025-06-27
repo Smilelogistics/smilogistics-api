@@ -103,7 +103,7 @@ return new class extends Migration
         Schema::create('plans', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->integer('price');
+            $table->decimal('price', 10, 2);
             $table->text('description');
             $table->string('billing_cycle')->nullable();
             $table->boolean('is_active')->default(true);

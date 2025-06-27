@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
@@ -136,9 +137,36 @@ class Branch extends Model
         return $this->hasMany(Settlement::class);
     }
 
-    public function isSubscribed(): bool
+    // public function isSubscribed(): bool
+    // {
+    //     return $this->isSubscribed == 1;
+    // }
+
+     public function subscriptions(): HasMany
     {
-        return $this->isSubscribed == 1;
+        return $this->hasMany(Subscription::class);
+    }
+
+    public function activeSubscription()
+    {
+        return $this->subscriptions()
+            ->where('status', 'active')
+            ->where('ends_at', '>', now())
+            ->latest()
+            ->first();
+    }
+
+    public function hasFeatureAccess(string $featureSlug): bool
+    {
+        $subscription = $this->activeSubscription();
+        
+        if (!$subscription) {
+            return false;
+        }
+
+        return $subscription->plan->features()
+            ->where('slug', $featureSlug)
+            ->exists();
     }
 
 }

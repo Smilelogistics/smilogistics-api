@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Customer;
+use App\Models\SuperAdmin;
 use App\Mail\newBranchMail;
 use App\Mail\newDriverMail;
 use Illuminate\Support\Str;
@@ -13,8 +14,8 @@ use Illuminate\Http\Request;
 use App\Mail\newCustomerMail;
 use App\Services\AuthService;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -97,6 +98,11 @@ class AuthController extends Controller
                  Driver::create([
                      'user_id' => $user->id,
                      'branch_id' => $branchId
+                 ]);
+                 //Mail::to($user->email)->send(new newDriverMail($user));
+             }elseif($user->user_type == 'superadministrator'){
+                 SuperAdmin::create([
+                     'user_id' => $user->id
                  ]);
                  //Mail::to($user->email)->send(new newDriverMail($user));
              }

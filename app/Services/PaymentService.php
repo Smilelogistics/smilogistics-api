@@ -89,7 +89,7 @@ class PaymentService
             ],
         ]);
 
-        //dd($response);
+        dd($response);
 
         if (!$response->successful() || $response->json('status') !== 'success') {
             throw new \Exception('Failed to initialize Flutterwave payment');
