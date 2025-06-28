@@ -21,7 +21,7 @@ class PlansSeeder extends Seeder
                 'price' => 49.99,
                 'interval' => 'monthly',
                 'description' => 'Basic plan with limited features',
-                'features' => [1, 2] // Using IDs of Basic Dashboard and Limited Reports
+                'features' => [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] // Using IDs of Basic Dashboard and Limited Reports
             ],
             [
                 'name' => 'Standard',
@@ -30,7 +30,7 @@ class PlansSeeder extends Seeder
                 'price' => 99.99,
                 'interval' => 'monthly',
                 'description' => 'Standard plan with limited features',
-                'features' => [3, 4] // Standard Analytics and Advanced Reports
+                'features' => [13, 14, 15, 16] // Standard Analytics and Advanced Reports
             ],
             [
                 'name' => 'Premium',
@@ -39,7 +39,7 @@ class PlansSeeder extends Seeder
                 'price' => 119.99,
                 'interval' => 'monthly',
                 'description' => 'Premium plan with all features',
-                'features' => [5, 6, 7, 8] // All premium features
+                'features' => [17, 18] // All premium features
             ]
         ];
 
