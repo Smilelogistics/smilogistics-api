@@ -83,7 +83,10 @@ class PlansController extends Controller
     public function getFeatures()
     {
         $features = Feature::all();
-        return response()->json($features);
+        return response()->json([
+            "status" => true,
+            "features" => $features
+        ]);
     }
 public function newPlan(Request $request)
 {
