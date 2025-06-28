@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Validator;
 class PlansController extends Controller
 {
     public  function index(){
-       $plans = Plan::all();
+       $plans = Plan::with('features')->get();
 
        return response()->json([
            'status' => 'success',
