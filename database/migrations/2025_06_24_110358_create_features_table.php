@@ -46,21 +46,21 @@ return new class extends Migration
             $table->string('interval')->nullable()->after('price')->default('monthly'); // monthly, yearly, etc.
         });
 
-        // Schema::table('shipment_tracks', function (Blueprint $table) {
-        //     // For PostgreSQL, we need to handle the column change differently
-        //     if (DB::getDriverName() === 'pgsql') {
-        //         DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id DROP NOT NULL');
-        //     } else {
-        //         $table->unsignedBigInteger('shipment_id')->nullable()->change();
-        //     }
+        Schema::table('shipment_tracks', function (Blueprint $table) {
+            // For PostgreSQL, we need to handle the column change differently
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id DROP NOT NULL');
+            } else {
+                $table->unsignedBigInteger('shipment_id')->nullable()->change();
+            }
 
-        //     // Add consolidate_shipment_id as nullable foreign key
-        //     $table->foreignId('consolidate_shipment_id')
-        //         ->after('shipment_id')
-        //         ->nullable()
-        //         ->constrained('consolidate_shipments') // Make sure this matches your table name
-        //         ->onDelete('cascade');
-        // });
+            // Add consolidate_shipment_id as nullable foreign key
+            $table->foreignId('consolidate_shipment_id')
+                ->after('shipment_id')
+                ->nullable()
+                ->constrained('consolidate_shipments') // Make sure this matches your table name
+                ->onDelete('cascade');
+        });
     }
 
     /**
@@ -68,18 +68,18 @@ return new class extends Migration
      */
     public function down(): void
     { 
-        // Schema::table('shipment_tracks', function (Blueprint $table) {
-        //     // Drop the foreign key first
-        //     $table->dropForeign(['consolidate_shipment_id']);
-        //     $table->dropColumn('consolidate_shipment_id');
+        Schema::table('shipment_tracks', function (Blueprint $table) {
+            // Drop the foreign key first
+            $table->dropForeign(['consolidate_shipment_id']);
+            $table->dropColumn('consolidate_shipment_id');
 
-        //     // Handle PostgreSQL column change
-        //     if (DB::getDriverName() === 'pgsql') {
-        //         DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id SET NOT NULL');
-        //     } else {
-        //         $table->unsignedBigInteger('shipment_id')->nullable(false)->change();
-        //     }
-        // });
+            // Handle PostgreSQL column change
+            if (DB::getDriverName() === 'pgsql') {
+                DB::statement('ALTER TABLE shipment_tracks ALTER COLUMN shipment_id SET NOT NULL');
+            } else {
+                $table->unsignedBigInteger('shipment_id')->nullable(false)->change();
+            }
+        });
 
         Schema::table('plans', function (Blueprint $table) {
             $table->dropColumn('slug');
