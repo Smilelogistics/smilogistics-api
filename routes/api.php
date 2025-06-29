@@ -111,7 +111,7 @@ Route::prefix('v1')->group(function () {
     // Handle reset submission
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
 
-    Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
+    Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
     // Protected routes
 

@@ -33,7 +33,7 @@ class PaymentService
 
     protected function initializePaystack(User $user, Plan $plan, Transaction $transaction)
     {
-        dd(env('PAYSTACK_SECRET_KEY'));
+        //dd(env('PAYSTACK_SECRET_KEY'));
         // dd(config('app.url'));
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.env('PAYSTACK_SECRET_KEY'),
@@ -49,7 +49,7 @@ class PaymentService
             ]
         ]);
         
-        dd($response->json());
+        //dd($response->json());
 
         if (!$response->successful()) {
             throw new \Exception('Failed to initialize Paystack payment');
