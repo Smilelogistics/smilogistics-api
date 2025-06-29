@@ -260,7 +260,7 @@ class TransactionsController extends Controller
 
                 DB::commit();
 
-                return redirect()->to(env('FRONTEND_URL') . '/dashboard');
+                return redirect()->to(env('FRONTEND_URL') . '/index.html');
                 //return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
                 //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
             }
@@ -447,7 +447,7 @@ class TransactionsController extends Controller
 
             DB::commit();
 
-             return redirect()->to(env('FRONTEND_URL') . '/dashboard');
+             return redirect()->to(env('FRONTEND_URL') . '/index.html');
 
             // return response()->json([
             //     'status' => 'success',
