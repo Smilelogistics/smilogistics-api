@@ -112,6 +112,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
 
     Route::get('/payments/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
+    Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
     // Protected routes
 
     Route::middleware('auth:sanctum')->group(function () {
@@ -311,9 +312,9 @@ Route::middleware('auth:sanctum', 'verified')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::post('/initialize', [TransactionsController::class, 'initialize']);
             //Route::post('/initialize-paystack', [TransactionsController::class, 'initiatePaystackPayment']);
-            // Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment'])->withoutMiddleware(['auth:api']);
+           // Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment'])->withoutMiddleware(['auth:api']);
             Route::post('/initialize-flutterwave', [TransactionsController::class, 'initializePaymentFlutterwave']);
-            Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
+            //Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
         });
     });
 });

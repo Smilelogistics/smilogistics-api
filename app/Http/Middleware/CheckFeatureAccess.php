@@ -19,7 +19,7 @@ class CheckFeatureAccess
         $subscription = $branch->activeSubscription();
         
         if (!$subscription) {
-            return response()->json(['message' => 'No active subscription'], 403);
+            return response()->json(['message' => 'No active subscription or you need to upgrade'], 403);
         }
 
         // Check all required features

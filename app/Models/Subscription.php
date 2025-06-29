@@ -23,10 +23,17 @@ class Subscription extends Model
         return $this->belongsTo(Plan::class);
     }
 
-    public function isActive(): bool
+    // public function isActive(): bool
+    // {
+    //     return $this->status === 'active' && 
+    //            $this->ends_at > now() && 
+    //            $this->plan->isActive();
+    // }
+
+    public function scopeIsActive($query)
     {
-        return $this->status === 'active' && 
-               $this->ends_at > now() && 
-               $this->plan->isActive();
+        return $query->where('status', 'active')
+                    ->where('ends_at', '>', now());
     }
+
 }

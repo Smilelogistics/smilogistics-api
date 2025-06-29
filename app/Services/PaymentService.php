@@ -33,23 +33,23 @@ class PaymentService
 
     protected function initializePaystack(User $user, Plan $plan, Transaction $transaction)
     {
-        //dd(env('PAYSTACK_SECRET_KEY'));
-        //dd(config('app.url'));
+        // dd(env('PAYSTACK_SECRET_KEY'));
+        // dd(config('app.url'));
         $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+            'Authorization' => 'Bearer '.env('PAYSTACK_SECRET_KEY'),
             'Content-Type' => 'application/json',
         ])->post('https://api.paystack.co/transaction/initialize', [
             'email' => $user->email,
             'amount' => $plan->price * 100, // Paystack uses kobo
             'reference' => $transaction->payment_gateway_ref,
             //'callback_url' => config('app.url') . '/api/v1/verify-paystack',
-            'callback_url' => config('app.url') . '/api/v1/payments/verify-paystack',
+            'callback_url' => config('app.url') . '/api/v1/verify-paystack',
             'metadata' => [
                 'user_id' => $user->id,
             ]
         ]);
         
-       // dd($response->json());
+        dd($response->json());
 
         if (!$response->successful()) {
             throw new \Exception('Failed to initialize Paystack payment');
@@ -74,7 +74,7 @@ class PaymentService
             'amount' => $plan->price,
             'currency' => $transaction->currency,
             'payment_options' => 'card,account,ussd',
-            'redirect_url' => config('app.url') . '/api/payments/callback-flutterwave',
+            'redirect_url' => config('app.url').'/api/v1/callback-flutterwave',
             'customer' => [
                 'email' => $user->email,
                 'name' => $user->fname. ' '. $user->lname,
@@ -89,7 +89,7 @@ class PaymentService
             ],
         ]);
 
-        dd($response);
+        //dd($response);
 
         if (!$response->successful() || $response->json('status') !== 'success') {
             throw new \Exception('Failed to initialize Flutterwave payment');

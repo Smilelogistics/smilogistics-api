@@ -200,20 +200,63 @@ class TransactionsController extends Controller
                     //'paid_at' => $responseData['data']['paid_at'] ?? null
                 ]);
 
-                $updateUser = User::where('id', $transaction->user_id)->first();
-                $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
+                // $updateUser = User::where('id', $transaction->user_id)->first();
+                // $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
 
-                $newEndDate = $currentEndDate->isFuture()
-                    ? $currentEndDate->addDays(30)
-                    : now()->addDays(30);
+                // $newEndDate = $currentEndDate->isFuture()
+                //     ? $currentEndDate->addDays(30)
+                //     : now()->addDays(30);
 
-                $updateUser->update([
-                    'isSubscribed' => 1,
-                    'subscription_end_date' => $newEndDate,
-                    'subscription_start_date' => now(),
-                    'subscription_type' => $transaction->subscription_type,
-                    'subscription_count' => $updateUser->subscription_count + 1
+                // $updateUser->update([
+                //     'isSubscribed' => 1,
+                //     'subscription_end_date' => $newEndDate,
+                //     'subscription_start_date' => now(),
+                //     'subscription_type' => $transaction->subscription_type,
+                //     'subscription_count' => $updateUser->subscription_count + 1
+                // ]);
+
+                // Get the user and branch
+               $user = User::findOrFail($transaction->user_id);
+                $branch = $user->branch;
+
+                if (!$branch) {
+                    throw new \Exception('User is not associated with any branch');
+                }
+
+                $plan = Plan::findOrFail($transaction->plan_id);
+
+                $currentSubscription = $branch->activeSubscription();
+                $startDate = now();
+                $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+                    ? $currentSubscription->ends_at
+                    : $startDate;
+
+                $endDate = Carbon::parse($endDate);
+                $endDate = $plan->interval === 'monthly'
+                    ? $endDate->copy()->addYear()
+                    : $endDate->copy()->addMonth();
+
+                $branch->subscriptions()->isActive()->update([
+                    'status' => 'canceled',
+                    'canceled_at' => now()
                 ]);
+
+                $subscription = $branch->subscriptions()->create([
+                    'plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    //'transaction_id' => $transaction->id
+                ]);
+
+                $user->update([
+                    'isSubscribed' => true,
+                    'subscription_end_date' => $endDate,
+                    'subscription_start_date' => $startDate,
+                    'subscription_type' => $plan->slug,
+                    'subscription_count' => $user->subscription_count + 1
+                ]);
+
 
                 DB::commit();
 
@@ -265,7 +308,7 @@ class TransactionsController extends Controller
                     'amount' => $validated['amount'],
                     'tx_ref' => $reference,
                     'currency' => 'NGN',
-                    'redirect_url' => config('app.url') . '/api/V1/payments/callback-flutterwave',
+                    'redirect_url' => config('app.url') . '/api/v1/callback-flutterwave',
                     'customer' => [
                         'email' => $user->email,
                         'name' => $user->fname . ' ' . $user->lname,
@@ -313,96 +356,109 @@ class TransactionsController extends Controller
 
     }
 
+
     public function callbackFlutterwave(Request $request)
     {
         $status = $request->query('status');
         $txid = $request->query('transaction_id');
 
-        if ($status === 'success' && $txid) {
-            $responseData = Flutterwave::verifyTransaction($txid);
+        if ($status === 'successful' && $txid) {
+
+            // Make direct API call to Flutterwave
+            $secretKey = env('FLUTTERWAVE_SECRET_KEY');
+            $response = Http::withToken($secretKey)
+                ->get("https://api.flutterwave.com/v3/transactions/{$txid}/verify");
+
+            if ($response->failed()) {
+                return response()->json(['message' => 'Unable to verify transaction.'], 500);
+            }
+
+            $responseData = $response->json();
+
+            //dd($responseData);
+
+            if ($responseData['status'] !== 'success') {
+                return response()->json(['message' => 'Transaction verification failed.'], 400);
+            }
+
+            $reference = $responseData['data']['tx_ref'];
 
             DB::beginTransaction();
 
             $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
-                $transaction->update([
-                    'status' => 'success',
-                    'payment_gateway_ref' => $responseData['data']['reference'],
-                    'payment_type' => $transaction->payment_type,
-                    'currency' => $responseData['data']['currency'],
-                    'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
-                    'channel' => $responseData['data']['channel'] ?? null,
-                    'customer_email' => $responseData['data']['customer']['email'] ?? null,
-                    'ip_address' => $responseData['data']['ip_address'] ?? null,
-                    'device' => $responseData['data']['user_agent'] ?? null,
-                    'location' => $responseData['data']['log']['geolocation'] ?? null,
-                    //'paid_at' => $responseData['data']['paid_at'] ?? null
-                ]);
 
-           
-                // Get the user and branch
-                $user = User::findOrFail($transaction->user_id);
-                $branch = $user->branch;
+            if (!$transaction) {
+                return response()->json(['message' => 'Transaction not found or already processed.'], 404);
+            }
 
-                if (!$branch) {
-                    throw new \Exception('User is not associated with any branch');
-                }
+            $transaction->update([
+                'status' => 'success',
+                'payment_gateway_ref' => $responseData['data']['tx_ref'],
+                'payment_type' => $transaction->payment_type,
+                'currency' => $responseData['data']['currency'],
+                'auth_token' => $responseData['data']['card']['token'] ?? null,
+                'channel' => $responseData['data']['channel'] ?? null,
+                'customer_email' => $responseData['data']['customer']['email'] ?? null,
+                'ip_address' => $responseData['data']['ip'] ?? null,
+                'device' => $responseData['data']['device_fingerprint'] ?? null,
+                'location' => $responseData['data']['log']['geolocation'] ?? null,
+            ]);
 
-                // Get the plan from the transaction
-                $plan = Plan::findOrFail($transaction->plan_id);
+            $user = User::findOrFail($transaction->user_id);
+            $branch = $user->branch;
 
-                // Calculate new end date (add to existing if subscription is active)
-                $currentSubscription = $branch->activeSubscription();
-                $startDate = now();
-                $endDate = $startDate->copy();
+            if (!$branch) {
+                throw new \Exception('User is not associated with any branch');
+            }
 
-                if ($currentSubscription && $currentSubscription->ends_at > now()) {
-                    // If existing subscription is still active, add to the remaining time
-                    $endDate = $currentSubscription->ends_at;
-                }
+            $plan = Plan::findOrFail($transaction->plan_id);
 
-                // Add the new subscription period
-                if ($plan->interval === 'yearly') {
-                    $endDate = $endDate->addYear();
-                } else {
-                    $endDate = $endDate->addMonth(); // Default to monthly
-                }
+            $currentSubscription = $branch->activeSubscription();
+            $startDate = now();
+            $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+                ? $currentSubscription->ends_at
+                : $startDate;
 
-                // Cancel any existing active subscription
-                $branch->subscriptions()->active()->update([
-                    'status' => 'canceled',
-                    'canceled_at' => now()
-                ]);
+            $endDate = Carbon::parse($endDate);
+            $endDate = $plan->interval === 'monthly'
+                ? $endDate->copy()->addYear()
+                : $endDate->copy()->addMonth();
 
-                // Create new subscription
-                $subscription = $branch->subscriptions()->create([
-                    'plan_id' => $plan->id,
-                    'starts_at' => $startDate,
-                    'ends_at' => $endDate,
-                    'status' => 'active',
-                    'transaction_id' => $transaction->id
-                ]);
+            $branch->subscriptions()->isActive()->update([
+                'status' => 'canceled',
+                'canceled_at' => now()
+            ]);
 
-                // Update user details
-                $user->update([
-                    'isSubscribed' => true,
-                    'subscription_end_date' => $endDate,
-                    'subscription_start_date' => $startDate,
-                    'subscription_type' => $plan->slug,
-                    'subscription_count' => $user->subscription_count + 1
-                ]);
+            $subscription = $branch->subscriptions()->create([
+                'plan_id' => $plan->id,
+                'starts_at' => $startDate,
+                'ends_at' => $endDate,
+                'status' => 'active',
+                //'transaction_id' => $transaction->id
+            ]);
 
-                DB::commit();
+            $user->update([
+                'isSubscribed' => true,
+                'subscription_end_date' => $endDate,
+                'subscription_start_date' => $startDate,
+                'subscription_type' => $plan->slug,
+                'subscription_count' => $user->subscription_count + 1
+            ]);
 
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Subscription payment processed successfully',
-                    'data' => [
-                        'user' => $user,
-                        'subscription' => $subscription,
-                        'plan' => $plan,
-                        'features' => $plan->allFeatures
-                    ]
-                ]);
+            DB::commit();
+
+             return redirect()->to(env('FRONTEND_URL') . '/dashboard');
+
+            // return response()->json([
+            //     'status' => 'success',
+            //     'message' => 'Subscription payment processed successfully',
+            //     'data' => [
+            //         'user' => $user,
+            //         'subscription' => $subscription,
+            //         'plan' => $plan,
+            //         'features' => $plan->allFeatures
+            //     ]
+            // ]);
         }
 
         return response()->json([

@@ -28,7 +28,7 @@ class CheckBranchFeatureAccess
         $subscription = $branch->activeSubscription();
         
         if (!$subscription) {
-            abort(403, 'No active subscription');
+            abort(403, 'No active subscription or you need to upgrade');
         }
 
         // Check if feature exists in current or any lower plan
