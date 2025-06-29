@@ -232,7 +232,7 @@ class TransactionsController extends Controller
                     : $startDate;
 
                 $endDate = Carbon::parse($endDate);
-                $endDate = $plan->interval === 'monthly'
+                $endDate = $plan->interval === 'yearly'
                     ? $endDate->copy()->addYear()
                     : $endDate->copy()->addMonth();
 
@@ -249,7 +249,7 @@ class TransactionsController extends Controller
                     //'transaction_id' => $transaction->id
                 ]);
 
-                $user->update([
+                $branch->update([
                     'isSubscribed' => true,
                     'subscription_end_date' => $endDate,
                     'subscription_start_date' => $startDate,
@@ -260,8 +260,8 @@ class TransactionsController extends Controller
 
                 DB::commit();
 
-
-                return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
+                return redirect()->to(env('FRONTEND_URL') . '/dashboard');
+                //return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
                 //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
             }
             
@@ -420,7 +420,7 @@ class TransactionsController extends Controller
                 : $startDate;
 
             $endDate = Carbon::parse($endDate);
-            $endDate = $plan->interval === 'monthly'
+            $endDate = $plan->interval === 'yearly'
                 ? $endDate->copy()->addYear()
                 : $endDate->copy()->addMonth();
 
@@ -437,7 +437,7 @@ class TransactionsController extends Controller
                 //'transaction_id' => $transaction->id
             ]);
 
-            $user->update([
+            $branch->update([
                 'isSubscribed' => true,
                 'subscription_end_date' => $endDate,
                 'subscription_start_date' => $startDate,
