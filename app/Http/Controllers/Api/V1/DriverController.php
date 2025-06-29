@@ -49,10 +49,13 @@ class DriverController extends Controller
 
     public function getBikeDrivers()
     {
+        $now = Carbon::now();
+        
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
         $bikeDriver = Driver::with(['branch', 'user', 'driverDocs', 'providers'])
         ->where('branch_id', $branchId)
+        ->where('cdl_expires', '>', $now)
         ->where('transport_type', '2')
         ->get();
         return response()->json($bikeDriver);

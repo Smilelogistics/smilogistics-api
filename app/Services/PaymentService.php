@@ -33,7 +33,7 @@ class PaymentService
 
     protected function initializePaystack(User $user, Plan $plan, Transaction $transaction)
     {
-        // dd(env('PAYSTACK_SECRET_KEY'));
+        dd(env('PAYSTACK_SECRET_KEY'));
         // dd(config('app.url'));
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.env('PAYSTACK_SECRET_KEY'),
