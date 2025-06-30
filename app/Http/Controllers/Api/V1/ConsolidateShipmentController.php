@@ -520,12 +520,12 @@ protected function handleFileUploads($request, $consolidateShipment)
 
         $done =  ShipmentTrack::create([
             'consolidate_shipment_id' => $shipment->id,
-            'status' => $request->shipment_status,
+            'status' => $request->status,
             'tracking_number' => $request->consolidate_tracking_number,
             'driver_id' => $request->driver
         ]);
 
-        //dd($done);
+       // dd($done);
 
           if ($first_notify_party_email) {
                 $first_notify_party_email->notify(new ShipmentUpdateNotification($shipment, $previousStatus));
