@@ -221,6 +221,7 @@ Route::prefix('v1')->group(function () {
                 Route::put('accept/{id}', [ConsolidateShipmentController::class,'acceptConsolidatedDelivery'])->name('console.accept');
                 Route::get('get-accepted-consolidated', [ConsolidateShipmentController::class, 'getAcceptedConslidatedDelivery'])->name('console.my.consolidate');
                 Route::get('get-pending', [ConsolidateShipmentController::class, 'getPendingConslidatedDelivery']);
+                Route::put('reject/{id}', [ConsolidateShipmentController::class,'rejecttConsolidatedDelivery'])->name('console.reject');
 
                 
                 Route::put('/updateShipmentStatus/{id}', [ConsolidateShipmentController::class, 'updateShipment'])->name('shipments.update');

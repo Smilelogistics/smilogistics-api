@@ -743,7 +743,7 @@ class ShipmentController extends Controller
                     'carrier_id' => $validatedData['carrier_id'] ?? null,
                     'bike_id' => $validatedData['bike_id'] ?? null,
                     'truck_id' => $validatedData['truck_id'] ?? null,
-                    'shipment_status' => $validatedData['shipment_status'] ?? null,
+                    'shipment_status' => $validatedData['shipment_status'] ?? 'Shipment Updated',
                     'signature' => $validatedData['signature'] ?? null,
                     'office' => $validatedData['office'] ?? null,
                     'load_type' => $validatedData['load_type'] ?? null,
