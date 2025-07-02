@@ -132,6 +132,9 @@ Route::prefix('v1')->group(function () {
 
         });
 
+        //Basic Subscription
+        Route::middleware('subscription:basic')->group(function () {
+            
         Route::prefix('settings')->group(function () {
             Route::get('/rates', [SettingsController::class, 'getRates'])->name('settings.rates');
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
@@ -150,8 +153,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/Dother', [SettingsController::class, 'updateDriverOther'])->name('settings.driver.other.update');
         });
 
-        //Basic Subscription
-        Route::middleware('subscription:basic')->group(function () {
+        
             // Shipment routes
             Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
             Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
