@@ -25,6 +25,11 @@ class SettingsController extends Controller
             ->where('branch_id', $branchId)->get();
             return response()->json($data);
         }
+        elseif ($user->hasRole('driver')) {
+            $data = Driver::with('branch', 'user')->where('user_id', $user->id)
+            ->where('branch_id', $branchId)->get();
+            return response()->json($data);
+        }
         elseif ($user->hasRole('businessadministrator')) {
             $data = Branch::with('user')->where('user_id', $user->id)->get();
             return response()->json($data);
