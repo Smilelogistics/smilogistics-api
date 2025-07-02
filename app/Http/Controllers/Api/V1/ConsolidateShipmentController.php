@@ -186,7 +186,7 @@ class ConsolidateShipmentController extends Controller
             'consolidate_shipment_id' => $consolidateShipment->id,
             'user_id' => Auth::id(),
             'status' => 'Shipment Created',
-            'tracking_number' => $requconsolidateShipmentest->consolidate_tracking_number,
+            'tracking_number' => $consolidateShipment->consolidate_tracking_number,
             //'driver_id' => $consolidateShipment->driver
         ]);
 
