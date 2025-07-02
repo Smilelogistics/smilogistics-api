@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Branch;
+use App\Models\Driver;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 
@@ -37,6 +39,35 @@ class AppServiceProvider extends ServiceProvider
                     Config::set('mail.from.address', $mail->mail_from_address);
                     Config::set('mail.from.name', $mail->mail_from_name);
                 }
+            }
+            elseif ($user->hasRole('customer')) {
+                $mail = Customer::with('branch', 'user')->where('user_id', $user->id)
+                ->where('branch_id', $branchId)->get();
+                if ($mail) {
+                    Config::set('mail.mailers.smtp.host', $mail->branch->mail_host);
+                    Config::set('mail.mailers.smtp.port', $mail->branch->mail_port);
+                    Config::set('mail.mailers.smtp.username', $mail->branch->mail_username);
+                    Config::set('mail.mailers.smtp.password', $mail->branch->mail_password);
+                    Config::set('mail.mailers.smtp.encryption', $mail->branch->mail_encryption);
+                    Config::set('mail.from.address', $mail->branch->mail_from_address);
+                    Config::set('mail.from.name', $mail->branch->mail_from_name);
+                }
+                
+            }
+            
+            elseif ($user->hasRole('driver')) {
+                $mail = Driver::with('branch', 'user')->where('user_id', $user->id)
+                ->where('branch_id', $branchId)->get();
+                if ($mail) {
+                    Config::set('mail.mailers.smtp.host', $mail->branch->mail_host);
+                    Config::set('mail.mailers.smtp.port', $mail->branch->mail_port);
+                    Config::set('mail.mailers.smtp.username', $mail->branch->mail_username);
+                    Config::set('mail.mailers.smtp.password', $mail->branch->mail_password);
+                    Config::set('mail.mailers.smtp.encryption', $mail->branch->mail_encryption);
+                    Config::set('mail.from.address', $mail->branch->mail_from_address);
+                    Config::set('mail.from.name', $mail->branch->mail_from_name);
+                }
+                
             }
             elseif ($user->hasRole('superadministrator')) {
                 $mail = SuperAdmin::where('user_id', $user->id)->first();
