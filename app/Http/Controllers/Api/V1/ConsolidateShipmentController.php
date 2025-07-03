@@ -29,7 +29,6 @@ class ConsolidateShipmentController extends Controller
         $branchId = auth()->user()->getBranchId();
         $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)
         ->where('user_id', $user->id)
-        ->with('customer.user', 'carrier', 'driver.user')
         ->latest()
         ->get();
         return response()->json(['consolidateShipments' => $consolidateShipments], 200);
