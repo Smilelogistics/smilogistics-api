@@ -1190,6 +1190,97 @@ protected function processUploads($shipment, $uploads)
         return response()->json($agency);
     }
 
+    
+    public function getPendingShipmentdDelivery()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+        $shipment = Shipment::with('driver')->where('dispatcher_accepted_status', '0')->first();
+
+        if(!$shipment)
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'No records found',
+                
+            ]);
+        }else{
+            return response()->json([
+                'success' => true,
+                'message' => 'Shipment fetched successfully',
+                'data' => $shipment
+            ]);
+        }
+        
+    }
+
+    public function getAcceptedDelivery()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+        $shipment = Shipment::with('driver')->where('dispatcher_accepted_status', '1')
+        ->where('branch_id', $branchId)
+        ->get();
+
+        if(!$shipment)
+        {
+            return response()->json([
+                'success' => false,
+                'message' => 'No records found',
+                
+            ]);
+        }else{
+            return response()->json([
+                'success' => true,
+                'message' => 'Shipment fetched successfully',
+                'data' => $shipment
+            ]);
+        }
+    }
+
+    public function acceptConsolidatedDelivery(Request $request, $id)
+    {
+        $driver = auth()->user();
+         $validator = Validator::make($request->all(), [
+            'status' => 'required|integer',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        try{
+
+            DB::beginTransaction();
+            
+        $shipment = Shipment::where('id', $id)
+        ->where('branch_id', $branchId)
+        ->first();
+        $shipment->update(['dispatcher_accepted_status' => $request->status]);
+    
+        // Get the user who created the shipment
+        if ($shipment->user_id) {
+            $userToNotify = User::find($shipment->user_id);
+            $userToNotify->notify(new DriverAcceptConsolidationDeliveryNotification($shipment, $driver));
+        }
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Shipment updated successfully',
+            'data' => $consolidateShipment
+        ]);
+
+        }catch (\Exception $e) {
+            \Log::error('Failed to create charge:', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+    }
+
+
     public function destroy($id) {
         $shipment = Shipment::findOrFail($id);
         $shipment->delete();
