@@ -53,7 +53,8 @@ class ConsolidateShipmentController extends Controller
         $validatedData = $request->validated();
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
-        $branch = $user->branch()->with('user')->first();
+        //$branch = $user->branch()->with('user')->first();
+        $branch = $user->branch()->with('user')->first() ?? Branch::find($branchId);
         $creatorDriver = $user->driver ? $user->driver->id : null;
 
         //dd($creatorDriver);
