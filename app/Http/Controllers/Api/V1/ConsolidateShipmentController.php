@@ -425,7 +425,10 @@ protected function handleFileUploads($request, $consolidateShipment)
     {
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
-        $consolidateShipment = ConsolidateShipment::with('driver')->where('accepted_status', 'Pending')->first();
+        $driverId = $user->driver ? $user->driver->id : null;
+        $consolidateShipment = ConsolidateShipment::with('driver')
+        ->where('branch_id', $branchId)->where('driver_id', $driverId)
+        ->get();
 
         return response()->json([
             'success' => true,
