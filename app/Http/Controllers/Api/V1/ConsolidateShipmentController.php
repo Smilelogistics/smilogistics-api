@@ -449,11 +449,25 @@ protected function handleFileUploads($request, $consolidateShipment)
         ]);
     }
 
-    public function acceptConsolidatedDelivery($id)
+    public function acceptConsolidatedDelivery(Request $request, $id)
     {
         $driver = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+
+        if(auth()->user()->hasRole('driver')) {
+            $validator = Validator::make($request->all(), [
+            'status' => 'required|string|in:Accept,Pending,Reject',
+        ]);
+
         $consolidateShipment = ConsolidateShipment::with(['user.driver'])->where('id', $id)->first();
-        $consolidateShipment->update(['accepted_status' => 'accepted']);
+        if($request->status == 'Pending'){
+            
+            $consolidateShipment->update(['accepted_status' => $request->status, 'driver_id' => null]);
+        }
+        else{
+            $consolidateShipment->update(['accepted_status' => $request->status]);
+        }
+        
     
         // Get the user who created the shipment
         if ($consolidateShipment->user_id) {
@@ -466,6 +480,14 @@ protected function handleFileUploads($request, $consolidateShipment)
             'message' => 'Consolidate Shipment accepted successfully',
             'data' => $consolidateShipment
         ]);
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'You are not a driver',
+            ]);
+        }
+
+       
     }
 
       public function rejecttConsolidatedDelivery($id)
