@@ -1208,11 +1208,7 @@ protected function processUploads($shipment, $uploads)
                 
             ]);
         }else{
-            return response()->json([
-                'success' => true,
-                'message' => 'Shipment fetched successfully',
-                'data' => $shipment
-            ]);
+            return response()->json(['shipments' => $shipments]);
         }
         
     }
