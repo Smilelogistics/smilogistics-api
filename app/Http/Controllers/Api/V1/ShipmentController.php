@@ -35,6 +35,8 @@ use Illuminate\Notifications\Notification;
 use App\Http\Requests\StoreShipmentRequest;
 use App\Mail\ShipmentAdditionalNotifyPartyMail;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Notifications\DriverAcceptShipmentDeliveryNotification;
+use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 
 class ShipmentController extends Controller
 {
@@ -1191,11 +1193,12 @@ protected function processUploads($shipment, $uploads)
     }
 
     
-    public function getPendingShipmentdDelivery()
+    public function getShipmentdDelivery()
     {
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
-        $shipment = Shipment::with('driver')->where('dispatcher_accepted_status', '0')->first();
+        $driverId = $user->driver ? $user->driver->id : null;
+        $shipment = Shipment::with('driver')->where('driver_id', $driverId)->where('branch_id', $branchId)->latest();
 
         if(!$shipment)
         {
@@ -1214,31 +1217,9 @@ protected function processUploads($shipment, $uploads)
         
     }
 
-    public function getAcceptedDelivery()
-    {
-        $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
-        $shipment = Shipment::with('driver')->where('dispatcher_accepted_status', '1')
-        ->where('branch_id', $branchId)
-        ->get();
+   
 
-        if(!$shipment)
-        {
-            return response()->json([
-                'success' => false,
-                'message' => 'No records found',
-                
-            ]);
-        }else{
-            return response()->json([
-                'success' => true,
-                'message' => 'Shipment fetched successfully',
-                'data' => $shipment
-            ]);
-        }
-    }
-
-    public function acceptConsolidatedDelivery(Request $request, $id)
+    public function acceptShipmentDelivery(Request $request, $id)
     {
         $driver = auth()->user();
          $validator = Validator::make($request->all(), [
@@ -1254,14 +1235,20 @@ protected function processUploads($shipment, $uploads)
             DB::beginTransaction();
             
         $shipment = Shipment::where('id', $id)
-        ->where('branch_id', $branchId)
+        // ->where('branch_id', $branchId)
         ->first();
-        $shipment->update(['dispatcher_accepted_status' => $request->status]);
+        if($request->status == 1){
+            $shipment->update(['dispatcher_accepted_status' => $request->status]);
+        }
+        else{
+            $shipment->update(['dispatcher_accepted_status' => $request->status, 'driver_id' => null]);
+        }
+        
     
         // Get the user who created the shipment
-        if ($shipment->user_id) {
-            $userToNotify = User::find($shipment->user_id);
-            $userToNotify->notify(new DriverAcceptConsolidationDeliveryNotification($shipment, $driver));
+        if ($shipment->driver_id) {
+            $driver = Driver::find($shipment->driver_id);
+            $driver->notify(new DriverAcceptShipmentDeliveryNotification($shipment, $driver));
         }
 
         DB::commit();
@@ -1269,7 +1256,7 @@ protected function processUploads($shipment, $uploads)
         return response()->json([
             'success' => true,
             'message' => 'Shipment updated successfully',
-            'data' => $consolidateShipment
+            'data' => $shipment
         ]);
 
         }catch (\Exception $e) {

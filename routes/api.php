@@ -158,14 +158,17 @@ Route::prefix('v1')->group(function () {
             Route::post('/shipments/create', [ShipmentController::class, 'store'])->name('shipments.store');
             Route::put('/updateShipmentStatus/{id}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
             Route::get('/shipments/track/{id}', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
+            Route::get('/shipments/delivery', [ShipmentController::class, 'getShipmentdDelivery'])->name('shipments.delivery');
+            Route::put('/shipments/acceptDelivery/{id}', [ShipmentController::class, 'acceptShipmentDelivery'])->name('shipments.acceptDelivery');
+
             Route::post('/agency', [ShipmentController::class, 'storeAgency'])->name('shipments.agency.store');
             //this route is for updating shipments, in the case of typo or something during uploads
             Route::put('/shipments/update/{id}', [ShipmentController::class, 'update'])->name('shipments.updateAll');
             //Route::post('/shipments/consolidate', [ConsolidatedShipmentController::class, 'consolidateShipment'])->name('shipments.consolidate');
-            Route::get('/get-consolidated-shipments', [ConsolidatedShipmentController::class, 'getConsolidatedShipment'])->name('get.consolidated.shipments');
-            Route::get('/get-pending-consolidated-shipments', [ConsolidatedShipmentController::class, 'pendingConsolidatedShipment'])->name('get.pending.consolidated.shipments');
-            Route::get('/get-consolidated-shipments-by-customer-email', [ConsolidatedShipmentController::class, 'getConsolidatedShipmentByCustomrEmail'])->name('email.consolidate');
-            Route::put('/consolidate-updateShipmentStatus/{id}', [ConsolidatedShipmentController::class, 'updateShipment'])->name('shipments.update');
+            // Route::get('/get-consolidated-shipments', [ConsolidatedShipmentController::class, 'getConsolidatedShipment'])->name('get.consolidated.shipments');
+            // Route::get('/get-pending-consolidated-shipments', [ConsolidatedShipmentController::class, 'pendingConsolidatedShipment'])->name('get.pending.consolidated.shipments');
+            // Route::get('/get-consolidated-shipments-by-customer-email', [ConsolidatedShipmentController::class, 'getConsolidatedShipmentByCustomrEmail'])->name('email.consolidate');
+            // Route::put('/consolidate-updateShipmentStatus/{id}', [ConsolidatedShipmentController::class, 'updateShipment'])->name('shipments.update');
             Route::get('/get-agency', [ShipmentController::class, 'getAgency'])->name('get.agency');
             // Route::get('/shipments', [ShipmentController::class, 'index']);
             // Route::get('/shipments/{id}', [ShipmentController::class, 'show']);
