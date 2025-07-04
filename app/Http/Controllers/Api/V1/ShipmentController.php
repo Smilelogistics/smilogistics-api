@@ -1208,7 +1208,7 @@ protected function processUploads($shipment, $uploads)
                 
             ]);
         }else{
-            return response()->json(['shipments' => $shipments]);
+            return response()->json(['shipments' => $shipment]);
         }
         
     }
