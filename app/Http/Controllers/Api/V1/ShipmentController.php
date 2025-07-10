@@ -7,10 +7,12 @@ use App\Models\Agency;
 use App\Models\BillTo;
 use App\Models\Branch;
 use App\Models\Driver;
+use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\Shipment;
 use App\Models\ShipmentNote;
 use Illuminate\Http\Request;
+use App\Models\InvoiceCharge;
 use App\Models\ShipmentTrack;
 use App\Models\ShipmentCharge;
 use App\Mail\AssigneDriverMail;
@@ -230,6 +232,18 @@ class ShipmentController extends Controller
                 $total = 0;
                 $totalDiscount = 0;
 
+                //Automatically create an invoice for the shipment
+                $invoicePrefx = $user->branch ? $user->branch->invoice_prefix : null;
+                $invoiceNumber = $invoicePrefx . Invoice::generateInvoiceNumber();
+                
+                 $invoice = Invoice::create([
+                'shipment_id' => $shipment->id,
+                'user_id' => auth()->user()->id,
+                'branch_id' => $branchId,
+                'invoice_number' => $invoiceNumber,
+                ]);
+                
+
                 // Process each charge
                 foreach ($validatedData['charge_type'] as $i => $chargeType) {
                     $amount = (float)($validatedData['amount'][$i] ?? 0);
@@ -254,6 +268,22 @@ class ShipmentController extends Controller
                         'total_discount' => $totalDiscount,
                         'net_total' => $total - $totalDiscount
                     ]);
+
+                        //invoice charges
+                        $invoiceCharge = InvoiceCharge::insert([
+                        [
+                            'invoice_id' => $invoice->id,
+                            'charge_type' => $chargeType,
+                            'units' => $validatedData['units'][$i] ?? null,
+                            'unit_rate' => $validatedData['rate'][$i] ?? null,
+                            'amount' => $amount,
+                            // 'total_discount' => $totalDiscount,
+                            // 'net_total' => $total - $totalDiscount,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]
+                    ]);
+                    // $invoice will be true or false
                 }
 
                 $net_totale = $total - $totalDiscount;
@@ -265,6 +295,15 @@ class ShipmentController extends Controller
                     'net_total_charges' => $net_totale,
                     'total_shipment_cost' => $shipment->total_shipment_cost + $net_totale
                 ]);
+
+                //update invoice
+                $invoice->update([
+                    //'total' => $total, 
+                    'total_discount' => $totalDiscount,
+                    'net_total' => $total - $totalDiscount
+                ]);
+
+
             }
 
 
@@ -828,6 +867,7 @@ class ShipmentController extends Controller
                 // Handle charges
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
                     $this->processCharges($shipment, $validatedData, $branchId);
+                    $this->processInvoiceCharges($shipment, $validatedData, $branchId);
                 }
 
                 // Handle cont
@@ -936,6 +976,83 @@ protected function processCharges($shipment, $validatedData, $branchId)
         'total_charges' => $total
     ]);
 }
+
+protected function processInvoiceCharges($shipment, $validatedData, $branchId)
+{
+    $total = 0;
+    $totalDiscount = 0;
+    
+    // Delete existing charges
+    $invoice = Invoice::where('shipment_id', $shipment->id)->first();
+
+    $invoiveCharge = InvoiceCharge::where('invoice_id', $invoice->id)->delete();
+
+    // Convert all fields to arrays and ensure consistent length
+    $chargeData = [
+        'charge_type' => array_values((array)($validatedData['charge_type'] ?? [])),
+        'comment' => array_values((array)($validatedData['comment'] ?? [])),
+        'units' => array_values((array)($validatedData['units'] ?? [])),
+        'unit_rate' => array_values((array)($validatedData['rate'] ?? [])),
+        'amount' => array_values((array)($validatedData['amount'] ?? [])),
+        'discount' => array_values((array)($validatedData['discount'] ?? [])),
+        'internal_notes' => array_values((array)($validatedData['internal_notes'] ?? [])),
+    ];
+
+    // Get the count based on charge_type (assuming it's the primary field)
+    $chargeCount = count($chargeData['charge_type']);
+
+    // Process each charge
+    for ($i = 0; $i < $chargeCount; $i++) {
+        try {
+            $amount = (float)($chargeData['amount'][$i] ?? 0);
+            $discount = (float)($chargeData['discount'][$i] ?? 0);
+            
+            $total += $amount;
+            $totalDiscount += $discount;
+
+            $charge = InvoiceCharge::create([
+                //'shipment_id' => $shipment->id,
+                'invoice_id' => $invoice->id,
+                'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                'comment' => $chargeData['comment'][$i] ?? null,
+                'units' => $chargeData['units'][$i] ?? null,
+                'rate' => $chargeData['rate'][$i] ?? null,
+                'amount' => $amount,
+                'discount' => $discount,
+                'internal_notes' => $chargeData['internal_notes'][$i] ?? null,
+            ]);
+
+            \Log::debug('Created charge:', $charge->toArray());
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to create charge:', [
+                'index' => $i,
+                'error' => $e->getMessage(),
+                'data' => [
+                    'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                    'rate' => $chargeData['rate'][$i] ?? null,
+                    'amount' => $chargeData['amount'][$i] ?? null,
+                ]
+            ]);
+            continue;
+        }
+    }
+
+    // Update shipment totals
+    $invoice->update([
+        'net_total' => $total - $totalDiscount,
+        'total_discount' => $totalDiscount,
+        //'total_charges' => $total
+    ]);
+
+    \Log::debug('Updated invoice charges totals:', [
+        'net_total' => $total - $totalDiscount,
+        'total_discount' => $totalDiscount,
+        //'total_charges' => $total
+    ]);
+}
+
+
     // protected function processCharges($shipment, $validatedData, $branchId)
     // {
     //     $total = 0;

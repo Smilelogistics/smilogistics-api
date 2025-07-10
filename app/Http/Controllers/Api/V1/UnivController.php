@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Models\User;
 use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Customer;

@@ -83,6 +83,7 @@ class StoreInvoiceRequest extends FormRequest
                  'isAccessorial' => 'nullable|array',
                  'isAccessorial.*' => 'nullable|boolean',
                  'total' => 'nullable|numeric',
+                 'total_repayment_amount' => 'nullable|numeric',
                 // 'total.*' => 'nullable|numeric',
              
                  // Invoice Documents (single & array support)
@@ -115,6 +116,22 @@ class StoreInvoiceRequest extends FormRequest
                  'credit_date.*' => 'nullable|date|sometimes',
                  'credit_note' => 'nullable|array',
                  'credit_note.*' => 'nullable|string|sometimes',
+
+                 //Repayment Records
+                 'paid_via' => 'nullable|array',
+                 'paid_via.*' => 'nullable|string|max:255',
+                 'payment_date' => 'nullable|array',
+                 'payment_date.*' => 'nullable|date',
+                 'payment_amount' => 'nullable|array',
+                 'payment_amount.*' => 'nullable|numeric',
+                 'check_number' => 'nullable|array',
+                 'check_number.*' => 'nullable|string|max:255',
+                 'processing_fee_per' => 'nullable|array',
+                 'processing_fee_per.*' => 'nullable|numeric',
+                 'processing_fee_flat' => 'nullable|array',
+                 'processing_fee_flat.*' => 'nullable|numeric',
+                 'payment_notes' => 'nullable|array',
+                 'payment_notes.*' => 'nullable|string',
         ];
     }
 

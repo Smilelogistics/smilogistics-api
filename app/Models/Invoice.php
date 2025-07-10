@@ -44,6 +44,9 @@ class Invoice extends Model
         'stop_address',
         'net_total',
         'total_discount',
+        'total_repayment_amount',
+        'remaining_balance',
+        'status',
       
     ];
 

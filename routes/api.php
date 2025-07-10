@@ -190,13 +190,20 @@ Route::prefix('v1')->group(function () {
             })->middleware('role:businessadministrator');
             Route::prefix('invoices')->group(function () {
                 Route::post('create', [InvoiceController::class, 'store'])->name('invoices.store');
-                Route::put('update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
+                //Route::put('update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
                 Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
                 Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
                 Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
                 Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
+                //Route::put('updatepaymentrecord/{id}', [InvoiceController::class, 'handleRepaymentRecord'])->name('invoices.updatepaymentrecord');
                 Route::delete('delete/{id}', [InvoiceController::class, 'destroy'])->name('invoices.destroy')->middleware('role:businessadministrator');
+
+                //separate updates for each invoice model
+                Route::post('basic/{id}', [InvoiceController::class, 'updateBasicInvoice'])->name('invoices.basic');
+                Route::post('charges/{id}', [InvoiceController::class, 'updateCreditMemo'])->name('invoices.charges');
+                Route::post('/docs/{id}', [InvoiceController::class, 'updateDocs'])->name('invoices.docs');
+                Route::post('payment/{id}', [InvoiceController::class, 'updateRepayment'])->name('invoices.payments');
             });
 
             Route::prefix('customers')->group(function () {

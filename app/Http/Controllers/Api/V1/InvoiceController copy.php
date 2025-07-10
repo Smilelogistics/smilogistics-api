@@ -352,10 +352,8 @@ class InvoiceController extends Controller
      * Update an existing invoice and its related models.
      */
 
-     public function updateBasicInvoice(Request $request, $id)
+     public function updateBasic(Request $request, $id)
     {
-        //dd($request->all());
-        
          $invoice = Invoice::findOrFail($id);
 
          DB::beginTransaction();
@@ -374,64 +372,7 @@ class InvoiceController extends Controller
 
     public function updateCreditMemo(Request $request, $id)
     {
-        $request->validate([
-            'charge_type' => 'required|array',
-            'charge_type.*' => 'required|string|max:255',
-
-            'units' => 'nullable|array',
-            'units.*' => 'nullable|numeric|min:0',
-
-            'unit_rate' => 'nullable|array',
-            'unit_rate.*' => 'nullable|numeric|min:0',
-
-            'rate' => 'nullable|array',
-            'rate.*' => 'nullable|numeric|min:0',
-
-            'amount' => 'nullable|array',
-            'amount.*' => 'nullable|numeric|min:0',
-
-            'discount' => 'nullable|array',
-            'discount.*' => 'nullable|numeric|min:0',
-
-            'comment' => 'nullable|array',
-            'comment.*' => 'nullable|string|max:1000',
-
-            'internal_notes' => 'nullable|array',
-            'internal_notes.*' => 'nullable|string|max:1000',
-        ]);
-
         $invoice = Invoice::findOrFail($id);
-
-        $invoiceCharges = $this->handleCharges($request, $id, $invoice);
-        $shipmentCharges = $this->handleShipmentCharges($request, $id, $invoice);
-
-        return response()->json([
-            'message' => 'Invoice updated successfully',
-            'invoice_charges' => $invoiceCharges,
-            'shipment_charges' => $shipmentCharges
-        ], 200);
-    }
-
-public function updateRepayment(Request $request, $id)
-{
-    //dd($request->all());
-    $invoice = Invoice::findOrFail($id);
-
-    $repaymentSummary = $this->handleRepaymentRecords($request, $id, $invoice);
-
-    return response()->json([
-        'message' => 'Invoice updated successfully',
-        'repayment' => $repaymentSummary
-    ], 200);
-}
-
-   
-
-    public function updateDocs(Request $request, $id)
-    {
-        $invoice = Invoice::findOrFail($id);
-        $this->handleDocuments($request, $id, $invoice);
-        return response()->json(['message' => 'Invoice updated successfully', 'invoice' => $invoice], 200);
     }
 
 
@@ -484,8 +425,9 @@ public function updateRepayment(Request $request, $id)
 
 protected function handleCharges(Request $request, $invoiceId, $invoice)
 {
-    if (!$request->has('charge_type')) return null;
-
+    if (!$request->has('charge_type')) return;
+//dd($request->all());
+    // Convert single item to array for consistent processing
     $charges = [
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
@@ -496,62 +438,125 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
         'internal_notes' => is_array($request->internal_notes ?? []) ? $request->internal_notes : [$request->internal_notes],
     ];
 
-    InvoiceCharge::where('invoice_id', $invoiceId)->delete();
 
-    $total = 0;
-    $total_discount = 0;
-    $createdCharges = [];
+    InvoiceCharge::where('invoice_id', $invoiceId)->delete();
+    
+        $total = 0;
+        $total_discount = 0;
 
     foreach ($charges['charge_type'] as $index => $type) {
-        $units = (float)($charges['units'][$index] ?? 0);
-        $rate = (float)($charges['rate'][$index] ?? 0);
-        $discount = (float)($charges['discount'][$index] ?? 0);
-        $amounts = $units * $rate;
-
-        $total += $amounts;
-        $total_discount += $discount;
-
-        $created = InvoiceCharge::create([
+         $units = (float)($charges['units'][$index] ?? 0);
+            $rate = (float)($charges['rate'][$index] ?? 0);
+            $discount = (float)($charges['discount'][$index] ?? 0);
+            $amounts = (float)($charges['units'][$index] ?? 0) * (float)($charges['rate'][$index] ?? 0);
+            
+            $total += $amounts;
+            $total_discount += $discount;
+        InvoiceCharge::create([
             'invoice_id' => $invoiceId,
             'charge_type' => $type,
             'units' => $charges['units'][$index] ?? null,
             'unit_rate' => $charges['rate'][$index] ?? null,
-            'amount' => $amounts,
+            'amount' =>  $amounts ?? null, //$charges['amount'][$index] ?? null,
             'comment' => $charges['comment'][$index] ?? null,
             'discount' => $charges['discount'][$index] ?? null,
-            'internal_notes' => $charges['internal_notes'][$index] ?? null,
+            'internal_notes' => $charges['internal_notes'][$index] ?? null
+        ]);
+    }
+     $invoice->update([
+            'net_total' => $total - $total_discount,
+            'total_discount' => $total_discount
         ]);
 
-        $createdCharges[] = $created;
-    }
+    if(!$request->payment_amount) return;
 
-    $invoice->update([
-        'net_total' => $total - $total_discount,
-        'total_discount' => $total_discount
-    ]);
+        $invoice = $invoice ?? Invoice::find($invoiceId);
+    if (!$invoice) return;
 
-    return [
-        'invoice_charges' => $createdCharges,
-        'net_total' => $total - $total_discount,
-        'total_discount' => $total_discount
-    ];
+
+    InvoicePaymentRecord::where('invoice_id', $invoice->id)->delete();
+       // dd($request->all());
+    $netTotal = $total - $total_discount;
+    $existingPayments = $invoice->total_repayment_amount ?? 0;
+    $totalPayments = 0;
+    $branchId = auth()->user()->getBranchId();
+
+    $paymentFields = [
+    'payment_date' => is_array($request->payment_date) ? $request->payment_date : [],
+    'paid_via' => is_array($request->paid_via) ? $request->paid_via : [],
+    'payment_amount' => is_array($request->payment_amount) ? $request->payment_amount : [],
+    'check_number' => is_array($request->check_number) ? $request->check_number : [],
+    'processing_fee_per' => is_array($request->processing_fee_per) ? $request->processing_fee_per : [],
+    'processing_fee_flat' => is_array($request->processing_fee_flat) ? $request->processing_fee_flat : [],
+    'payment_notes' => is_array($request->payment_notes) ? $request->payment_notes : [],
+];
+
+
+    foreach ($paymentFields['payment_amount'] as $index => $amount) {
+            $amountPaid = (float)$amount;
+            
+            if ($amountPaid <= 0) {
+                continue;
+            }
+
+            $totalPayments += $amountPaid;
+
+            InvoicePaymentRecord::create([
+                    'invoice_id' => $invoice->id,
+                    'branch_id' => $branchId,
+                    'payment_date' => $paymentFields['payment_date'][$index] ?? null,
+                    'payment_amount' => $amountPaid,
+                    'paid_via' => $paymentFields['paid_via'][$index] ?? null,
+                    'check_number' => $paymentFields['check_number'][$index] ?? null,
+                    'processing_fee_per' => $paymentFields['processing_fee_per'][$index] ?? null,
+                    'processing_fee_flat' => $paymentFields['processing_fee_flat'][$index] ?? null,
+                    'payment_notes' => $paymentFields['payment_notes'][$index] ?? null
+                ]);
+        }
+
+        if ($totalPayments > 0) {
+            // Calculate new totals including existing payments
+            $newTotalPayments = $existingPayments + $totalPayments;
+            $remainingBalance = max(0, $netTotal - $newTotalPayments); // Prevent negative balance
+
+            // Determine payment status
+            $paymentStatus = 'unpaid';
+            if ($remainingBalance <= 0) {
+                $paymentStatus = 'paid';
+            } elseif ($newTotalPayments > 0) {
+                $paymentStatus = 'partially_paid';
+            }
+
+            // Update invoice
+            $invoice->update([
+                'total_repayment_amount' => $newTotalPayments,
+                'remaining_balance' => $remainingBalance,
+                'status' => $paymentStatus,
+            ]);
+
+        }
 }
-
 
 protected function handleShipmentCharges(Request $request, $invoiceId, $invoice = null)
 {
-    if (!$request->has('charge_type')) return null;
+    if (!$request->has('charge_type')) return;
 
     $invoice = $invoice ?? Invoice::find($invoiceId);
-    if (!$invoice) return null;
+    if (!$invoice) return;
 
     $shipment = $invoice->shipment;
-    if (!$shipment) return null;
+    if(!$shipment) return;
+    // {
+    //     dd('no shipment');
+    // }
+    // else{
+    //     dd('shipment');
+    // }
 
     $charges = [
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
-        'rate' => is_array($request->unit_rate ?? []) ? $request->unit_rate : [$request->unit_rate],
+        'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
         'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
         'discount' => is_array($request->discount ?? []) ? $request->discount : [$request->discount],
         'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
@@ -562,18 +567,15 @@ protected function handleShipmentCharges(Request $request, $invoiceId, $invoice 
 
     $total = 0;
     $total_discount = 0;
-    $createdCharges = [];
 
     foreach ($charges['charge_type'] as $index => $type) {
         $amount = (float)($charges['units'][$index]) * (float)($charges['rate'][$index]);
         $discount = (float)($charges['discount'][$index] ?? 0);
-
         $total += $amount;
         $total_discount += $discount;
 
-        $created = ShipmentCharge::create([
+        ShipmentCharge::create([
             'shipment_id' => $shipment->id,
-            'branch_id' => $shipment->branch_id,
             'charge_type' => $type,
             'units' => $charges['units'][$index] ?? null,
             'rate' => $charges['rate'][$index] ?? null,
@@ -582,9 +584,9 @@ protected function handleShipmentCharges(Request $request, $invoiceId, $invoice 
             'comment' => $charges['comment'][$index] ?? null,
             'internal_notes' => $charges['internal_notes'][$index] ?? null,
         ]);
-
-        $createdCharges[] = $created;
     }
+
+    //dd($net_total);
 
     $net_total = $total - $total_discount;
 
@@ -594,103 +596,65 @@ protected function handleShipmentCharges(Request $request, $invoiceId, $invoice 
         'net_total_charges' => $net_total,
         'total_shipment_cost' => ($shipment->total_shipment_cost ?? 0) + $net_total,
     ]);
-
-    return [
-        'shipment_charges' => $createdCharges,
-        'net_total' => $net_total,
-        'total_discount' => $total_discount
-    ];
+    
 }
 
-
-protected function handleRepaymentRecords(Request $request, $invoiceId, $invoice = null)
+protected function handleRepaymentRecords(Request $request, $invoiceId, $invoice)
 {
-    $invoice = $invoice ?? Invoice::find($invoiceId);
-    if (!$invoice) return null;
-
-    $validated = $request->validate([
-        'payment_date' => 'required|array',
-        'payment_date.*' => 'required|date',
-
-        'payment_amount' => 'required|array',
-        'payment_amount.*' => 'required|numeric|min:0',
-
-        'paid_via' => 'nullable|array',
-        'paid_via.*' => 'nullable|string|max:255',
-
-        'check_number' => 'nullable|array',
-        'check_number.*' => 'nullable|string|max:255',
-
-        'processing_fee_per' => 'nullable|array',
-        'processing_fee_per.*' => 'nullable|numeric|min:0',
-
-        'processing_fee_flat' => 'nullable|array',
-        'processing_fee_flat.*' => 'nullable|numeric|min:0',
-
-        'payment_notes' => 'nullable|array',
-        'payment_notes.*' => 'nullable|string|max:1000',
-    ]);
-
+    $invoice = $invoice ?? 
+    Invoice::find($invoiceId);
+    if (!$invoice) return;
+    
     $branchId = auth()->user()->getBranchId();
 
-    // Delete existing payment records
+
     InvoicePaymentRecord::where('invoice_id', $invoice->id)->delete();
 
-    $createdRecords = [];
-    $totalPayments = 0;
+    foreach ($request->payment_amount as $index => $amount) {
+            $amountPaid = (float)$amount;
+            
+            if ($amountPaid <= 0) {
+                continue;
+            }
 
-    foreach ($validated['payment_amount'] as $index => $amount) {
-        $amountPaid = (float) $amount;
+            $totalPayments += $amountPaid;
 
-        if ($amountPaid <= 0) continue;
+            InvoicePaymentRecord::create([
+                'invoice_id' => $invoice->id,
+                'branch_id' => $branchId,
+                'payment_date' => $validated['payment_date'][$index] ?? null,
+                'payment_amount' => $amountPaid,
+                'paid_via' => $validated['paid_via'][$index] ?? null,
+                'check_number' => $validated['check_number'][$index] ?? null,
+                'processing_fee_per' => $validated['processing_fee_per'][$index] ?? null,
+                'processing_fee_flat' => $validated['processing_fee_flat'][$index] ?? null,
+                'payment_notes' => $validated['payment_notes'][$index] ?? null,
+                'created_by' => auth()->id()
+            ]);
+        }
 
-        $totalPayments += $amountPaid;
+        if ($totalPayments > 0) {
+            // Calculate new totals including existing payments
+            $newTotalPayments = $existingPayments + $totalPayments;
+            $remainingBalance = max(0, $netTotal - $newTotalPayments); // Prevent negative balance
 
-        $created = InvoicePaymentRecord::create([
-            'invoice_id' => $invoice->id,
-            'branch_id' => $branchId,
-            'payment_date' => $validated['payment_date'][$index] ?? null,
-            'payment_amount' => $amountPaid,
-            'paid_via' => $validated['paid_via'][$index] ?? null,
-            'check_number' => $validated['check_number'][$index] ?? null,
-            'processing_fee_per' => $validated['processing_fee_per'][$index] ?? null,
-            'processing_fee_flat' => $validated['processing_fee_flat'][$index] ?? null,
-            'payment_notes' => $validated['payment_notes'][$index] ?? null
-        ]);
+            // Determine payment status
+            $paymentStatus = 'unpaid';
+            if ($remainingBalance <= 0) {
+                $paymentStatus = 'paid';
+            } elseif ($newTotalPayments > 0) {
+                $paymentStatus = 'partially_paid';
+            }
 
-        $createdRecords[] = $created;
-    }
+            // Update invoice
+            $invoice->update([
+                'total_repayment_amount' => $newTotalPayments,
+                'remaining_balance' => $remainingBalance,
+                'status' => $paymentStatus,
+            ]);
 
-    $netTotal = $invoice->net_total ?? 0;
-    $existingPayments = 0; // If you track prior total in DB or recalculate if needed
-    $newTotalPayments = $existingPayments + $totalPayments;
-    $remainingBalance = max(0, $netTotal - $newTotalPayments);
-
-    // Determine status
-    $paymentStatus = 'unpaid';
-    if ($remainingBalance <= 0) {
-        $paymentStatus = 'paid';
-    } elseif ($newTotalPayments > 0) {
-        $paymentStatus = 'partially_paid';
-    }
-
-    $invoice->update([
-        'total_repayment_amount' => $newTotalPayments,
-        'net_total' => $remainingBalance,
-        'remaining_balance' => $remainingBalance,
-        'status' => $paymentStatus,
-    ]);
-
-    return [
-        'repayment_records' => $createdRecords,
-        'total_repayment_amount' => $newTotalPayments,
-        'remaining_balance' => $remainingBalance,
-        'status' => $paymentStatus,
-    ];
+        }
 }
-
-
-
 
 protected function handleDocuments(Request $request, $invoiceId)
 {

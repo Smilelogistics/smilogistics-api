@@ -16,6 +16,7 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class SettingsController extends Controller
 {
+
     public function index() {
         
         $user = auth()->user();
