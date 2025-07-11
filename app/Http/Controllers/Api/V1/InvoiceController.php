@@ -71,6 +71,7 @@ class InvoiceController extends Controller
             'invoicedocs', 
             'invoicepayments', 
             'invoicecharges', 
+            'paymentRecord',
             'branch.user'
         ]);
 

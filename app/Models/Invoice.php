@@ -81,6 +81,11 @@ class Invoice extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function paymentRecord()
+    {
+        return $this->belongsTo(InvoicePaymentRecord::class);
+    }
+
     
     public static function generateInvoiceNumber()
     {
