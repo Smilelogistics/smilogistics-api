@@ -373,7 +373,7 @@ class InvoiceController extends Controller
         }
     }
 
-    public function updateCreditMemo(Request $request, $id)
+    public function updateCharges(Request $request, $id)
     {
         $request->validate([
             'charge_type' => 'required|array',
@@ -460,6 +460,16 @@ public function updateRepayment(Request $request, $id)
         'message' => 'Invoice updated successfully',
         'repayment' => $repayment
     ], 200);
+}
+
+public function updateCreditMemo(Request $request, $id)
+{
+    try {
+        $this->handlePayments($request, $id);
+        return response()->json(['message' => 'Credit memo payments updated successfully.'], 200);
+    } catch (\Exception $e) {
+        return response()->json(['message' => 'Failed to update credit memo payments.', 'error' => $e->getMessage()], 500);
+    }
 }
 
 

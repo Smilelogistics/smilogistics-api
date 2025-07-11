@@ -201,7 +201,8 @@ Route::prefix('v1')->group(function () {
 
                 //separate updates for each invoice model
                 Route::post('basic/{id}', [InvoiceController::class, 'updateBasicInvoice'])->name('invoices.basic');
-                Route::post('charges/{id}', [InvoiceController::class, 'updateCreditMemo'])->name('invoices.charges');
+                Route::post('charges/{id}', [InvoiceController::class, 'updateCharges'])->name('invoices.charges');
+                Route::post('credit-memo/{id}', [InvoiceController::class, 'updateCreditMemo'])->name('invoices.charges');
                 Route::post('/docs/{id}', [InvoiceController::class, 'updateDocs'])->name('invoices.docs');
                 Route::post('payment/{id}', [InvoiceController::class, 'updateRepayment'])->name('invoices.payments');
             });
