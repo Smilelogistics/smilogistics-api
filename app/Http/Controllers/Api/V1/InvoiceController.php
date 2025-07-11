@@ -456,6 +456,7 @@ public function updateRepayment(Request $request, $id)
     $repayment = $this->handleRepaymentRecords($payments, $invoice);
 
     return response()->json([
+        'success' => true,
         'message' => 'Invoice updated successfully',
         'repayment' => $repayment
     ], 200);
