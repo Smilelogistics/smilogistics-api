@@ -416,14 +416,14 @@ class InvoiceController extends Controller
 public function updateRepayment(Request $request, $id)
 {
     $validated = $request->validate([
-        'invoicepayments' => 'required|array',
-        'invoicepayments.*.payment_date' => 'required|date',
-        'invoicepayments.*.paid_via' => 'nullable|string|max:255',
-        'invoicepayments.*.payment_amount' => 'required|numeric|min:0',
-        'invoicepayments.*.check_number' => 'nullable|string|max:255',
-        'invoicepayments.*.processing_fee_per' => 'nullable|numeric|min:0',
-        'invoicepayments.*.processing_fee_flat' => 'nullable|numeric|min:0',
-        'invoicepayments.*.payment_notes' => 'nullable|string|max:1000',
+        'paymentRecord' => 'required|array',
+        'paymentRecord.*.payment_date' => 'required|date',
+        'paymentRecord.*.paid_via' => 'nullable|string|max:255',
+        'paymentRecord.*.payment_amount' => 'required|numeric|min:0',
+        'paymentRecord.*.check_number' => 'nullable|string|max:255',
+        'paymentRecord.*.processing_fee_per' => 'nullable|numeric|min:0',
+        'paymentRecord.*.processing_fee_flat' => 'nullable|numeric|min:0',
+        'paymentRecord.*.payment_notes' => 'nullable|string|max:1000',
     ]);
 
     $repayment = $this->handleRepaymentRecords($validated['invoicepayments'], $invoice);
