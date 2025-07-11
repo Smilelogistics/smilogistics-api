@@ -665,8 +665,7 @@ protected function handleRepaymentRecords(array $payments, $invoice)
             'check_number' => $payment['check_number'] ?? null,
             'processing_fee_per' => $payment['processing_fee_per'] ?? null,
             'processing_fee_flat' => $payment['processing_fee_flat'] ?? null,
-            'payment_notes' => $payment['payment_notes'] ?? null,
-            'created_by' => auth()->id()
+            'payment_notes' => $payment['payment_notes'] ?? null
         ]);
 
         $createdRecords[] = $created;
