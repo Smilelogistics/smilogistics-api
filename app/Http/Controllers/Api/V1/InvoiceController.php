@@ -416,29 +416,51 @@ class InvoiceController extends Controller
 public function updateRepayment(Request $request, $id)
 {
     $validated = $request->validate([
-         'paid_via' => 'nullable|array',
-                 'paid_via.*' => 'nullable|string|max:255',
-                 'payment_date' => 'required|array',
-                 'payment_date.*' => 'required|date',
-                 'payment_amount' => 'required|array',
-                 'payment_amount.*' => 'required|numeric',
-                 'check_number' => 'nullable|array',
-                 'check_number.*' => 'nullable|string|max:255',
-                 'processing_fee_per' => 'nullable|array',
-                 'processing_fee_per.*' => 'nullable|numeric',
-                 'processing_fee_flat' => 'nullable|array',
-                 'processing_fee_flat.*' => 'nullable|numeric',
-                 'payment_notes' => 'nullable|array',
-                 'payment_notes.*' => 'nullable|string',
+        'paid_via' => 'nullable|array',
+        'paid_via.*' => 'nullable|string|max:255',
+
+        'payment_date' => 'required|array',
+        'payment_date.*' => 'required|date',
+
+        'payment_amount' => 'required|array',
+        'payment_amount.*' => 'required|numeric|min:0',
+
+        'check_number' => 'nullable|array',
+        'check_number.*' => 'nullable|string|max:255',
+
+        'processing_fee_per' => 'nullable|array',
+        'processing_fee_per.*' => 'nullable|numeric|min:0',
+
+        'processing_fee_flat' => 'nullable|array',
+        'processing_fee_flat.*' => 'nullable|numeric|min:0',
+
+        'payment_notes' => 'nullable|array',
+        'payment_notes.*' => 'nullable|string|max:1000',
     ]);
 
-    $repayment = $this->handleRepaymentRecords($validated['invoicepayments'], $invoice);
+    $invoice = Invoice::findOrFail($id);
+
+    $payments = [];
+    foreach ($validated['payment_amount'] as $index => $amount) {
+        $payments[] = [
+            'payment_date' => $validated['payment_date'][$index] ?? null,
+            'payment_amount' => $amount ?? 0,
+            'paid_via' => $validated['paid_via'][$index] ?? null,
+            'check_number' => $validated['check_number'][$index] ?? null,
+            'processing_fee_per' => $validated['processing_fee_per'][$index] ?? null,
+            'processing_fee_flat' => $validated['processing_fee_flat'][$index] ?? null,
+            'payment_notes' => $validated['payment_notes'][$index] ?? null,
+        ];
+    }
+
+    $repayment = $this->handleRepaymentRecords($payments, $invoice);
 
     return response()->json([
         'message' => 'Invoice updated successfully',
         'repayment' => $repayment
     ], 200);
 }
+
 
    
 
