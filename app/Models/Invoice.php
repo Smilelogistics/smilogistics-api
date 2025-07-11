@@ -83,7 +83,7 @@ class Invoice extends Model
 
     public function paymentRecord()
     {
-        return $this->belongsTo(InvoicePaymentRecord::class);
+        return $this->hasMany(InvoicePaymentRecord::class);
     }
 
     
