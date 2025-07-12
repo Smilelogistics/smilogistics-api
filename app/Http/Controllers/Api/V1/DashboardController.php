@@ -6,6 +6,7 @@ use App\Models\Plan;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Driver;
+use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Shipment;
@@ -238,6 +239,9 @@ class DashboardController extends Controller
 
     public function monthlyIncome()
     {
+         $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+        if ($user->hasRole('superadministrator')) {
         // Get current date and calculate start date (12 months ago)
         $currentDate = now();
         $startDate = $currentDate->copy()->subMonths(11)->startOfMonth(); // 11 months + current month = 12
@@ -312,8 +316,173 @@ class DashboardController extends Controller
                     'revenue' => $totalRevenue,
                     'formatted_revenue' => NumberFormatter::formatCount($totalRevenue)
                 ],
-                'detailed_data' => $orderedResult // Optional: include detailed data for debugging
+                'detailed_data' => $orderedResult
+            ]
+        ]);
+    }elseif ($user->hasRole('businessadministrator') || $user->hasRole('customer') || $user->hasRole('driver')) {
+        // Get current date and calculate start date (12 months ago)
+        $currentDate = now();
+        $startDate = $currentDate->copy()->subMonths(11)->startOfMonth();
+        
+        // Initialize query based on role
+        $shipmentQuery = Shipment::query();
+        $consolidatedQuery = ConsolidateShipment::query();
+        
+        if ($user->hasRole('businessadministrator')) {
+            $shipmentQuery->where('branch_id', $branchId);
+            $consolidatedQuery->where('branch_id', $branchId);
+        } elseif ($user->hasRole('customer')) {
+            $shipmentQuery->where('customer_id', $user->customer->id);
+            $consolidatedQuery->where('customer_id', $user->customer->id);
+        } elseif ($user->hasRole('driver')) {
+            $shipmentQuery->where('driver_id', $user->driver->id);
+            $consolidatedQuery->where('driver_id', $user->driver->id);
+        }
+        
+        // Get shipment data
+        $shipmentData = $shipmentQuery
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('
+                EXTRACT(YEAR FROM created_at) as year,
+                EXTRACT(MONTH FROM created_at) as month,
+                COUNT(*) as shipment_count
+            ')
+            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get();
+        
+        // Get consolidated shipment data
+        $consolidatedData = $consolidatedQuery
+            ->where('created_at', '>=', $startDate)
+            ->selectRaw('
+                EXTRACT(YEAR FROM created_at) as year,
+                EXTRACT(MONTH FROM created_at) as month,
+                COUNT(*) as consolidated_count
+            ')
+            ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+            ->orderBy('year', 'asc')
+            ->orderBy('month', 'asc')
+            ->get();
+        
+        // Initialize arrays with default values (0) for all 12 months
+        $result = [];
+        
+        // Create all 12 months first with zero values
+        for ($i = 0; $i < 12; $i++) {
+            $date = $startDate->copy()->addMonths($i);
+            $year = $date->year;
+            $month = $date->month;
+            
+            $result[$year.'-'.$month] = [
+                'year' => $year,
+                'month' => $month,
+                'month_name' => $date->format('M'),
+                'shipments' => 0,
+                'consolidated' => 0,
+                'total_shipments' => 0,
+            ];
+        }
+        
+        // Fill the data for existing months from shipments
+        foreach ($shipmentData as $data) {
+            $key = $data->year.'-'.$data->month;
+            if (isset($result[$key])) {
+                $result[$key]['shipments'] = (int)$data->shipment_count;
+                $result[$key]['total_shipments'] += (int)$data->shipment_count;
+            }
+        }
+        
+        // Fill the data for existing months from consolidated shipments
+        foreach ($consolidatedData as $data) {
+            $key = $data->year.'-'.$data->month;
+            if (isset($result[$key])) {
+                $result[$key]['consolidated'] = (int)$data->consolidated_count;
+                $result[$key]['total_shipments'] += (int)$data->consolidated_count;
+            }
+        }
+        
+        // Extract the ordered values for response
+        $orderedResult = array_values($result);
+        $shipments = array_column($orderedResult, 'shipments');
+        $consolidated = array_column($orderedResult, 'consolidated');
+        $totalShipments = array_column($orderedResult, 'total_shipments');
+        $monthNames = array_column($orderedResult, 'month_name');
+        
+        // Calculate totals
+        $totalAllShipments = array_sum($shipments) + array_sum($consolidated);
+        
+        // For businessadministrator, add invoice data if needed
+        $additionalData = [];
+        if ($user->hasRole('businessadministrator')) {
+            $invoiceData = Invoice::where('branch_id', $branchId)
+                ->where('status', 'paid')
+                ->where('created_at', '>=', $startDate)
+                ->selectRaw('
+                    EXTRACT(YEAR FROM created_at) as year,
+                    EXTRACT(MONTH FROM created_at) as month,
+                    SUM(net_total) as total_amount
+                ')
+                ->groupByRaw('EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get();
+            
+            // Initialize revenue data
+            foreach ($result as $key => $value) {
+                $result[$key]['revenugit e'] = 0;
+            }
+            
+            // Fill revenue data
+            foreach ($invoiceData as $data) {
+                $key = $data->year.'-'.$data->month;
+                if (isset($result[$key])) {
+                    $result[$key]['revenue'] = (float)$data->total_amount;
+                }
+            }
+            
+            $revenue = array_column($orderedResult, 'revenue');
+            $totalRevenue = array_sum($revenue);
+            
+            $additionalData = [
+                'revenue_series' => [
+                    'name' => 'Revenue',
+                    'data' => $revenue
+                ],
+                'totals' => [
+                    'revenue' => $totalRevenue,
+                    'formatted_revenue' => NumberFormatter::formatCount($totalRevenue)
+                ]
+            ];
+        }
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'series' => [
+                    [
+                        'name' => 'Shipments',
+                        'data' => $shipments
+                    ],
+                    [
+                        'name' => 'Consolidated',
+                        'data' => $consolidated
+                    ],
+                    [
+                        'name' => 'Total Shipments',
+                        'data' => $totalShipments
+                    ]
+                ],
+                'categories' => $monthNames,
+                'totals' => [
+                    'shipments' => array_sum($shipments),
+                    'consolidated' => array_sum($consolidated),
+                    'total_shipments' => $totalAllShipments
+                ],
+                'detailed_data' => $orderedResult,
+                ...$additionalData
             ]
         ]);
     }
+    } 
 }
