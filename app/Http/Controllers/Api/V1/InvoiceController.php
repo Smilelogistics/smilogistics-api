@@ -542,7 +542,7 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
     $charges = [
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
-        'rate' => is_array($request->unit_rate ?? []) ? $request->unit_rate : [$request->unit_rate],
+        'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
         'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
         'discount' => is_array($request->discount ?? []) ? $request->discount : [$request->discount],
         'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
@@ -605,7 +605,7 @@ protected function handleShipmentCharges(Request $request, $invoiceId, $invoice 
     $charges = [
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
-        'rate' => is_array($request->unit_rate ?? []) ? $request->unit_rate : [$request->unit_rate],
+        'rate' => is_array($request->rate ?? []) ? $request->rate : [$request->rate],
         //'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
         'discount' => is_array($request->discount ?? []) ? $request->discount : [$request->discount],
         'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
