@@ -390,8 +390,8 @@ class InvoiceController extends Controller
             'rate' => 'nullable|array',
             'rate.*' => 'nullable|numeric|min:0',
 
-            'amount' => 'nullable|array',
-            'amount.*' => 'nullable|numeric|min:0',
+            // 'amount' => 'nullable|array',
+            // 'amount.*' => 'nullable|numeric|min:0',
 
             'discount' => 'nullable|array',
             'discount.*' => 'nullable|numeric|min:0',
@@ -560,6 +560,7 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
         $rate = (float)($charges['rate'][$index] ?? 0);
         $discount = (float)($charges['discount'][$index] ?? 0);
         $amounts = $units * $rate;
+        //dd($amounts);
 
         $total += $amounts;
         $total_discount += $discount;
@@ -605,7 +606,7 @@ protected function handleShipmentCharges(Request $request, $invoiceId, $invoice 
         'charge_type' => is_array($request->charge_type) ? $request->charge_type : [$request->charge_type],
         'units' => is_array($request->units ?? []) ? $request->units : [$request->units],
         'rate' => is_array($request->unit_rate ?? []) ? $request->unit_rate : [$request->unit_rate],
-        'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
+        //'amount' => is_array($request->amount ?? []) ? $request->amount : [$request->amount],
         'discount' => is_array($request->discount ?? []) ? $request->discount : [$request->discount],
         'comment' => is_array($request->comment ?? []) ? $request->comment : [$request->comment],
         'internal_notes' => is_array($request->internal_notes ?? []) ? $request->internal_notes : [$request->internal_notes],
