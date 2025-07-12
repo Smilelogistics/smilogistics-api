@@ -365,7 +365,9 @@ class InvoiceController extends Controller
 
            
             DB::commit();
-            return response()->json(['message' => 'Invoice basic charges updated successfully', 'invoice' => $invoice], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Invoice basic charges updated successfully', 'invoice' => $invoice], 200);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -407,6 +409,7 @@ class InvoiceController extends Controller
         $shipmentCharges = $this->handleShipmentCharges($request, $id, $invoice);
 
         return response()->json([
+            'success' => true,
             'message' => 'Invoice updated successfully',
             'invoice_charges' => $invoiceCharges,
             'shipment_charges' => $shipmentCharges
@@ -466,7 +469,9 @@ public function updateCreditMemo(Request $request, $id)
 {
     try {
         $this->handlePayments($request, $id);
-        return response()->json(['message' => 'Credit memo payments updated successfully.'], 200);
+        return response()->json([
+            'success' => true,
+            'message' => 'Credit memo payments updated successfully.'], 200);
     } catch (\Exception $e) {
         return response()->json(['message' => 'Failed to update credit memo payments.', 'error' => $e->getMessage()], 500);
     }
