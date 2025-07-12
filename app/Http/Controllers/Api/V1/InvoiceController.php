@@ -227,7 +227,8 @@ class InvoiceController extends Controller
                 $invoice->update([
                     //'total' => $total, 
                     'total_discount' => $totalDiscount,
-                    'net_total' => $total - $totalDiscount
+                    'net_total' => $total - $totalDiscount,
+                    'remaining_balance' => $total - $totalDiscount
                 ]);
             }
 
@@ -581,7 +582,8 @@ protected function handleCharges(Request $request, $invoiceId, $invoice)
 
     $invoice->update([
         'net_total' => $total - $total_discount,
-        'total_discount' => $total_discount
+        'total_discount' => $total_discount,
+        'remaining_balance' => $total - $total_discount
     ]);
 
     return [
@@ -688,7 +690,7 @@ protected function handleRepaymentRecords(array $payments, $invoice)
         $createdRecords[] = $created;
     }
 
-    $netTotal = $invoice->net_total ?? 0;
+    $netTotal = $invoice->remaining_balance ?? 0;
     $existingPayments = 0;
     $newTotalPayments = $existingPayments + $totalPayments;
     $remainingBalance = max(0, $netTotal - $newTotalPayments);
