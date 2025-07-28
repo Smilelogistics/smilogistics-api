@@ -36,8 +36,8 @@ class NewBranchNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
+                    ->line('Your registration is sucessfull, your 30 days free trial is activated.')
+                    ->action('Get started', url('/'))
                     ->line('Thank you for using our application!');
     }
 

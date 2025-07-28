@@ -99,12 +99,12 @@ class AuthController extends Controller
                      'user_id' => $user->id,
                      'branch_id' => $branchId
                  ]);
-                 //Mail::to($user->email)->send(new newDriverMail($user));
+                 Mail::to($user->email)->send(new newDriverMail($user));
              }elseif($user->user_type == 'superadministrator'){
                  SuperAdmin::create([
                      'user_id' => $user->id
                  ]);
-                 //Mail::to($user->email)->send(new newDriverMail($user));
+                 Mail::to($user->email)->send(new newDriverMail($user));
              }
              
              $user->addRole($user->user_type);
