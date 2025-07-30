@@ -40,7 +40,7 @@
           <tr>
             <td style="text-align:center;">
               <h2 style="padding-top: 25px; line-height: 1; margin:0px;">Need Help?</h2>
-              <div style="margin-bottom: 25px; font-size: 15px;margin-top:7px;">Give us a call Sample-1800
+              <div style="margin-bottom: 25px; font-size: 15px;margin-top:7px;">Give us a call 2347067317819
               </div>
             </td>
           </tr>
