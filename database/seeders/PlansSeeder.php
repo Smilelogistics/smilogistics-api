@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Plan;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class PlansSeeder extends Seeder
@@ -13,6 +15,9 @@ class PlansSeeder extends Seeder
      */
     public function run(): void
     {
+         Schema::disableForeignKeyConstraints();
+    DB::table('plans')->truncate(); // Deletes all rows and resets auto-increment ID
+    Schema::enableForeignKeyConstraints();
          // Now seed Plans
         $plans = [
             [

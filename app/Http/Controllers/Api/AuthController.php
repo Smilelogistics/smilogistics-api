@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Plan;
 use App\Models\User;
 use App\Models\Branch;
 use App\Models\Driver;
@@ -13,8 +14,8 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\newCustomerMail;
 use App\Services\AuthService;
-use Illuminate\Support\Carbon;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -79,6 +80,43 @@ class AuthController extends Controller
                      'address' => $request->address ?? 'No address provided',
                      'about_us' => $request->about_us ?? null,
                  ]);
+
+                  $branch = $user->branch;
+                  //dd($branch);
+                 $plan = Plan::where('slug', 'premium')->first();
+
+                $currentSubscription = $branch->activeSubscription();
+                $startDate = now();
+                $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+                    ? $currentSubscription->ends_at
+                    : $startDate;
+
+                $endDate = Carbon::parse($endDate);
+                $endDate = $plan->interval === 'yearly'
+                    ? $endDate->copy()->addYear()
+                    : $endDate->copy()->addMonth();
+
+                $branch->subscriptions()->isActive()->update([
+                    'status' => 'canceled',
+                    'canceled_at' => now()
+                ]);
+
+                $subscription = $branch->subscriptions()->create([
+                    'plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    //'transaction_id' => $transaction->id
+                ]);
+
+                $branch->update([
+                    'isSubscribed' => true,
+                    'subscription_end_date' => $endDate,
+                    'subscription_start_date' => $startDate,
+                    'subscription_type' => $plan->slug,
+                    'subscription_count' => $user->subscription_count + 1
+                ]);
+
                  Mail::to($user->email)->send(new newBranchMail($user));
                  $user->notify(new NewBranchNotification($user));
      
@@ -169,6 +207,43 @@ class AuthController extends Controller
                      'address' => $request->address ?? 'No address provided',
                      'about_us' => $request->about_us ?? null,
                  ]);
+
+                 $branch = $user->branch;
+                  //dd($branch);
+                 $plan = Plan::where('slug', 'premium')->first();
+
+                $currentSubscription = $branch->activeSubscription();
+                $startDate = now();
+                $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+                    ? $currentSubscription->ends_at
+                    : $startDate;
+
+                $endDate = Carbon::parse($endDate);
+                $endDate = $plan->interval === 'yearly'
+                    ? $endDate->copy()->addYear()
+                    : $endDate->copy()->addMonth();
+
+                $branch->subscriptions()->isActive()->update([
+                    'status' => 'canceled',
+                    'canceled_at' => now()
+                ]);
+
+                $subscription = $branch->subscriptions()->create([
+                    'plan_id' => $plan->id,
+                    'starts_at' => $startDate,
+                    'ends_at' => $endDate,
+                    'status' => 'active',
+                    //'transaction_id' => $transaction->id
+                ]);
+
+                $branch->update([
+                    'isSubscribed' => true,
+                    'subscription_end_date' => $endDate,
+                    'subscription_start_date' => $startDate,
+                    'subscription_type' => $plan->slug,
+                    'subscription_count' => $user->subscription_count + 1
+                ]);
+
                  Mail::to($user->email)->send(new newBranchMail($user));
                  $user->notify(new NewBranchNotification($user));
      
