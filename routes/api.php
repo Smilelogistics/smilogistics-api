@@ -71,7 +71,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
         return response()->json(['message' => 'Invalid verification hash.'], 403);
     }
 
-    if ($user->hasVerifiedEmail()) {
+    if ($user->hasVerifiedEmail()) { 
         return response()->json(['message' => 'Email already verified.'], 200);
     }
 
