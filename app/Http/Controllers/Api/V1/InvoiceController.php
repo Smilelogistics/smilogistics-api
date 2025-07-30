@@ -699,7 +699,7 @@ protected function handleRepaymentRecords(array $payments, $invoice)
     if ($remainingBalance <= 0) {
         $paymentStatus = 'paid';
     } elseif ($newTotalPayments > 0) {
-        $paymentStatus = 'partially_paid';
+        $paymentStatus = 'partially_paid'; 
     }
 
     $invoice->update([
