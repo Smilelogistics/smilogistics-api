@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Auth\Events\PasswordReset;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\V1\BikeController;
@@ -77,7 +78,8 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     $user->markEmailAsVerified();
     event(new Verified($user));
 
-    return response()->json(['message' => 'Email verified successfully.']);
+    //return response()->json(['message' => 'Email verified successfully.']);
+    return Redirect::to('https://app.smileslogistics.com/?verified=1');
 })->middleware(['signed'])->name('verification.verify');
 
 
