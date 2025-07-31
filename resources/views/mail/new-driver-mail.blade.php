@@ -4,7 +4,7 @@
 Hello, {{ $createUser['name'] }}, your driver account has been successfully created. Kindly download the mobile app and change your password:
 
 - **Email**: {{ $createUser['email'] }}
-- **Temporary Password**: 0000000000
+- **Temporary Password**: 123456789
 
 @component('mail::panel')
 **Important**: Please change your password after logging in for the first time.
