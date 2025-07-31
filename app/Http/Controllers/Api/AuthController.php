@@ -40,9 +40,9 @@ class AuthController extends Controller
          $user = auth()->user();
         // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
 
-        // if ($user->user_type == 'businessadministrator' && $request->user_type == 'superadministrator') {
-        //     return response()->json(['error' => 'You cannot register a superadmin as a business admin.'], 400);
-        // }
+        if ($user->user_type == 'businessadministrator' && $request->user_type == 'superadministrator') {
+            return response()->json(['error' => 'You cannot register a superadmin as a business admin.'], 400);
+        }
          $validator = Validator::make($request->all(), [
              'fname' => 'required|string|max:255',
              'mname' => 'nullable|string|max:255',
