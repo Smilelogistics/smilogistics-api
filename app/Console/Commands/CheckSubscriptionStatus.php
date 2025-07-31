@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use App\Models\Branch;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\SubscriptionReminderNotification;
 use App\Notifications\TrialSubscriptionReminderNotification;
@@ -34,7 +35,7 @@ class CheckSubscriptionStatus extends Command
         $today  = Carbon::today();
 
 
-        $branchs = Branch::where('isSubscribed', 1)
+        $branches = Branch::where('isSubscribed', 1)
         ->whereDate('subscription_end_date', '<', $today)->get();
 
         foreach ($branches as $branch) {

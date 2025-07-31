@@ -4,6 +4,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Auth\Events\PasswordReset;
@@ -26,17 +27,26 @@ use App\Http\Controllers\Api\V1\TransactionsController;
 use App\Http\Controllers\Api\V1\ConsolidateShipmentController;
 use App\Http\Controllers\Api\V1\ConsolidatedShipmentController;
 
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+Route::post('/subscription-check', function() {
+    if (request()->header('X-Auth-Token') !== config('app.subscription_check_token')) {
+        Log::warning('Unauthorized subscription check attempt');
+        return response()->json(['error' => 'Unauthorized'], 401);
+    }
 
-// Route::get('/test-db', function (Request $request) {
-//     try {
-//         DB::connection()->getPdo();
-//         return response()->json(['message' => '✅ Database connected successfully!']);
-//     } catch (\Exception $e) {
-//         return response()->json(['error' => '❌ Database not connected', 'details' => $e->getMessage()], 500);
-//     }
+    Log::info('Starting subscription check');
+    $output = [];
+    Artisan::call('app:check-subscription-status', [], $output);
+    Log::info('Subscription check completed', ['output' => $output]);
+
+    return response()->json([
+        'message' => 'Subscription check completed',
+        'output' => $output
+    ]);
+})->middleware('throttle:60,1');
+
+// Route::post('/subscription-check', function() {
+//     Artisan::call('app:check-subscription-status');
+//     return response()->json(['message' => 'Subscription check completed']);
 // });
 
 
