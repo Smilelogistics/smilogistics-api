@@ -3,6 +3,7 @@
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Password;
@@ -43,6 +44,19 @@ Route::post('/subscription-check', function() {
         'output' => $output
     ]);
 })->middleware('throttle:60,1');
+
+Route::get('/test-email', function (Request $request) {
+    try {
+        Mail::raw('This is a test email from smileslogistics.', function ($message) {
+            $message->to('codedkolobanny@gmail.com')
+                    ->subject('Test Email');
+        });
+
+        return response()->json(['success' => true, 'message' => 'Test email sent successfully.']);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'message' => 'Failed to send email: ' . $e->getMessage()]);
+    }
+});
 
 // Route::post('/subscription-check', function() {
 //     Artisan::call('app:check-subscription-status');
