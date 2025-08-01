@@ -48,7 +48,7 @@ Route::post('/subscription-check', function() {
 Route::get('/test-email', function (Request $request) {
     try {
         Mail::raw('This is a test email from smileslogistics.', function ($message) {
-            $message->to('codedkolobanny@gmail@gmail.com')
+            $message->to('codedkolobanny@gmail.com')
                     ->subject('Test Email');
         });
 
