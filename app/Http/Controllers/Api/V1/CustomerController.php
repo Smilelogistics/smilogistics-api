@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Customer;
 use Illuminate\Http\Request;
@@ -68,6 +69,7 @@ class CustomerController extends Controller
        // dd($validatedData['tags']);
 
         //Mail::to($user->email)->send(new newCustomerMail($user));
+        $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
 
         $customer = Customer::create([
             'branch_id' => $branchId,
@@ -91,7 +93,7 @@ class CustomerController extends Controller
             'credit_limit' => $request->credit_limit,
             'alert_percentage' => $request->alert_percentage,
             'outstanding_balance' => $request->outstanding_balance,
-            'start_date' => $request->start_date,
+            'start_date' => $start_date,
             'send_invoice_under_this_company' => $request->send_invoice_under_this_company,
             'account_code' => $request->account_code,
             'invoice_footer_note' => $request->invoice_footer_note,
