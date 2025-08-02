@@ -68,7 +68,7 @@ class CustomerController extends Controller
         }
        // dd($validatedData['tags']);
 
-        //Mail::to($user->email)->send(new newCustomerMail($user));
+        Mail::to($user->email)->send(new newCustomerMail($user));
         $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
 
         $customer = Customer::create([
@@ -137,6 +137,8 @@ class CustomerController extends Controller
             }
         }
 
+        //Mail::to($user->email)->send(new newCustomerMail($user));
+     
         DB::commit();
 
         return response()->json([

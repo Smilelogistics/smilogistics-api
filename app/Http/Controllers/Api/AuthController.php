@@ -142,7 +142,7 @@ class AuthController extends Controller
                  SuperAdmin::create([
                      'user_id' => $user->id
                  ]);
-                 //Mail::to($user->email)->send(new newDriverMail($user));
+                 Mail::to($user->email)->send(new newDriverMail($user));
              }
              
              $user->addRole($user->user_type);

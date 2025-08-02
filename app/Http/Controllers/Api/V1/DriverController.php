@@ -195,7 +195,7 @@ class DriverController extends Controller
                 'lname' => $validateData['lname'],
                 'mname' => $validateData['mname'],
                 'email' => $validateData['email'],
-                'password' => Hash::make('12345678'), //10 zeros is your default password to the app
+                'password' => Hash::make('123456789'), //10 zeros is your default password to the app
                 'user_type' => 'driver',
             ]);
             $createUser->addRole($createUser->user_type);
@@ -312,7 +312,7 @@ class DriverController extends Controller
 
             DB::commit();
             ///if($createUser->email) wanted to check if email is present in the request but no need since its required in validation
-            Mail::to($driver->user->email)->send(new newDriverMail($createUser));
+            Mail::to($request->email)->send(new newDriverMail($createUser));
 
             return response()->json([
                 'message' => 'Driver created successfully 🚀',
