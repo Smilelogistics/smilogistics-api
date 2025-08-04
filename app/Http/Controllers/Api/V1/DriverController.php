@@ -308,11 +308,12 @@ class DriverController extends Controller
             } else {
                 \Log::error('No files found in the request.');
             }
-
-
-            DB::commit();
+            //dd($request->email);
             ///if($createUser->email) wanted to check if email is present in the request but no need since its required in validation
             Mail::to($request->email)->send(new newDriverMail($createUser));
+
+            DB::commit();
+           
 
             return response()->json([
                 'message' => 'Driver created successfully 🚀',

@@ -47,8 +47,10 @@ class CustomerController extends Controller
             'fname' => $request->customer_name,
             'email' => $request->customer_email,
             'user_type' => 'customer',
-            'password' => Hash::make('12345678'),
+            'password' => Hash::make('123456789'),
         ]);
+
+        //dd($user);
 
         $user->addRole('customer');
 
@@ -67,9 +69,14 @@ class CustomerController extends Controller
             $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
        // dd($validatedData['tags']);
-
+        //dd($user->email);
         Mail::to($user->email)->send(new newCustomerMail($user));
-        $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
+        $start_date = null;
+        if(isset($request->start_date))
+            {
+                $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
+            } 
+            //Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
 
         $customer = Customer::create([
             'branch_id' => $branchId,

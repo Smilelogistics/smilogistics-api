@@ -25,11 +25,8 @@
               <!-- <h2 style="margin: 0px;padding-bottom: 25px;font-size:22px;"> Please renew your subscription</h2> -->
               <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">Hello {{$user['name']}} your account has been successfully created, Kindly login with the details below and change your password <br>
               Email: {{$user['email']}} <br>
-              @if (!empty($user['password']))
-                Password: The password you created
-              @else
               Password: 123456789.
-              @endif
+             
               </p>
               <p style=" margin: 0px 32px;padding-bottom: 25px;line-height: 2; font-size: 15px;"> Warm Regards, <br>
             {{ config('app.name') }}
