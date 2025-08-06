@@ -100,7 +100,7 @@ class CustomerController extends Controller
             'credit_limit' => $request->credit_limit,
             'alert_percentage' => $request->alert_percentage,
             'outstanding_balance' => $request->outstanding_balance,
-            'start_date' => $start_date,
+            'start_date' => $request->start_date,
             'send_invoice_under_this_company' => $request->send_invoice_under_this_company,
             'account_code' => $request->account_code,
             'invoice_footer_note' => $request->invoice_footer_note,
