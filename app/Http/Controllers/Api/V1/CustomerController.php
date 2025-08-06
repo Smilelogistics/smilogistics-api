@@ -71,11 +71,11 @@ class CustomerController extends Controller
        // dd($validatedData['tags']);
         //dd($user->email);
         Mail::to($user->email)->send(new newCustomerMail($user));
-        $start_date = null;
-        if(isset($request->start_date))
-            {
-                $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
-            } 
+        // $start_date = null;
+        // if(isset($request->start_date))
+        //     {
+        //         $start_date = Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
+        //     } 
             //Carbon::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d');
 
         $customer = Customer::create([
