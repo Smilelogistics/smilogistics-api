@@ -93,9 +93,9 @@ class ShipmentController extends Controller
         //dd($validatedData);
 
         $total_miles = $validatedData['total_miles'];
-        $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
+        $fuel_rate_per_gallon = $user->branch->price_per_gallon ?? 1;
         $mpg = $user->branch->mpg ?? 1;
-        $price_per_mile = $user->branch->price_per_mile ?? 0;
+        $price_per_mile = $user->branch->price_per_mile ?? 1;
 
         $shipping_cost = ($total_miles * 2)* $price_per_mile;
 
