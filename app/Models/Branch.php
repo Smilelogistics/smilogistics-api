@@ -62,6 +62,7 @@ class Branch extends Model
         'subscription_date',
         'isSubscribed',
         'price_per_mile',
+        'price_per_gallon',
 
        'trucking_bank_name',
       'trucking_account_name',

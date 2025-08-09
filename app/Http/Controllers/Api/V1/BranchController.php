@@ -13,37 +13,13 @@ class BranchController extends Controller
         $branch = Branch::all();
         return response()->json($branch);
     }
-    // public function getMPG()
-    // {
-    //     $user = auth()->user();
-    //     $branchId = auth()->user()->getBranchId();
-
-    //     $mpg = Branch::where('id', $branchId)->value('mpg','price_per_gallon');
-    //     return response()->json($mpg);
-    // }
-
     public function getMPG()
     {
+        $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
-        
-        $branch = Branch::where('id', $branchId)
-            ->select('mpg', 'price_per_gallon')
-            ->first();
-        
-        if (!$branch) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Branch not found'
-            ], 404);
-        }
-        
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'mpg' => $branch->mpg,
-                'price_per_gallon' => $branch->price_per_gallon
-            ]
-        ]);
+
+        $mpg = Branch::where('id', $branchId)->value('mpg');
+        return response()->json($mpg);
     }
     public function update(Request $request, $id)
     {
