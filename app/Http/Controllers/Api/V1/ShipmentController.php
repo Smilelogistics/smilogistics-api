@@ -377,28 +377,28 @@ class ShipmentController extends Controller
 
 
             
-            if (!empty($validatedData['bill_to']) && is_array($validatedData['bill_to'])) {
-                $biltos = [];
-                for ($i = 0; $i < count($validatedData['bill_to']); $i++) {
-                    $biltos[] = [
-                        'bill_to' => $validatedData['bill_to'][$i],
-                        'carrier_id' => $validatedData['carrier_id'][$i] ?? null,
-                        'driver_id' => $validatedData['driver_id'][$i] ?? null,
-                        'customer_id' => $validatedData['customer_id'][$i] ?? null,
-                    ];
-                }
+            // if (!empty($validatedData['bill_to']) && is_array($validatedData['bill_to'])) {
+            //     $biltos = [];
+            //     for ($i = 0; $i < count($validatedData['bill_to']); $i++) {
+            //         $biltos[] = [
+            //             'bill_to' => $validatedData['bill_to'][$i],
+            //             'carrier_id' => $validatedData['carrier_id'][$i] ?? null,
+            //             'driver_id' => $validatedData['driver_id'][$i] ?? null,
+            //             'customer_id' => $validatedData['customer_id'][$i] ?? null,
+            //         ];
+            //     }
 
-                foreach($biltos as $billto){
-                    BillTo::create([
-                        'shipment_id' => $shipment->id,
-                        'branch_id' => $branchId ?? null,
-                        'bill_to' => $billto['bill_to'],
-                        'carrier_id' => $billto['carrier_id'],
-                        'driver_id' => $billto['driver_id'],
-                        'customer_id' => $billto['customer_id'],
-                    ]);
-                }
-            }
+            //     foreach($biltos as $billto){
+            //         BillTo::create([
+            //             'shipment_id' => $shipment->id,
+            //             'branch_id' => $branchId ?? null,
+            //             'bill_to' => $billto['bill_to'],
+            //             'carrier_id' => $billto['carrier_id'],
+            //             'driver_id' => $billto['driver_id'],
+            //             'customer_id' => $billto['customer_id'],
+            //         ]);
+            //     }
+            // }
 
             if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
                 $credit_total = 0;
@@ -734,6 +734,7 @@ class ShipmentController extends Controller
                     'carrier_id' => $validatedData['carrier_id'] ?? null,
                     'bike_id' => $validatedData['bike_id'] ?? null,
                     'truck_id' => $validatedData['truck_id'] ?? null,
+                    'customer_id' => $validatedData['bill_to'] ?? null,
                     'shipment_status' => $validatedData['shipment_status'] ?? 'Shipment Updated',
                     'signature' => $validatedData['signature'] ?? null,
                     'office' => $validatedData['office'] ?? null,

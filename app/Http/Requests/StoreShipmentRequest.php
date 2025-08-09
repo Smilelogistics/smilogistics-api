@@ -30,6 +30,8 @@ class StoreShipmentRequest extends FormRequest
             'driver_id' => 'nullable|exists:drivers,id',
             'user_id' => 'nullable|exists:users,id',
             'carrier_id' => 'nullable|exists:carriers,id',
+            'bill_to' => 'nullable|exists:customers,id',
+            'quick_note' => 'nullable|string|max:255',
             'truck_id' => 'nullable|exists:trucks,id',
             'bike_id' => 'nullable|exists:bikes,id',
             'shipment_tracking_number' => 'nullable|string|max:255',
@@ -126,11 +128,11 @@ class StoreShipmentRequest extends FormRequest
             //billto starts here
             
             //'bill_tos' => 'nullable|array',
-            'bill_to.*' => 'nullable|string|max:255',
-            'quick_note.*' => 'nullable|string',
-            'customer_id.*' => 'nullable|integer|exists:customers,id',
-            'driver_id.*' => 'nullable|integer|exists:drivers,id',
-            'carrier_id.*' => 'nullable|integer|exists:carriers,id',
+            // 'bill_to.*' => 'nullable|string|max:255',
+            // 'quick_note.*' => 'nullable|string',
+            // 'customer_id.*' => 'nullable|integer|exists:customers,id',
+            // 'driver_id.*' => 'nullable|integer|exists:drivers,id',
+            // 'carrier_id.*' => 'nullable|integer|exists:carriers,id',
             
             //Ocean shipment
             'shipment_type' => 'nullable|string',
