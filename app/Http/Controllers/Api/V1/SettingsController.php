@@ -34,7 +34,7 @@ class SettingsController extends Controller
             return response()->json($data);
         }
         elseif ($user->hasRole('businessadministrator')) {
-            $data = Branch::with('user')->where('user_id', $user->id)->get();
+            $data = Branch::with('user','offices')->where('user_id', $user->id)->get();
             return response()->json($data);
         }
         elseif($user->hasRole('superadministrator')) {
