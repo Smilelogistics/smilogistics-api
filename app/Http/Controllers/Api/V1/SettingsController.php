@@ -317,10 +317,10 @@ public function updateGeneral(Request $request)
         }
     }
 
-    public function createOffices(Request $request)
+   public function createOffices(Request $request)
     {
         $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
+        $branchId = $user->getBranchId();
 
         $validator = Validator::make($request->all(), [
             'short_name.*' => 'sometimes|string|max:255',
@@ -336,27 +336,23 @@ public function updateGeneral(Request $request)
         DB::beginTransaction();
 
         try {
-            if (!empty($validatedData['short_name']) && is_array($validatedData['short_name'])) {
+            if (!empty($validated['short_name']) && is_array($validated['short_name'])) {
 
-                // Process each charge
-                foreach ($validatedData['short_name'] as $i => $chargeType) {
-            
-                    // Create charge record
+                foreach ($validated['short_name'] as $i => $shortName) {
                     OfficeLocation::create([
-                        'short_name' => $validatedData['short_name'][$i] ?? null,
-                        'long_name' => $validatedData['long_name'][$i] ?? null,
+                        'branch_id'  => $branchId, // might want to attach to branch
+                        'short_name' => $shortName ?? null,
+                        'long_name'  => $validated['long_name'][$i] ?? null,
                     ]);
                 }
-
             }
-
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Offices updated successfully',
-                'data' => $validated
+                'data'    => $validated
             ]);
 
         } catch (\Exception $e) {
@@ -365,10 +361,11 @@ public function updateGeneral(Request $request)
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'error' => 'Failed to update offices settings'
+                'error'   => 'Failed to update offices settings'
             ], 500);
         }
     }
+
 
     public function updateMailer(Request $request)
     {

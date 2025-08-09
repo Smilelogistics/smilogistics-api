@@ -251,6 +251,7 @@ Route::prefix('v1')->group(function () {
                 Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
                 Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
+                Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
             })->middleware('role:businessadministrator');
 
             Route::prefix('consolidate')->group(function () {

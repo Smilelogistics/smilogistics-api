@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Driver;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use App\Models\OfficeLocation;
 use App\Http\Controllers\Controller;
 
 class UnivController extends Controller
@@ -37,6 +38,20 @@ class UnivController extends Controller
         return response()->json([
             'customers' => $customers,
             'drivers' => $drivers,
+        ]);
+    }
+
+    public function getOffices()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+
+        $offices = OfficeLocation::where('branch_id', $branchId)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'offices' => $offices,
         ]);
     }
             
