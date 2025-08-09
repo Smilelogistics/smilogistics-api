@@ -92,14 +92,19 @@ class ShipmentController extends Controller
 
         //dd($validatedData);
 
-        $total_miles = $validatedData['total_miles'];
-        $fuel_rate_per_gallon = $user->branch->price_per_gallon ?? 1;
-        $mpg = $user->branch->mpg ?? 1;
-        $price_per_mile = $user->branch->price_per_mile ?? 1;
+        if($validatedData['shipment_type'] == 'land')
+        {
+            $total_miles = $validatedData['total_miles'];
+            $fuel_rate_per_gallon = $user->branch->price_per_gallon ?? 1;
+            $mpg = $user->branch->mpg ?? 1;
+            $price_per_mile = $user->branch->price_per_mile ?? 1;
 
-        $shipping_cost = ($total_miles * 2)* $price_per_mile;
+            $shipping_cost = ($total_miles * 2)* $price_per_mile;
 
-        $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+            $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+        }
+
+        
 
         //dd($validatedData);
         if (isset($validatedData['tags'])) {
