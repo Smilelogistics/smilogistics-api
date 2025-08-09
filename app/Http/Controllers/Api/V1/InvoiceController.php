@@ -163,7 +163,10 @@ class InvoiceController extends Controller
     }
     public function getCustomer()
     {
-        $customers = Customer::with('branch', 'user')->get();
+        $branchId = auth()->user()->getBranchId();
+        $customers = Customer::with('branch', 'user')
+        ->where('branch_id', $branchId)
+        ->get();
         return response()->json(['customers' => $customers], 200);
     }
 

@@ -140,7 +140,8 @@ class ShipmentController extends Controller
             'carrier_id' => $validatedData['carrier_id'] ?? null,
             'truck_id' => $validatedData['truck_id'] ?? null,
             'bike_id' => $validatedData['bike_id'] ?? null,
-            'shipment_tracking_number' => $shipment_prefix . Shipment::generateTrackingNumber() ?? null,
+            'shipment_tracking_number' =>  ($shipment_prefix ?? '') . Shipment::generateUniqueCode('shipments', 'shipment_tracking_number', '', 10) ?? null,
+            // Shipment::generateTrackingNumber() ?? null,
             'shipment_status' => $validatedData['shipment_status'] ?? 'Shipment Created',
             'signature' => $validatedData['signature'] ?? null,
             'office' => $validatedData['office'] ?? null,
@@ -148,15 +149,15 @@ class ShipmentController extends Controller
             'load_type_note' => $validatedData['load_type_note'] ?? null,
             'brokered' => $validatedData['brokered'] ?? null,
             'shipment_image' => $validatedData['shipment_image'] ?? null,
-            'reference_number' => $validatedData['reference_number'] ?? null,
-            'bill_of_laden_number' => $validatedData['bill_of_laden_number'] ?? null,
-            'booking_number' => $validatedData['booking_number'] ?? null,
-            'po_number' => $validatedData['po_number'] ?? null,
+            'reference_number' => Shipment::generateUniqueCode('shipments', 'reference_number', 'REF-', 10) ?? null,
+            'bill_of_laden_number' => Shipment::generateUniqueCode('shipments', 'bill_of_laden_number', 'BOL-', 10) ?? null,
+            'booking_number' => Shipment::generateUniqueCode('shipments', 'booking_number', 'BK-', 10) ?? null,
+            'po_number' => Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10) ?? null,
             'shipment_weight' => $validatedData['shipment_weight'] ?? null,
             'commodity' => $validatedData['commodity'] ?? null,
             'pieces' => $validatedData['pieces'] ?? null,
-            'pickup_number' => $validatedData['pickup_number'] ?? null,
-            'overweight_hazmat' => $validatedData['overweight_hazmat'] ?? null,
+            'pickup_number' => Shipment::generateUniqueCode('shipments', 'pickup_number', 'PU-', 10) ?? null,
+            //'overweight_hazmat' => $validatedData['overweight_hazmat'] ?? null,
             
             'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
                 ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
@@ -179,7 +180,7 @@ class ShipmentController extends Controller
             'broker_batch_number' => $validatedData['broker_batch_number'] ?? null,
             'broker_seq_number' => $validatedData['broker_seq_number'] ?? null,
             'broker_sales_rep' => $validatedData['broker_sales_rep'] ?? null,
-            'broker_edi_api_shipment_number' => $validatedData['broker_edi_api_shipment_number'] ?? null,
+            'broker_edi_api_shipment_number' => Shipment::generateUniqueCode('shipments', 'broker_edi_api_shipment_number', 'EDI-', 10) ?? null,
             'broker_notes' => $validatedData['broker_notes'] ?? null,
             //ocean shipment
             'shipment_type' => $validatedData['shipment_type'] ?? null,
@@ -238,6 +239,7 @@ class ShipmentController extends Controller
                 
                  $invoice = Invoice::create([
                 'shipment_id' => $shipment->id,
+                'customer_id' => $validatedData['bill_to'] ?? null,
                 'user_id' => auth()->user()->id,
                 'branch_id' => $branchId,
                 'invoice_number' => $invoiceNumber,
@@ -455,58 +457,6 @@ class ShipmentController extends Controller
             }
 
 
-            // if (!empty($validatedData['expense_type']) && is_array($validatedData['expense_type'])) {
-            //     $credit_total = 0;
-            //     $expense_total = 0;
-                
-            //     $expenses = [];
-            //     for ($i = 0; $i < count($validatedData['expense_type']); $i++) {
-            //         $expenses[] = [
-            //             'expense_type' => $validatedData['expense_type'][$i],
-            //             'credit_reimbursement_amount' => $validatedData['credit_reimbursement_amount'][$i] ?? 0,
-            //             'units' => $validatedData['expense_unit'][$i] ?? 0, // Changed from 'units'
-            //             'rate' => $validatedData['expense_rate'][$i] ?? 0,  // Changed from 'rate'
-            //             'amount' => $validatedData['expense_amount'][$i] ?? 0,
-            //             'vendor_invoice_number' => $validatedData['vendor_invoice_number'][$i] ?? null,
-            //             'payment_reference_note' => $validatedData['payment_reference_note'][$i] ?? null,
-            //             'disputed_note' => $validatedData['disputed_note'][$i] ?? null,
-            //             'expense_disputed' => isset($validatedData['expense_disputed'][$i]) ? 1 : 0,
-            //             'paid' => isset($validatedData['paid'][$i]) ? 1 : 0
-            //         ];
-            //     }
-            
-            //         foreach ($expenses as $expense) {
-            //             $units = (float)$expense['units'];
-            //             $rate = (float)$expense['rate'];
-            //             $amount = (float)$expense['amount'];
-            //             $credit = (float)$expense['credit_reimbursement_amount'];
-            
-            //             // Calculate totals
-            //             $expense_total += $amount;
-            //             $credit_total += $credit;
-            //             $net_total = $expense_total - $credit_total;
-            
-            //             ShipmentExpense::create([
-            //                 'shipment_id' => $shipment->id,
-            //                 'branch_id' => $branchId ?? null,
-            //                 'expense_type' => $expense['expense_type'],
-            //                 'credit_reimbursement_amount' => $credit,
-            //                 'units' => $units,
-            //                 'rate' => $rate,
-            //                 'amount' => $amount,
-            //                 'vendor_invoice_number' => $expense['vendor_invoice_number'],
-            //                 'payment_reference_note' => $expense['payment_reference_note'],
-            //                 'disputed_note' => $expense['disputed_note'],
-            //                 'expense_disputed' => $expense['expense_disputed'],
-            //                 'paid' => $expense['paid'],
-            //                 'credit_total' => $credit_total,
-            //                 'expense_total' => $expense_total,
-            //                 'net_expense' => $net_total,
-            //             ]);
-            //         }
-                    
-                
-            // }
             if ($request->hasFile('file_path')) {
                 // Get the files - always convert to array for consistent handling
                 $files = $request->file('file_path');
@@ -819,7 +769,7 @@ class ShipmentController extends Controller
                     'broker_email' => $validatedData['broker_email'] ?? null,
                     'broker_phone' => $validatedData['broker_phone'] ?? null,
                     'broker_reference_number' => $validatedData['broker_reference_number'] ?? null,
-                    'broker_batch_number' => $validatedData['broker_batch_number'] ?? null,
+                    'broker_batch_number' => Shipment::generateUniqueCode('shipments', 'broker_batch_number', 'BA-', 10) ?? null,
                     'broker_seq_number' => $validatedData['broker_seq_number'] ?? null,
                     'broker_sales_rep' => $validatedData['broker_sales_rep'] ?? null,
                     'broker_edi_api_shipment_number' => $validatedData['broker_edi_api_shipment_number'] ?? null,

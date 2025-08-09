@@ -163,6 +163,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/data', [SettingsController::class, 'index'])->name('settings.index');
             Route::post('/general', [SettingsController::class, 'updateGeneral'])->name('settings.general.update');
             Route::post('/account', [SettingsController::class, 'updateAccount'])->name('settings.account.update');
+            ROUTE::POST('/offices', [SettingsController::class, 'createOffices'])->name('settings.offices.create');
             Route::post('/payment', [SettingsController::class, 'updatePayment'])->name('settings.payment.update');
             Route::post('/sms', [SettingsController::class, 'updateMailer'])->name('settings.mailer.update');
             Route::post('/security', [SettingsController::class, 'updateSecurity'])->name('settings.security.update');

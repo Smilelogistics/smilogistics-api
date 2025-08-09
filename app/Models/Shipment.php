@@ -79,16 +79,40 @@ class Shipment extends Model
     // }
 
     public static function generateTrackingNumber()
-{
-    $prefix = 'SHIP-';
+    {
+        $prefix = 'SHIP-';
 
-    do {
-        $number = random_int(1000000000, 9999999999);
-        $trackingNumber = $prefix . $number;
-    } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists());
+        do {
+            $number = random_int(1000000000, 9999999999);
+            $trackingNumber = $prefix . $number;
+        } while (DB::table('shipments')->where('shipment_tracking_number', $trackingNumber)->exists());
 
-    return $trackingNumber;
-}
+        return $trackingNumber;
+    }
+
+
+    public static function generateUniqueCode($table, $column, $prefix='', $digits = 10)
+    {
+        $maxAttempts = 10;
+        $attempt = 0;
+
+        do {
+            $number = random_int(pow(10, $digits-1), pow(10, $digits)-1);
+            $code = $prefix . $number;
+            
+            $exists = DB::table($table)
+                    ->where($column, $code)
+                    ->exists();
+            
+            if (!$exists) {
+                return $code;
+            }
+            
+            $attempt++;
+        } while ($attempt < $maxAttempts);
+
+        throw new \RuntimeException("Failed to generate unique code after {$maxAttempts} attempts");
+    }
 
     protected static function booted()
     {

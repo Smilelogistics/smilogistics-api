@@ -7,10 +7,12 @@ use App\Models\Driver;
 use App\Models\Customer;
 use App\Models\SuperAdmin;
 use Illuminate\Http\Request;
+use App\Models\OfficeLocation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
@@ -76,228 +78,6 @@ class SettingsController extends Controller
         }
     }
 
-//     public function updateGeneral(Request $request)
-// {
-//     try {
-//         $user = auth()->user();
-        
-//         // Validate input
-//         $validated = $request->validate([
-//             'phone' => 'nullable|string|max:20',
-//             'address' => 'nullable|string|min:10|max:255',
-//             'parcel_prefix' => 'nullable|string|max:10',
-//             'invoice_prefix' => 'nullable|string|max:10',
-//             'currency' => 'nullable|string|size:3',
-//             'copyright' => 'nullable|string|min:5|max:100',
-//             'logo1' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'logo2' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'logo3' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'mpg' => 'sometimes|integer',
-//         ]);
-
-//         // Define upload directory
-//         $uploadPath = public_path('uploads/logos');
-
-//         // Create folder if not exists
-//         if (!file_exists($uploadPath)) {
-//             mkdir($uploadPath, 0777, true);
-//         }
-
-//         foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
-//             if ($request->hasFile($logoField)) {
-//                 // Generate unique file name
-//                 // $fileName = $logoField . '_' . time() . '.' . $request->file($logoField)->extension();
-//                 // $request->file($logoField)->move($uploadPath, $fileName);
-//                 // $logoPaths[$logoField] = 'uploads/logos/' . $fileName;
-
-//                 if ($file->isValid()) {
-//                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-//                         'folder' => 'Smile_logistics/Branch_Logos',
-//                     ]);
-        
-//                     Branch::create([
-//                         'truck_id' => $truck->id,
-//                         'logo1' => $uploadedFile->getSecurePath(),
-//                         'logo2' => $uploadedFile->getSecurePath(),
-//                         'logo3' => $uploadedFile->getSecurePath(),
-//                         //'public_id' => $uploadedFile->getPublicId()
-//                     ]);
-//                 }
-//             }
-//         }
-        
-
-//         $updateData = $validated; //array_merge($validated, $logoPaths);
-
-//         $updateData = array_filter($updateData);
-
-//         // if ($user->hasRole('customer')) {
-//         //     $customer = Customer::updateOrCreate(
-//         //         ['user_id' => $user->id],
-//         //         $updateData
-//         //     );
-
-//         //     foreach ($logoPaths as $field => $path) {
-//         //         if (!empty($customer->{$field})) {
-//         //             Storage::delete(str_replace('storage/', 'public/', $customer->{$field}));
-//         //         }
-//         //     }
-//         // } 
-//         // else
-//         if ($user->hasRole('businessadministrator')) {
-//             if (!$user->branch) {
-//                 return response()->json([
-//                     'message' => 'Branch not found',
-//                     'hint' => 'Contact administrator to assign you to a branch'
-//                 ], 404);
-//             }
-
-//             $branch = $user->branch;
-            
-//             // Delete old logos before updating
-//             foreach ($logoPaths as $field => $path) {
-//                 if (!empty($branch->{$field})) {
-//                     Storage::delete(str_replace('storage/', 'public/', $branch->{$field}));
-//                 }
-//             }
-
-//             $branch->update($updateData);
-//         }
-//         else {
-//             return response()->json([
-//                 'message' => 'Unauthorized action',
-//                 'hint' => 'Your role cannot update these settings'
-//             ], 403);
-//         }
-
-//         return response()->json([
-//             'message' => 'General Settings updated successfully',
-//             'data' => $updateData,
-//             'logo_urls' => $logoPaths
-//         ]);
-
-//     } catch (ValidationException $e) {
-//         return response()->json([
-//             'message' => 'Validation failed',
-//             'errors' => $e->errors()
-//         ], 422);
-        
-//     } catch (\Exception $e) {
-//         Log::error("Settings update failed: " . $e->getMessage());
-//         return response()->json([
-//             'message' => 'Update failed',
-//             'hint' => 'Please try again or contact support'
-//         ], 500);
-//     }
-// }
-
-        /**
-         * Update general settings of a branch
-         * 
-         * @param  \Illuminate\Http\Request  $request
-         * @return \Illuminate\Http\Response
-         */
-// public function updateGeneral(Request $request)
-// {
-//     try {
-//         $user = auth()->user();
-        
-//         // Validate input
-//         $validated = $request->validate([
-//             'phone' => 'nullable|string|max:20',
-//             'address' => 'nullable|string|min:10|max:255',
-//             'parcel_prefix' => 'nullable|string|max:10',
-//             'invoice_prefix' => 'nullable|string|max:10',
-//             'currency' => 'nullable|string|size:3',
-//             'copyright' => 'nullable|string|min:5|max:100',
-//             'logo1' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'logo2' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'logo3' => 'sometimes|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             //'favicon' => 'sometimes|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-//             'mpg' => 'sometimes|integer',
-//             'base_rate' => 'nullable|numeric',
-//             'base_fee' => 'nullable|numeric',
-//             'handling_fee' => 'nullable|numeric',
-//             'price_per_mile' => 'nullable|numeric',
-//             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
-
-//         ]);
-
-//         // Initialize logo paths array
-//         $logoPaths = [];
-
-//         // Handle file uploads to Cloudinary
-//         foreach (['logo1', 'logo2', 'logo3'] as $logoField) {
-//             if ($request->hasFile($logoField)) {
-//                 $file = $request->file($logoField);
-                
-//                 if ($file->isValid()) {
-//                     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-//                         'folder' => 'Smile_logistics/Branch_Logos',
-//                     ]);
-                    
-//                     $logoPaths[$logoField] = $uploadedFile->getSecurePath();
-//                 }
-//             }
-//         }
-//         if($request->hasFile('invoice_logo')) {
-//             $file = $request->file('invoice_logo');
-            
-//             if ($file->isValid()) {
-//                 $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-//                     'folder' => 'Smile_logistics/Branch_Logos',
-//                 ]);
-                
-//                 $logoPaths['invoice_logo'] = $uploadedFile->getSecurePath();
-//             }
-//         }
-
-//         // Prepare update data
-//         $updateData = array_merge($validated, $logoPaths);
-//         $updateData = array_filter($updateData);
-
-//         if ($user->hasRole('businessadministrator')) {
-//             if (!$user->branch) {
-//                 return response()->json([
-//                     'message' => 'Branch not found',
-//                     'hint' => 'Contact administrator to assign you to a branch'
-//                 ], 404);
-//             }
-
-//             $branch = $user->branch;
-            
-//             // Update branch with new data
-//             $branch->update($updateData);
-
-//             return response()->json([
-//                 'message' => 'General Settings updated successfully',
-//                 'data' => $updateData,
-//                 'logo_urls' => $logoPaths
-//             ]);
-//         }
-
-//         return response()->json([
-//             'message' => 'Unauthorized action',
-//             'hint' => 'Your role cannot update these settings'
-//         ], 403);
-
-//     } catch (ValidationException $e) {
-//         return response()->json([
-//             'message' => 'Validation failed',
-//             'errors' => $e->errors()
-//         ], 422);
-        
-//     } catch (\Exception $e) {
-//         Log::error("Settings update failed: " . $e->getMessage());
-//         return response()->json([
-//             'message' => 'Update failed',
-//             'error' => $e->getMessage(),
-//             'hint' => 'Please try again or contact support'
-//         ], 500);
-//     }
-// }
-
 public function updateGeneral(Request $request)
 {
     try {
@@ -320,6 +100,7 @@ public function updateGeneral(Request $request)
             'base_fee' => 'nullable|numeric',
             'handling_fee' => 'nullable|numeric',
             'price_per_mile' => 'nullable|numeric',
+            'price_per_gallon' => 'nullable|numeric',
             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
         ]);
 
@@ -532,6 +313,59 @@ public function updateGeneral(Request $request)
                 'success' => false,
                 'message' => $e->getMessage(),
                 'error' => 'Failed to update mail settings'
+            ], 500);
+        }
+    }
+
+    public function createOffices(Request $request)
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+
+        $validator = Validator::make($request->all(), [
+            'short_name.*' => 'sometimes|string|max:255',
+            'long_name.*' => 'sometimes|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $validated = $validator->validated();
+
+        DB::beginTransaction();
+
+        try {
+            if (!empty($validatedData['short_name']) && is_array($validatedData['short_name'])) {
+
+                // Process each charge
+                foreach ($validatedData['short_name'] as $i => $chargeType) {
+            
+                    // Create charge record
+                    OfficeLocation::create([
+                        'short_name' => $validatedData['short_name'][$i] ?? null,
+                        'long_name' => $validatedData['long_name'][$i] ?? null,
+                    ]);
+                }
+
+            }
+
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Offices updated successfully',
+                'data' => $validated
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'error' => 'Failed to update offices settings'
             ], 500);
         }
     }
