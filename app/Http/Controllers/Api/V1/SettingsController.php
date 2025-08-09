@@ -325,6 +325,7 @@ public function updateGeneral(Request $request)
         $validator = Validator::make($request->all(), [
             'short_name.*' => 'sometimes|string|max:255',
             'long_name.*' => 'sometimes|string|max:255',
+            'id.*' => 'sometimes|integer|exists:office_locations,id,branch_id,'.$branchId,
         ]);
 
         if ($validator->fails()) {
@@ -336,14 +337,34 @@ public function updateGeneral(Request $request)
         DB::beginTransaction();
 
         try {
-            if (!empty($validated['short_name']) && is_array($validated['short_name'])) {
+            // First get all existing offices for this branch
+            $existingOfficeIds = OfficeLocation::where('branch_id', $branchId)
+                ->pluck('id')
+                ->toArray();
 
-                foreach ($validated['short_name'] as $i => $shortName) {
-                    OfficeLocation::create([
-                        'branch_id'  => $branchId, // might want to attach to branch
-                        'short_name' => $shortName ?? null,
-                        'long_name'  => $validated['long_name'][$i] ?? null,
-                    ]);
+            $submittedIds = $validated['id'] ?? [];
+
+            // Delete offices that were removed from the form
+            $idsToDelete = array_diff($existingOfficeIds, $submittedIds);
+            if (!empty($idsToDelete)) {
+                OfficeLocation::whereIn('id', $idsToDelete)->delete();
+            }
+
+            // Process submitted offices
+            foreach ($validated['short_name'] as $i => $shortName) {
+                $officeData = [
+                    'branch_id' => $branchId,
+                    'short_name' => $shortName ?? null,
+                    'long_name' => $validated['long_name'][$i] ?? null,
+                ];
+
+                if (!empty($validated['id'][$i])) {
+                    // Update existing office
+                    OfficeLocation::where('id', $validated['id'][$i])
+                        ->update($officeData);
+                } else {
+                    // Create new office
+                    OfficeLocation::create($officeData);
                 }
             }
 
@@ -352,16 +373,15 @@ public function updateGeneral(Request $request)
             return response()->json([
                 'success' => true,
                 'message' => 'Offices updated successfully',
-                'data'    => $validated
+                'data' => OfficeLocation::where('branch_id', $branchId)->get()
             ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
-                'error'   => 'Failed to update offices settings'
+                'error' => 'Failed to update offices settings'
             ], 500);
         }
     }
