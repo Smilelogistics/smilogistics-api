@@ -96,8 +96,16 @@ class ShipmentController extends Controller
         {
             $total_miles = $validatedData['total_miles'];
             $fuel_rate_per_gallon = $user->branch->price_per_gallon ?? 1;
+            //dd($fuel_rate_per_gallon);
             $mpg = $user->branch->mpg ?? 1;
             $price_per_mile = $user->branch->price_per_mile ?? 1;
+
+             if ($mpg <= 0) {
+                return response()->json([
+                    'error' => 'Invalid MPG value',
+                    'message' => 'Miles per gallon (MPG) must be greater than zero'
+                ], 400);
+            }
 
             $shipping_cost = ($total_miles * 2)* $price_per_mile;
 
