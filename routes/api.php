@@ -206,6 +206,8 @@ Route::prefix('v1')->group(function () {
                 Route::resource('driver', DriverController::class);
                 Route::get('truckdrivers', [DriverController::class, 'getTruckDrivers']);
                 Route::get('bikedrivers', [DriverController::class, 'getBikeDrivers']);
+                Route::get('get-flash-message-shipment/{id}', [DriverController::class, 'getFlashMessageShipment'])->name('customer.flash-message');
+                Route::get('get-flash-message-accounting/{id}', [DriverController::class, 'getFlashMessageAccounting'])->name('customer.flash-message-account');
             });
 
               Route::prefix('trucks')->group(function () {
@@ -239,6 +241,8 @@ Route::prefix('v1')->group(function () {
             Route::put('update/{id}', [CustomerController::class, 'update'])->name('customers.update');
             Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
             Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
+            Route::get('get-flash-message-shipment/{id}', [CustomerController::class, 'getFlashMessageShipment'])->name('customer.flash-message');
+            Route::get('get-flash-message-accounting/{id}', [CustomerController::class, 'getFlashMessageAccounting'])->name('customer.flash-message-account');
             Route::delete('delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy')->middleware('role:businessadministrator');
             });
             

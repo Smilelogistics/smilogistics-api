@@ -28,6 +28,37 @@ class CustomerController extends Controller
         return response()->json(['customers' => $customers], 200);
     }
 
+    public function getFlashMessageShipment($id)
+    {
+        $user = auth()->user();
+        $branchId = $user->getBranchId();
+
+        $flashmessage = DB::table('customers')
+            ->where('id', $id)
+            ->value('flash_note_for_drivers');
+
+        return response()->json([
+            'flash' => $flashmessage ?? null
+        ]);
+    }
+
+    public function getFlashMessageAccounting($id)
+    {
+        $user = auth()->user();
+        $branchId = $user->getBranchId();
+
+        $flashmessage = DB::table('customers')
+            ->where('id', $id)
+            ->value('flash_note_for_drivers');
+
+        return response()->json([
+            'flash' => $flashmessage ?? null
+        ]);
+    }
+
+    
+
+
     public function show($id)
     {
         $customer = Customer::with(['branch', 'user', 'documents'])->findOrFail($id);

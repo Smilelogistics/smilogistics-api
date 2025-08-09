@@ -36,6 +36,34 @@ class DriverController extends Controller
         return response()->json($driver);
     }
 
+    public function getFlashMessageShipment($id)
+    {
+        $user = auth()->user();
+        $branchId = $user->getBranchId();
+
+        $flashmessage = DB::table('drivers')
+            ->where('id', $id)
+            ->value('flash_notes_to_dispatch');
+
+        return response()->json([
+            'flash' => $flashmessage ?? null
+        ]);
+    }
+
+    public function getFlashMessageAccounting($id)
+    {
+        $user = auth()->user();
+        $branchId = $user->getBranchId();
+
+        $flashmessage = DB::table('drivers')
+            ->where('id', $id)
+            ->value('flash_notes_to_payroll');
+
+        return response()->json([
+            'flash' => $flashmessage ?? null
+        ]);
+    }
+
     public function getTruckDrivers()
     {
         $user = auth()->user();
@@ -46,6 +74,7 @@ class DriverController extends Controller
         ->get();
         return response()->json($truckDriver);
     }
+    
 
     public function getBikeDrivers()
     {
