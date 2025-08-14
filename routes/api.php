@@ -114,7 +114,7 @@ Route::get('/email/check', function (Request $request) {
 })->middleware(['auth:sanctum']);
 
 
-Route::get('/google-map-keys', [UnivController::class, 'getMapsData']);
+Route::get('/config/google-map-keys', [UnivController::class, 'getMapsData']);
 Route::get('/maps', function(Request $request){
      return response()->json([
             'apiKey' => config('services.google_maps.api')
