@@ -114,14 +114,14 @@ Route::get('/email/check', function (Request $request) {
 })->middleware(['auth:sanctum']);
 
 
-Route::get('/config/google-map-keys', [UnivController::class, 'getMapsData']);
-Route::get('/maps', function(Request $request){
-     return response()->json([
-            'apiKey' => config('services.google_maps.api')
-        ]);
-});
+// Route::get('/maps', function(Request $request){
+//      return response()->json([
+//             'apiKey' => config('services.google_maps.api')
+//         ]);
+// });
 Route::prefix('v1')->group(function () {
     
+Route::get('/config/maps', [UnivController::class, 'getMapsData']);
 
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/otp/send', [AuthController::class, 'sendOtp']);
