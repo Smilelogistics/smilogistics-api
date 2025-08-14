@@ -68,6 +68,10 @@ return [
         'app' =>[
             'url' => env('APP_URL'),
         ],
+
+        'google' => [
+            'api' => env('GOOGLE_MAPS_API_KEY'),
+        ],
     ],
 
 ];

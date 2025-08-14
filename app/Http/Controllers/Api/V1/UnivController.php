@@ -19,6 +19,13 @@ class UnivController extends Controller
             'role' => $user->roles->pluck('name')->first()      
           ]);
     }
+    
+    public function getMapsData()
+    {
+        return response()->json([
+            'apiKey' => config('services.google_maps.api')
+        ]);
+    }
 
     public function getUsers()
     {
@@ -40,6 +47,7 @@ class UnivController extends Controller
             'drivers' => $drivers,
         ]);
     }
+
 
     public function getOffices()
     {
