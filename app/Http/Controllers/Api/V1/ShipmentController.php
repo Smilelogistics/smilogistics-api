@@ -241,6 +241,7 @@ class ShipmentController extends Controller
                 ]);
                 
             }
+             if (!empty($validatedData['pickups']) && is_array($validatedData['pickups'])) {
 
             foreach ($request->pickups as $index => $pickup) {
                 $shipment->pickupLocations()->create([
@@ -278,6 +279,7 @@ class ShipmentController extends Controller
                     'no_latter_than_time' => $dropoff['no_latter_than_time']
                 ]);
             }
+        }
             
             if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
                 $total = 0;
