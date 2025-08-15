@@ -241,6 +241,43 @@ class ShipmentController extends Controller
                 ]);
                 
             }
+
+            foreach ($request->pickups as $index => $pickup) {
+                $shipment->pickupLocations()->create([
+                    'type' => 'pickup',
+                    'sequence' => $index + 1,
+                    'pick_up_type' => $pickup['pick_up'],
+                    'location_name' => $pickup['location_name'],
+                    'address' => $pickup['address'],
+                    'city' => $pickup['city'],
+                    'state' => $pickup['state'],
+                    'zip' => $pickup['zip'],
+                    'latitude' => $pickup['coordinates']['lat'],
+                    'longitude' => $pickup['coordinates']['lng'],
+                    'appt_date' => $pickup['appt_date'],
+                    'no_latter_than_date' => $pickup['no_latter_than_date'],
+                    'no_latter_than_time' => $pickup['no_latter_than_time']
+                ]);
+            }
+
+            // Create dropoff locations
+            foreach ($request->dropoffs as $index => $dropoff) {
+                $shipment->dropoffLocations()->create([
+                    'type' => 'dropoff',
+                    'sequence' => $index + 1,
+                    'drop_at_type' => $dropoff['drop_at'],
+                    'location_name' => $dropoff['location_name'],
+                    'address' => $dropoff['address'],
+                    'city' => $dropoff['city'],
+                    'state' => $dropoff['state'],
+                    'zip' => $dropoff['zip'],
+                    'latitude' => $dropoff['coordinates']['lat'],
+                    'longitude' => $dropoff['coordinates']['lng'],
+                    'appt_date' => $dropoff['appt_date'],
+                    'no_latter_than_date' => $dropoff['no_latter_than_date'],
+                    'no_latter_than_time' => $dropoff['no_latter_than_time']
+                ]);
+            }
             
             if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
                 $total = 0;
@@ -1342,6 +1379,92 @@ protected function processUploads($shipment, $uploads)
             ]);
         }
 
+    }
+
+    public function calculateCharges(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'pickups' => 'required|array|min:1',
+            'pickups.*.coordinates' => 'required|array',
+            'pickups.*.coordinates.lat' => 'required|numeric',
+            'pickups.*.coordinates.lng' => 'required|numeric',
+            'dropoffs' => 'required|array|min:1',
+            'dropoffs.*.coordinates' => 'required|array',
+            'dropoffs.*.coordinates.lat' => 'required|numeric',
+            'dropoffs.*.coordinates.lng' => 'required|numeric',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid coordinates provided',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            $baseRate = 50.00; // Base charge
+            $pricePerMile = 2.50; // Price per mile
+            $totalDistance = 0;
+
+            // Calculate distance between all pickup and dropoff combinations
+            foreach ($request->pickups as $pickup) {
+                foreach ($request->dropoffs as $dropoff) {
+                    $distance = $this->calculateDistance(
+                        $pickup['coordinates']['lat'],
+                        $pickup['coordinates']['lng'],
+                        $dropoff['coordinates']['lat'],
+                        $dropoff['coordinates']['lng']
+                    );
+                    $totalDistance += $distance;
+                }
+            }
+
+            $distanceCharge = $totalDistance * $pricePerMile;
+            $totalCharge = $baseRate + $distanceCharge;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total_distance' => round($totalDistance, 2),
+                    'base_rate' => $baseRate,
+                    'distance_charge' => round($distanceCharge, 2),
+                    'total_charge' => round($totalCharge, 2),
+                    'price_per_mile' => $pricePerMile
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Charge calculation failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to calculate charges'
+            ], 500);
+        }
+    }
+
+    private function calculateDistance($lat1, $lng1, $lat2, $lng2)
+    {
+        // Haversine formula to calculate distance between two points
+        $earthRadius = 3958.756; // Earth's radius in miles
+
+        $lat1Rad = deg2rad($lat1);
+        $lng1Rad = deg2rad($lng1);
+        $lat2Rad = deg2rad($lat2);
+        $lng2Rad = deg2rad($lng2);
+
+        $deltaLat = $lat2Rad - $lat1Rad;
+        $deltaLng = $lng2Rad - $lng1Rad;
+
+        $a = sin($deltaLat / 2) * sin($deltaLat / 2) +
+             cos($lat1Rad) * cos($lat2Rad) *
+             sin($deltaLng / 2) * sin($deltaLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c;
+
+        return $distance;
     }
 
 

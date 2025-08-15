@@ -70,6 +70,20 @@ class Shipment extends Model
     {
         return $this->hasMany(BillTo::class, 'shipment_id');
     }
+      public function pickupLocations()
+    {
+        return $this->hasMany(ShipmentLocation::class)->where('type', 'pickup')->orderBy('sequence');
+    }
+
+    public function dropoffLocations()
+    {
+        return $this->hasMany(ShipmentLocation::class)->where('type', 'dropoff')->orderBy('sequence');
+    }
+
+    public function allLocations()
+    {
+        return $this->hasMany(ShipmentLocation::class)->orderBy('type')->orderBy('sequence');
+    }
     // public static function generateTrackingNumber() {
     //     do {
     //         $trackingNumber = random_int(1000000000, 9999999999);
