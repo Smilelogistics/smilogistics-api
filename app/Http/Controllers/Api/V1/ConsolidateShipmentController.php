@@ -86,6 +86,12 @@ class ConsolidateShipmentController extends Controller
             ]);
        }
 
+        if(auth()->user()->hasRole('customer'))
+        {
+            $validatedData['payment_status'] = 'awaiting_payment';
+        }
+
+
 
        try{
            DB::beginTransaction();
@@ -333,6 +339,11 @@ class ConsolidateShipmentController extends Controller
             }
             
         $total_shipping_cost = $validatedShipment['total_weight'] * $handling_fee;
+
+        if(auth()->user()->hasRole('customer'))
+        {
+            $validatedShipment['payment_status'] = 'awaiting_payment';
+        }
 
         
 
