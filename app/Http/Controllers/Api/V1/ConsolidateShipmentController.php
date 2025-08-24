@@ -268,8 +268,8 @@ class ConsolidateShipmentController extends Controller
             'amount.*' => 'sometimes|numeric',
             'discount' => 'sometimes|string',
             'discount.*' => 'sometimes|numeric',
-            'internal_notes' => 'sometimes|string',
-            'internal_notes.*' => 'sometimes|string',
+            'internal_notes' => 'nullable|string',
+            'internal_notes.*' => 'nullable|string',
             'billed' => 'sometimes|string',
             'billed.*' => 'sometimes|boolean',
 
