@@ -280,6 +280,8 @@ class ShipmentController extends Controller
                 ]);
             }
         }
+
+        
             
             if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
                 $total = 0;

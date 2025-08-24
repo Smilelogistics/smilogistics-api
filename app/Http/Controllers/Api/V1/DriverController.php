@@ -406,7 +406,7 @@ class DriverController extends Controller
             'company_name_paid_to' => 'sometimes|nullable|string|max:255',
             'employer_identification_number' => 'sometimes|nullable|string|max:20',
             'send_settlements_mail' => 'sometimes|nullable|email',
-            'print_settlements_under_this_company' => 'sometimes|nullable|boolean',
+            'print_settlements_under_this_company' => 'sometimes|nullable|string|max:500',
             'flash_notes_to_dispatch' => 'sometimes|nullable|string|max:500',
             'flash_notes_to_payroll' => 'sometimes|nullable|string|max:500',
             'internal_notes' => 'sometimes|nullable|string|max:1000',
