@@ -36,9 +36,26 @@ class UnivController extends Controller
                 ->where('id', $branchId)
                 ->latest()
                 ->get();
+
+                if($user->hasRole('businessadministrator')) {
+                    $customers = Customer::with(['user', 'branch'])
+                ->where('id', $branchId)
+                ->latest()
+                ->get();
+                }
+                else {
+                    $customers = Customer::with(['user', 'branch'])
+                ->where('branch_id', $branchId)
+                ->where('id', auth()->user()->customer->id)
+                ->latest()
+                ->get();
+                }
         
         
-        return response()->json($branches);
+        return response()->json([
+            'branches' => $branches,
+            'customers' => $customers
+        ]);
     }
 
     public function getUsers()
