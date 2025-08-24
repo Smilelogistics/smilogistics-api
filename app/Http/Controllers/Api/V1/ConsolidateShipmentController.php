@@ -119,7 +119,7 @@ class ConsolidateShipmentController extends Controller
             'description' => $validatedData['description'] ?? null,
             'pickup_type' => $validatedData['pickup_type'] ?? null,
             'total_shipping_cost' => $total_shipping_cost,
-            'payment_status' => $validatedData['payment_status'] ?? 'awaiting_authorization',
+            'payment_status' => $validatedData['payment_status'] ?? 'pending',
             'payment_method' => $validatedData['payment_method'] ?? null,
             'status' => 'Shipment Created',
         ]);
