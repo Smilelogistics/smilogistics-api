@@ -337,10 +337,7 @@ class ConsolidateShipmentController extends Controller
             
         $total_shipping_cost = $validatedShipment['total_weight'] * $handling_fee;
 
-        if(auth()->user()->hasRole('customer'))
-        {
-            $validatedShipment['payment_status'] = 'awaiting_payment';
-        }
+       
 
         
 
@@ -365,7 +362,7 @@ class ConsolidateShipmentController extends Controller
             'expected_departure_date' => $validatedShipment['expected_departure_date'] ?? null,
             'expected_arrival_date' => $validatedShipment['expected_arrival_date'] ?? null,
             'total_shipping_cost' => $total_shipping_cost,
-            'payment_status' => $validatedShipment['payment_status'] ?? null,
+            'payment_status' => $validatedShipment['payment_status'] ?? 'pending',
             'payment_method' => $validatedShipment['payment_method'] ?? null,
             
         ]);
