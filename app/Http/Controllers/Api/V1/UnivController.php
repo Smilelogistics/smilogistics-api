@@ -38,9 +38,7 @@ class UnivController extends Controller
                 ->get();
         
         
-        return response()->json([
-            'branches' => $branches,
-        ]);
+        return response()->json($branches);
     }
 
     public function getUsers()
