@@ -21,6 +21,17 @@ class BranchController extends Controller
         $mpg = Branch::where('id', $branchId)->value('mpg');
         return response()->json($mpg);
     }
+
+    public function getCurrency()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+
+        $currency = Branch::where('id', $branchId)->value('currency');
+        return response()->json($currency);
+    }
+
+
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [

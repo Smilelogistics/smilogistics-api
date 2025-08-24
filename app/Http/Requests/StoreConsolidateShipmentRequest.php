@@ -50,7 +50,7 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'total_weight' => 'nullable|numeric|min:0',
             'total_shipping_cost' => 'nullable|numeric|min:0',
             'handling_fee' => 'nullable|numeric|min:0',
-            'payment_status' => 'required|in:Paid,Pending,Partially Paid',
+            'payment_status' => 'nullable|in:Paid,Pending,Partially Paid',
             'payment_method' => 'nullable|in:Cash,Card,Wallet,Transfer,Other',
             // 'accepted_status' => 'required|in:Accepted,Rejected,Pending',
             // 'status' => 'required|string|max:100',
