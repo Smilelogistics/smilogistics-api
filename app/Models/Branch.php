@@ -77,6 +77,8 @@ class Branch extends Model
       'ocean_account_number',
       'ocean_routing',
       'ocean_zelle',
+      'max_length',
+      'max_height',
     ];
     protected static function boot()
     {
