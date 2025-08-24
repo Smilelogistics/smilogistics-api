@@ -254,6 +254,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             });
             
             Route::prefix('users')->group(function () {
+                Route::get('current-branch', [UnivController::class, 'getBranches']);
                 Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
                 Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');

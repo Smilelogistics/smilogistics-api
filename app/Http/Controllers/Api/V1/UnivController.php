@@ -27,6 +27,22 @@ class UnivController extends Controller
         ]);
     }
 
+    public function getBranches()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+
+            $branches = Branch::with(['user', 'offices'])
+                ->where('id', $branchId)
+                ->latest()
+                ->get();
+        
+        
+        return response()->json([
+            'branches' => $branches,
+        ]);
+    }
+
     public function getUsers()
     {
         $user = auth()->user();
