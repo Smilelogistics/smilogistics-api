@@ -65,9 +65,27 @@ class ConsolidateShipmentController extends Controller
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $customerId = $user->customer ? $user->customer->id : null;
         $handling_fee = auth()->user()->getBranchHandlingFee();
+        $max_length = auth()->user()->getBranchTotalLength();
+        $max_height = auth()->user()->getBranchTotalHeight();
         //$mpg = auth()->user()->getMPG();
         $total_shipping_cost = $validatedData['total_weight'] * $handling_fee;
-       // dd($handling_fee);
+       //dd($max_height);
+
+       if($validatedData['total_length'] > $max_length)
+       {
+            return response()->json([
+                'error' => true,
+                'message' => 'The Length provided is greater than the max Length',
+            ]);
+       }
+       elseif($validatedData['total_height'] > $max_height)
+       {
+        return response()->json([
+                'error' => true,
+                'message' => 'The Height provided is greater than the max Height',
+            ]);
+       }
+
 
        try{
            DB::beginTransaction();
@@ -93,6 +111,10 @@ class ConsolidateShipmentController extends Controller
             'expected_departure_date' => $validatedData['expected_departure_date'] ?? null,
             'expected_arrival_date' => $validatedData['expected_arrival_date'] ?? null,
             'total_weight' => $validatedData['total_weight'] ?? null,
+            'total_height' => $validatedData['total_height'] ?? null,
+            'total_length' => $validatedData['total_length'] ?? null,
+            'description' => $validatedData['description'] ?? null,
+            'pickup_type' => $validatedData['pickup_type'] ?? null,
             'total_shipping_cost' => $total_shipping_cost,
             'payment_status' => $validatedData['payment_status'] ?? null,
             'payment_method' => $validatedData['payment_method'] ?? null,
@@ -240,12 +262,19 @@ class ConsolidateShipmentController extends Controller
 {
     $user = auth()->user();
     $branchId = $user->getBranchId();
+    $max_length = auth()->user()->getBranchTotalLength();
+    $max_height = auth()->user()->getBranchTotalHeight();
+    $handling_fee = auth()->user()->getBranchHandlingFee();
 
     try {
         $validator = Validator::make($request->all(), [
             'consolidation_type' => 'nullable|string|nullable',
             'consolidated_for' => 'nullable|string|nullable',
             'total_weight' => 'nullable|numeric|nullable',
+            'total_height' => 'nullable|numeric|nullable',
+            'total_length' => 'nullable|numeric|nullable',
+            'description' => 'nullable|string|nullable',
+            'pickup_type' => 'nullable|string|nullable',
             'receiver_phone' => 'nullable|string|nullable',
             'receiver_email' => 'nullable|email|nullable',
             'origin_warehouse' => 'nullable|string|nullable',
@@ -285,10 +314,30 @@ class ConsolidateShipmentController extends Controller
                 'message' => $validator->errors(),
             ], 422);
         }
+        
+        $validatedShipment = $validator->validated();
+
+           if($validatedShipment['total_length'] > $max_length)
+            {
+                    return response()->json([
+                        'error' => true,
+                        'message' => 'The Length provided is greater than the max Length',
+                    ]);
+            }
+            elseif($validatedShipment['total_height'] > $max_height)
+            {
+                return response()->json([
+                        'error' => true,
+                        'message' => 'The Height provided is greater than the max Height',
+                    ]);
+            }
+            
+        $total_shipping_cost = $validatedShipment['total_weight'] * $handling_fee;
+
+        
 
         DB::beginTransaction();
 
-        $validatedShipment = $validator->validated();
         //dd($request->charge_type);
         $consolidateShipment = ConsolidateShipment::findOrFail($id);
 
@@ -297,15 +346,20 @@ class ConsolidateShipmentController extends Controller
             'consolidation_type' => $validatedShipment['consolidation_type'] ?? null,
             'consolidated_for' => $validatedShipment['consolidated_for'] ?? null,
             'total_weight' => $validatedShipment['total_weight'] ?? null,
+            'total_height' => $validatedShipment['total_height'] ?? null,
+            'total_length' => $validatedShipment['total_length'] ?? null,
+            'description' => $validatedShipment['description'] ?? null,
+            'pickup_type' => $validatedShipment['pickup_type'] ?? null,
             'receiver_phone' => $validatedShipment['receiver_phone'] ?? null,
             'receiver_email' => $validatedShipment['receiver_email'] ?? null,
             'origin_warehouse' => $validatedShipment['origin_warehouse'] ?? null,
             'destination_warehouse' => $validatedShipment['destination_warehouse'] ?? null,
             'expected_departure_date' => $validatedShipment['expected_departure_date'] ?? null,
             'expected_arrival_date' => $validatedShipment['expected_arrival_date'] ?? null,
-            'total_shipping_cost' => $validatedShipment['total_shipping_cost'] ?? null,
+            'total_shipping_cost' => $total_shipping_cost,
             'payment_status' => $validatedShipment['payment_status'] ?? null,
             'payment_method' => $validatedShipment['payment_method'] ?? null,
+            
         ]);
 
         // Process charges if they exist

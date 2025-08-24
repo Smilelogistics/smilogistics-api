@@ -50,6 +50,10 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'total_weight' => 'nullable|numeric|min:0',
             'total_shipping_cost' => 'nullable|numeric|min:0',
             'handling_fee' => 'nullable|numeric|min:0',
+            'total_length' => 'nullable|numeric|min:0',
+            'total_height' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|',
+            'pickup_type' => 'nullable|string',
             'payment_status' => 'nullable|in:Paid,Pending,Partially Paid',
             'payment_method' => 'nullable|in:Cash,Card,Wallet,Transfer,Other',
             // 'accepted_status' => 'required|in:Accepted,Rejected,Pending',
@@ -89,7 +93,7 @@ class StoreConsolidateShipmentRequest extends FormRequest
             'file_path' => 'sometimes|array',
             'proof_of_delivery_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
             'invoice_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,webp',
-            'internal_notes' => 'nullable|string',
+            //'internal_notes' => 'nullable|string',
 
         ];
     }

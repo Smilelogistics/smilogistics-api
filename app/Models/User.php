@@ -144,6 +144,32 @@ class User extends Authenticatable implements MustVerifyEmail
         return null;
     }
 
+    public function getBranchTotalHeight()
+    {
+        if ($this->branch) {
+            return $this->branch->max_height;
+        } elseif ($this->customer) {
+            return optional($this->customer->branch)->max_height;
+        } elseif ($this->driver) {
+            return optional($this->driver->branch)->max_height;
+        }
+
+        return null;
+    }
+
+    public function getBranchTotalLength()
+    {
+        if ($this->branch) {
+            return $this->branch->max_length;
+        } elseif ($this->customer) {
+            return optional($this->customer->branch)->max_length;
+        } elseif ($this->driver) {
+            return optional($this->driver->branch)->max_length;
+        }
+
+        return null;
+    }
+
 
     public function getMPG()
     {
