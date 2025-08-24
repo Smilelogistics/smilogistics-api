@@ -80,6 +80,7 @@ class SettingsController extends Controller
 
 public function updateGeneral(Request $request)
 {
+    //dd($request->all());
     try {
         $user = auth()->user();
 
@@ -101,6 +102,8 @@ public function updateGeneral(Request $request)
             'handling_fee' => 'nullable|numeric',
             'price_per_mile' => 'nullable|numeric',
             'price_per_gallon' => 'nullable|numeric',
+            'max_height' => 'nullable|numeric',
+            'max_length' => 'nullable|numeric',
             'invoice_logo' => 'nullable|file|mimes:pdf,jpg,png,jpeg|max:2048',
         ]);
 
@@ -123,6 +126,7 @@ public function updateGeneral(Request $request)
         $updateData = array_filter($updateData, fn ($v) => $v !== null);
 
         // Handle update based on user role
+        //dd($user);
         if ($user->hasRole('businessadministrator')) {
             if (!$user->branch) {
                 return response()->json([
