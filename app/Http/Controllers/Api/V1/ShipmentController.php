@@ -162,14 +162,18 @@ class ShipmentController extends Controller
             'load_type_note' => $validatedData['load_type_note'] ?? null,
             'brokered' => $validatedData['brokered'] ?? null,
             'shipment_image' => $validatedData['shipment_image'] ?? null,
-            'reference_number' => Shipment::generateUniqueCode('shipments', 'reference_number', 'REF-', 10) ?? null,
-            'bill_of_laden_number' => Shipment::generateUniqueCode('shipments', 'bill_of_laden_number', 'BOL-', 10) ?? null,
-            'booking_number' => Shipment::generateUniqueCode('shipments', 'booking_number', 'BK-', 10) ?? null,
-            'po_number' => Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10) ?? null,
+            'reference_number' => $validatedData['reference_number'] ?? Shipment::generateUniqueCode('shipments', 'reference_number', 'REF-', 10) ?? null,
+            'bill_of_laden_number' => $validatedData['bill_of_laden_number'] 
+            ?? Shipment::generateUniqueCode('shipments', 'bill_of_laden_number', 'BOL-', 10),
+
+        'booking_number' => $validatedData['booking_number'] ?? Shipment::generateUniqueCode('shipments', 'booking_number', 'BK-', 10),
+
+        'po_number' => $validatedData['po_number'] ?? Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10),
+
             'shipment_weight' => $validatedData['shipment_weight'] ?? null,
             'commodity' => $validatedData['commodity'] ?? null,
             'pieces' => $validatedData['pieces'] ?? null,
-            'pickup_number' => Shipment::generateUniqueCode('shipments', 'pickup_number', 'PU-', 10) ?? null,
+            'pickup_number' => $validatedData['pickup_number'] ?? Shipment::generateUniqueCode('shipments', 'pickup_number', 'PU-', 10),
             //'overweight_hazmat' => $validatedData['overweight_hazmat'] ?? null,
             
             'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
