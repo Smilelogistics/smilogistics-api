@@ -140,6 +140,7 @@ class ShipmentController extends Controller
                 $arrayFields[$field] = [$value];
             }
         }
+        dd($validatedData['bill_to']);
 
        
         DB::beginTransaction();
