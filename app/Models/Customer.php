@@ -51,4 +51,9 @@ class Customer extends Model
         return $this->branch->hasFeatureAccess($featureSlug);
     }
 
+    public function invoice()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
 }

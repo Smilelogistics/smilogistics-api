@@ -21,6 +21,11 @@ class Shipment extends Model
         'tags' => 'array',
     ];
 
+    public function invoice()
+    {
+        return $this->hasOne(Invoice::class, 'shipment_id');
+    }
+
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
