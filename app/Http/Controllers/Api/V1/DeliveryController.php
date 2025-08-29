@@ -28,7 +28,7 @@ public function makeRequest(Request $request)
         'drop_off_address' => 'required|string|max:255',
         'package_description' => 'nullable|string|max:500',
         'package_weight' => 'required|numeric|min:0.1',
-        'isFragile' => 'nullable|boolean',
+        'isFragile' => 'nullable',
         'service_type' => 'required|in:standard,express,same-day',
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
