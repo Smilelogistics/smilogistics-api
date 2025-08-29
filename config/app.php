@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'https://laravel-production-077b.up.railway.app'),
+    'url' => env('APP_URL', 'https://api.smileslogistics.com'),
     'frontend_url' => env('FRONTEND_URL', 'https://smilelogistics.vercel.app'),
     'subscription_check_token' => env('SUBSCRIPTION_CHECK_TOKEN'),
 
