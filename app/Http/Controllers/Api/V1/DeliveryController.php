@@ -23,25 +23,34 @@ public function getMyDeliveries()
 public function makeRequest(Request $request)
 {
     $validated = $request->validate([
-        'from_address' => 'required|string|max:255',
-        'to_address' => 'required|string|max:255',
-        'distance_km' => 'required|numeric|min:0',
-        'weight_kg' => 'required|numeric|min:0.1',
+        'from' => 'required|string|max:255',
+        'drop_off_address' => 'required|string|max:255',
+        'package_description' => 'nullable|string|max:500',
+        'package_weight' => 'required|numeric|min:0.1',
+        'isFragile' => 'nullable|boolean',
         'service_type' => 'required|in:standard,express,same-day',
-        'delivery_cost' => 'required|numeric|min:0',
-        'estimated_duration' => 'required|string',
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
     ]);
 
+    // Calculate delivery cost
+    $distanceKm = $this->calculateDistance($validated['from'], $validated['drop_off_address']);
+    $baseRate = $this->calculateBaseRate($validated['service_type'], $distanceKm);
+    $weightSurcharge = $this->calculateWeightSurcharge($validated['package_weight'], $baseRate);
+    $serviceFee = $this->getServiceFee($validated['service_type']);
+    
+    $deliveryCost = $baseRate + $weightSurcharge + $serviceFee;
+    $estimatedDuration = $this->calculateEstimatedDuration($distanceKm, $validated['service_type']);
+
+    // Find nearest available bike
     $lat = $validated['latitude'];
     $lng = $validated['longitude'];
     $radiusLevels = [10, 30, 60, 90, 120, 150];
 
-    $driver = null;
+    $bike = null;
 
     foreach ($radiusLevels as $radius) {
-        $driver = Bike::select('*')
+        $bike = Bike::select('*')
             ->selectRaw("
                 (6371 * acos(
                     cos(radians(?)) *
@@ -55,39 +64,107 @@ public function makeRequest(Request $request)
             ->orderBy('distance', 'asc')
             ->first();
 
-        if ($driver) {
+        if ($bike) {
             break;
-
         }
     }
 
-    if (!$driver) {
+    if (!$bike) {
         return response()->json([
             'success' => false,
             'message' => 'No bikes available nearby.'
         ], 404);
     }
 
-    // Assign driver
-    $shipment = ConsolidateShipment::find($request->shipment_id);
+    // Create shipment
+    $shipment = ConsolidateShipment::create([
+        'from' => $validated['from'],
+        'drop_off_address' => $validated['drop_off_address'],
+        'package_description' => $validated['package_description'] ?? '',
+        'package_weight' => $validated['package_weight'],
+        'isFragile' => $validated['isFragile'] ?? false,
+        'service_type' => $validated['service_type'],
+        'distance_km' => $distanceKm,
+        'delivery_cost' => $deliveryCost,
+        'estimated_duration' => $estimatedDuration,
+        'status' => 'pending'
+    ]);
 
+    // Assign bike to delivery
     $delivery = Delivery::create([
         'shipment_id' => $shipment->id,
-        'driver_id' => $driver->driver_id,
+        'driver_id' => $bike->driver_id,
+        'bike_id' => $bike->id,
         'assigned_at' => now(),
         'driver_status' => 'pending'
     ]);
 
+    // Update bike status
+    $bike->update(['status' => 'assigned']);
+
     // Notify driver
-    $driverUser = User::find($driver->driver_id);
+    $driverUser = User::find($bike->driver_id);
     if ($driverUser) {
         $driverUser->notify(new ShipmentAssigned($shipment));
     }
 
     return response()->json([
         'success' => true,
-        'data' => $delivery
+        'message' => 'Delivery request created successfully',
+        'data' => [
+            'shipment' => $shipment,
+            'delivery' => $delivery,
+            'assigned_bike' => $bike
+        ]
     ]);
+}
+
+private function calculateDistance($from, $to)
+{
+    // This is a simplified implementation - you might want to use a proper geocoding service
+    // For now, we'll return a fixed distance or implement a simple calculation
+    // In production, use Google Maps Distance Matrix API or similar
+    
+    // Placeholder implementation - returns random distance between 5-50km
+    return rand(5, 50);
+}
+
+private function calculateBaseRate($serviceType, $distanceKm)
+{
+    switch($serviceType) {
+        case 'express': return $distanceKm * 75;
+        case 'same-day': return $distanceKm * 100;
+        default: return $distanceKm * 50;
+    }
+}
+
+private function calculateWeightSurcharge($weight, $baseRate)
+{
+    if ($weight <= 5) return 0;
+    return $baseRate * (ceil(($weight - 5)/5) * 0.1);
+}
+
+private function getServiceFee($serviceType)
+{
+    switch($serviceType) {
+        case 'express': return 200;
+        case 'same-day': return 300;
+        default: return 100;
+    }
+}
+
+private function calculateEstimatedDuration($distanceKm, $serviceType)
+{
+    $baseHours = $distanceKm / 30; // Assuming average speed of 30km/h
+    
+    switch($serviceType) {
+        case 'same-day': 
+            return ceil($baseHours) . ' hours';
+        case 'express': 
+            return ceil($baseHours * 1.5) . ' hours';
+        default: 
+            return ceil($baseHours * 2) . ' hours';
+    }
 }
 
 
@@ -148,29 +225,7 @@ public function makeRequest(Request $request)
     //     ]);
     // }
 
-    private function calculateBaseRate($serviceType, $distanceKm)
-    {
-        switch($serviceType) {
-            case 'express': return $distanceKm * 75;
-            case 'same-day': return $distanceKm * 100;
-            default: return $distanceKm * 50;
-        }
-    }
-
-    private function calculateWeightSurcharge($weight, $baseRate)
-    {
-        if ($weight <= 5) return 0;
-        return $baseRate * (Math.ceil(($weight - 5)/5) * 0.1);
-    }
-
-    private function getServiceFee($serviceType)
-    {
-        switch($serviceType) {
-            case 'express': return 200;
-            case 'same-day': return 300;
-            default: return 100;
-        }
-    }
+   
 
     // app/Http/Controllers/ShipmentController.php
     // public function assignDriver(Request $request)
