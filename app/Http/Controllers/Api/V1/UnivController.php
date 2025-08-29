@@ -39,7 +39,7 @@ class UnivController extends Controller
 
                 if($user->hasRole('businessadministrator')) {
                     $customers = Customer::with(['user', 'branch'])
-                ->where('id', $branchId)
+                ->where('branch_id', $branchId)
                 ->latest()
                 ->get();
                 }
