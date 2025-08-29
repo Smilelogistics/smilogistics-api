@@ -62,6 +62,17 @@ class BikeController extends Controller
     }
     public function store(CreateBikeRequest $request)
     {
+        
+        $validator = Validator::make($request->all(), [
+            'driver_id' => 'required|integer',
+            'bike_type' => 'nullable|string|max:255',
+            'bike_number' => 'nullable|string|max:500',
+            'bike_office' => 'nullable|string',
+            'make_model' => 'nullable',
+            'license_plate_number' => 'nullable',
+        ]);
+
+
         $validatedData = $request->validated();
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
