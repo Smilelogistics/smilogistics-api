@@ -10,6 +10,7 @@ use App\Models\DriverDocs;
 use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
 use App\Models\AppIntegration;
+use Illuminate\Support\Carbon;
 use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
