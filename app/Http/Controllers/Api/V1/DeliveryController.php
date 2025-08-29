@@ -22,7 +22,7 @@ public function getMyDeliveries()
 
 public function makeRequest(Request $request)
 {
-    $validated = $request->validate([
+    $validator = Validator::make($request->all(), [
         'from' => 'required|string|max:255',
         'drop_off_address' => 'required|string|max:255',
         'package_description' => 'nullable|string|max:500',
@@ -32,6 +32,12 @@ public function makeRequest(Request $request)
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
     ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    $validated = $validator->validated();
 
     // Calculate delivery cost
     $distanceKm = $this->calculateDistance($validated['from'], $validated['drop_off_address']);
