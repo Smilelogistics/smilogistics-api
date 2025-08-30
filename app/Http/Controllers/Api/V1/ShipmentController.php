@@ -562,7 +562,7 @@ class ShipmentController extends Controller
             } 
 
             if(auth()->user()->hasRole('customer')) {
-                $branchUser = auth()->user()->branch->user;
+                $branchUser = auth()->user()->customer->branch->user;
                 $branchUser->notify(new BusinessShipmentCreationNotification($shipment));
             }
          
