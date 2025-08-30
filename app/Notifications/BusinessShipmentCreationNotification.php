@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class BusinessShipmentCreationNotification extends Notification implements ShouldQueue
+class BusinessShipmentCreationNotification extends Notification
 {
     use Queueable;
 
@@ -26,7 +26,7 @@ class BusinessShipmentCreationNotification extends Notification implements Shoul
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
@@ -38,9 +38,12 @@ class BusinessShipmentCreationNotification extends Notification implements Shoul
             ->subject('New Shipment Created')
             ->line('A new shipment has been created by a customer.')
             ->line('Reference Number: ' . $this->shipment->reference_number)
-            ->line('Status: ' . $this->shipment->status)
-            ->action('View Shipment', url('/view_loads_single.html/' . $this->shipment->id))
-            ->line('Thank you for using our application!');
+            // ->line('Status: ' . $this->shipment->status)
+            ->action(
+                'View Shipment',
+                config('app.frontend_url'). '/view_loads_single.html?id=' . base64_encode($this->shipment->id)
+            );
+            //->line('Thank you for using our application!');
     }
 
     /**
@@ -53,6 +56,7 @@ class BusinessShipmentCreationNotification extends Notification implements Shoul
             'reference'     => $this->shipment->reference_number,
             'status'        => $this->shipment->status,
             'created_by'    => auth()->id(),
+            'url'           => url('/view_loads_single.html?id=' . base64_encode($this->shipment->id)),
         ];
     }
 }

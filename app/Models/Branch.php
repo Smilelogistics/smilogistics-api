@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Branch extends Model
 {
+    use Notifiable;
+    
     protected $fillable = [
         'user_id',
         'branch_code',

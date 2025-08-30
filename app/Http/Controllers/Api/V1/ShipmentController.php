@@ -560,12 +560,14 @@ class ShipmentController extends Controller
            ;
             
             } 
-
-            if(auth()->user()->hasRole('customer')) {
-                $branchUser = auth()->user()->customer->businessadministrator->user;
+            //dd($branchUser = auth()->user()->customer->branch->user);
+            if(auth()->user()->user_type == 'customer') {
+                //dd($branchUser = auth()->user()->customer->branch->user);
+                $branchUser = auth()->user()->customer->branch->user;
+                //dd($branchUser);
+                ///dd(base64_encode($shipment->id));
                 $branchUser->notify(new BusinessShipmentCreationNotification($shipment));
             }
-         
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
                 'user_id' => Auth::id(),
