@@ -37,6 +37,7 @@ use Illuminate\Notifications\Notification;
 use App\Http\Requests\StoreShipmentRequest;
 use App\Mail\ShipmentAdditionalNotifyPartyMail;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use App\Notifications\BusinessShipmentCreationNotification;
 use App\Notifications\DriverAcceptShipmentDeliveryNotification;
 use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 
@@ -559,6 +560,11 @@ class ShipmentController extends Controller
            ;
             
             } 
+
+            if(auth()->user()->hasRole('customer')) {
+                $branchUser = auth()->user()->branch->user;
+                $branchUser->notify(new BusinessShipmentCreationNotification($shipment));
+            }
          
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
