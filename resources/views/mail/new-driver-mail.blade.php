@@ -166,7 +166,7 @@
             </td></tr>
           </table>
 
-          <div class="sp-24"></div>
+          <div class="sp-24" style="margin-bottom: 15px"></div>
 
           <!-- Important Note with black bar -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="note-wrap" style="padding-left:14px;">

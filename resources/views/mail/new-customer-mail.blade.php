@@ -192,7 +192,7 @@
             </td></tr>
           </table>
 
-          <div class="sp-32"></div>
+          <div class="sp-32" style="margin-bottom: 15px"></div>
 
           <!-- Help -->
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
