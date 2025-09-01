@@ -94,13 +94,24 @@ class BikeController extends Controller
     
             if (isset($validatedData['file_path']) && is_array($validatedData['file_path'])) {
                 foreach ($validatedData['file_path'] as $file) {
-                    $filename = $file->store('bikes', 'public');
+                    $filename = time() . '_' . $file->getClientOriginalName();
+
+                    // Store in Wasabi under "bikes" folder
+                    $path = $file->storeAs(
+                        'bikes',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+                    dd($url);
+                    // Save into database
                     BikeDoc::create([
                         'bike_id' => $bike->id,
-                        'file' => $filename,
+                        'file'    => $url,
                     ]);
                 }
             }
+
     
             DB::commit();
     

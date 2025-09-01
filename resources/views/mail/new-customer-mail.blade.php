@@ -130,7 +130,7 @@
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
               <td align="center">
-                <img src="" width="140" alt="SMILES Logistics Group" style="width:140px; height:auto;">
+                <img src="https://s3.eu-central-2.wasabisys.com/smileslogistics/assets/images/logo-dark.png" width="140" alt="SMILES Logistics Group" style="width:140px; height:auto;">
               </td>
             </tr>
           </table>
