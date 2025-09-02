@@ -65,7 +65,6 @@ class UnivController extends Controller
     public function getUsers()
     {
         $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
 
         if($user->hasRole('superadministrator')) {
             $customers = Branch::with(['user'])
@@ -75,6 +74,7 @@ class UnivController extends Controller
         }
         elseif($user->hasRole('businessadministrator')) {
 
+        $branchId = auth()->user()->getBranchId();
         $customers = Customer::with(['branch', 'user'])
             ->where('branch_id', $branchId)
             ->latest()
