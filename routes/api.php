@@ -260,7 +260,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
                 Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
                 Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
-            })->middleware('role:businessadministrator | superadministrator');
+            })->middleware('role:businessadministrator,superadministrator');
 
             Route::prefix('consolidate')->group(function () {
                 Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
