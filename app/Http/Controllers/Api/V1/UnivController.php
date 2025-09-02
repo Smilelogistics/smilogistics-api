@@ -65,8 +65,11 @@ class UnivController extends Controller
     public function getUsers()
     {
         $user = auth()->user();
+        //$user = auth('sanctum')->user();
+        dd($user);
 
         if($user->hasRole('superadministrator')) {
+            dd('ok');
             $customers = Branch::with(['user'])
                 //->where('branch_id', $branchId)
                 ->latest()
