@@ -9,7 +9,7 @@ use App\Models\Driver;
 use App\Models\Customer;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Psy\Exception\Exception;
+use Exception;
 use App\Models\OfficeLocation;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
