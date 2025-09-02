@@ -63,6 +63,14 @@ class UnivController extends Controller
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
 
+        if($user->hasRole('superadministrator')) {
+            $customers = Branch::with(['user'])
+                //->where('branch_id', $branchId)
+                ->latest()
+                ->get();
+        }
+        elseif($user->hasRole('businessadministrator')) {
+
         $customers = Customer::with(['branch', 'user'])
             ->where('branch_id', $branchId)
             ->latest()
@@ -72,6 +80,7 @@ class UnivController extends Controller
             ->where('branch_id', $branchId)
             ->latest()
             ->get();
+        }
 
         return response()->json([
             'customers' => $customers,

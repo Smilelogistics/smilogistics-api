@@ -30,7 +30,6 @@ class DashboardController extends Controller
             $recentTransactions = Transaction::latest()->take(10)->get();
             $plans = Plan::count();
             $branches = Branch::count();
-            $getBranches = Branch::all();
             // $myCustomers = Customer::where('branch_id', $branchId)->count();
             // $myDrivers = Driver::where('branch_id', $branchId)->count();
             // $totalBiz = $myCustomers+$myDrivers;
@@ -44,8 +43,7 @@ class DashboardController extends Controller
                     'branches' => $branches,
                     'Totalsubsribers' => $Totalsubsribers,
                     'recentTransactions' => $recentTransactions,
-                    'plans' => $plans,
-                    'getBranches' => $getBranches
+                    'plans' => $plans
                 ]
             ]);
         }
