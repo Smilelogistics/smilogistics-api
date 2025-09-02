@@ -22,7 +22,7 @@ class CheckBranchFeatureAccess
         $branch = $user->branch ?? $user->customer?->branch ?? $user->driver?->branch;
         
         if (!$branch) {
-            abort(403, 'No branch associated');
+            abort(403, 'No branch asso');
         }
 
         $subscription = $branch->activeSubscription();
