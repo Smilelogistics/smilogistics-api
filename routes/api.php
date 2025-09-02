@@ -152,6 +152,12 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
         
         Route::get('/user', [AuthController::class, 'user']);
     });
+
+    //we move this route to the top so that superadministrator can access it
+
+    Route::get('users/members', [UnivController::class, 'getUsers'])->name('users.index');       
+    Route::post('users/unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
+    Route::get('users/user/{id}', [UnivController::class, 'getUser'])->name('users.show');
      
     //, 'subscription:premium'
     Route::middleware('auth:sanctum', 'verified')->group(function () {
@@ -255,14 +261,11 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             
             Route::prefix('users')->group(function () {
                 Route::get('current-branch', [UnivController::class, 'getBranches']);
-                Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
-                Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
+                //
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
                 Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
                 Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
             })->middleware('role:businessadministrator, superadministrator');
-            
-                Route::post('users/unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
 
             Route::prefix('consolidate')->group(function () {
                 Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
