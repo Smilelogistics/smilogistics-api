@@ -261,7 +261,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
                 Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
                 Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
                 Route::post('unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
-            })->middleware('role:businessadministrator');
+            })->middleware('role:businessadministrator, superadministrator');
 
             Route::prefix('consolidate')->group(function () {
                 Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
