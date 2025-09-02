@@ -34,9 +34,6 @@ Route::post('/subscription-check', function() {
         return response()->json(['error' => 'Unauthorized'], 401);
     }
 
-    
-                Route::get('users/members', [UnivController::class, 'getUsers'])->name('users.index');
-
     Log::info('Starting subscription check');
     $output = [];
     Artisan::call('app:check-subscription-status', [], $output);
@@ -258,12 +255,13 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             
             Route::prefix('users')->group(function () {
                 Route::get('current-branch', [UnivController::class, 'getBranches']);
-                //Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
+                Route::get('members', [UnivController::class, 'getUsers'])->name('users.index');
                 Route::get('user/{id}', [UnivController::class, 'getUser'])->name('users.show');
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
                 Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
                 Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
-            })->middleware('role:superadministrator,superadministrator'); 
+                Route::post('unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
+            })->middleware('role:businessadministrator');
 
             Route::prefix('consolidate')->group(function () {
                 Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
