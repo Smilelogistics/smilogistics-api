@@ -183,6 +183,7 @@ class InvoiceController extends Controller
         $arrayFields = ['credit_memo', 'credit_amount', 'credit_date', 'credit_note'];
         $invoiceData = Arr::except($validatedData, ['credit_memo', 'credit_amount', 'credit_date', 'credit_note']);
 
+        $paymentStatus = '';
 
         foreach ($arrayFields as $field) {
             if (isset($validatedData[$field]) && is_array($validatedData[$field])) {
@@ -264,7 +265,6 @@ class InvoiceController extends Controller
                 ]);
             }
           //  dd($totalPayments);
-                $paymentStatus = '';
           
             
             if ($totalPayments > 0) {
