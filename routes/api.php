@@ -171,13 +171,15 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
     Route::middleware('auth:sanctum')->group(function () {
         
         Route::get('/user', [AuthController::class, 'user']);
-    });
 
-    //we move this route to the top so that superadministrator can access it
+        //we move this route to the top so that superadministrator can access it
 
     Route::get('users/members', [UnivController::class, 'getUsers'])->name('users.index');       
     Route::post('users/unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
     Route::get('users/user/{id}', [UnivController::class, 'getUser'])->name('users.show');
+    });
+
+    
      
     //, 'subscription:premium'
     Route::middleware('auth:sanctum', 'verified')->group(function () {
