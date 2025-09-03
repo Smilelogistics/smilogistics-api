@@ -67,12 +67,17 @@ class UnivController extends Controller
         $user = auth()->user();
         //dd($user);
 
-        if($user->hasRole('superadministrator')) {
-            dd('ok');
+        if($user->user_type == 'superadministrator') {
+            //dd('ok');
             $customers = Branch::with(['user'])
                 //->where('branch_id', $branchId)
                 ->latest()
                 ->get();
+
+                return response()->json([
+            'customers' => $customers,
+            
+        ]);
         }
         elseif($user->hasRole('businessadministrator')) {
 
@@ -86,12 +91,14 @@ class UnivController extends Controller
             ->where('branch_id', $branchId)
             ->latest()
             ->get();
-        }
 
-        return response()->json([
+            return response()->json([
             'customers' => $customers,
             'drivers' => $drivers,
         ]);
+        }
+
+        
     }
 
 
