@@ -65,7 +65,7 @@ class UnivController extends Controller
     public function getUsers()
     {
         $user = auth()->user();
-        dd($user);
+        //dd($user);
 
         if($user->hasRole('superadministrator')) {
             dd('ok');
