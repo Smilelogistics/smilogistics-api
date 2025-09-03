@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\CarrierAccountCreatedMail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Mail\CarrierCreatedNotificationMail;
 use App\Notifications\CarrierAccountCreated;
@@ -268,17 +269,36 @@ class CarrierController extends Controller
                 $files = is_array($files) ? $files : [$files];
             
                 foreach ($files as $file) {
-                    if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/Carrier',
-                        ]);
-            
-                        $carrier->carrierDocs()->create(
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+
+                    // Store in Wasabi under "bikes" folder
+                    $path = $file->storeAs(
+                        'carriers',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                     $carrier->carrierDocs()->create(
                             [
-                                'file' => $uploadedFile->getSecurePath(),
-                                'public_id' => $uploadedFile->getPublicId()
+                                'file' => $url,
+                                //'public_id' => $uploadedFile->getPublicId()
                         ]);
-                    }
+
+                    //Cloudinary
+
+                    // if ($file->isValid()) {
+                    //     $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //         'folder' => 'Smile_logistics/Carrier',
+                    //     ]);
+            
+                    //     $carrier->carrierDocs()->create(
+                    //         [
+                    //             'file' => $uploadedFile->getSecurePath(),
+                    //             'public_id' => $uploadedFile->getPublicId()
+                    //     ]);
+                    // }
                 }
             }
     
@@ -460,17 +480,35 @@ $arrayFields = [
         
             foreach ($files as $file) {
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/Carrier',
-                    ]);
-        
-                    $carrier->carrierDocs()->updateOrCreate(
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+
+                    $path = $file->storeAs(
+                        'carriers',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                     $carrier->carrierDocs()->updateOrCreate(
                         [ 
                             'carrier_id' => $carrier->id],
                         [
-                            'file' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file' => $url,
+                            //'public_id' => $uploadedFile->getPublicId()
                     ]);
+
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/Carrier',
+                    // ]);
+        
+                    // $carrier->carrierDocs()->updateOrCreate(
+                    //     [ 
+                    //         'carrier_id' => $carrier->id],
+                    //     [
+                    //         'file' => $uploadedFile->getSecurePath(),
+                    //         'public_id' => $uploadedFile->getPublicId()
+                    // ]);
                 }
             }
         }

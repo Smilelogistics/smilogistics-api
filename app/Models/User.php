@@ -189,4 +189,39 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->branch && $this->branch->isSubscribed == 1;
     }
 
+    public static function normalizeEmail(string $email): string
+    {
+        $email = strtolower(trim($email));
+
+        [$local, $domain] = explode('@', $email, 2);
+
+        switch ($domain) {
+            case 'gmail.com':
+            case 'googlemail.com':
+                // remove dots + strip everything after +
+                $local = preg_replace('/\./', '', $local);
+                $local = preg_replace('/\+.*/', '', $local);
+                break;
+
+            case 'outlook.com':
+            case 'hotmail.com':
+            case 'live.com':
+            case 'office365.com':
+            case 'protonmail.com':
+            case 'icloud.com':
+                // strip everything after +
+                $local = preg_replace('/\+.*/', '', $local);
+                break;
+
+            case 'yahoo.com':
+            case 'ymail.com':
+            case 'rocketmail.com':
+                // strip everything after -
+                $local = preg_replace('/\-.*$/', '', $local);
+                break;
+        }
+
+        return $local . '@' . $domain;
+    }
+
 }

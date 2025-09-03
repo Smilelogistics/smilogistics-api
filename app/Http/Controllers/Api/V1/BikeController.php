@@ -8,6 +8,7 @@ use App\Models\BikeDoc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\CreateBikeRequest;
 use Illuminate\Support\Facades\Validator;
 
@@ -103,7 +104,7 @@ class BikeController extends Controller
                         'wasabi'    // disk name from config/filesystems.php
                     );
                     $url = Storage::disk('wasabi')->url($path);
-                    dd($url);
+                    //dd($url);
                     // Save into database
                     BikeDoc::create([
                         'bike_id' => $bike->id,

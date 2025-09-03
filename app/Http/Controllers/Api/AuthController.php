@@ -38,24 +38,27 @@ class AuthController extends Controller
      {
         //dd(env('DB_DATABASE')); 
          $user = auth()->user();
+         $normalized = User::normalizeEmail($request->email);
         // 1|CaqoIM26iLaKYJNiBTmepTxmYNiaCmAdPEIKfSJP879c0a61
 
         if ($user->user_type == 'businessadministrator' && $request->user_type == 'superadministrator') {
             return response()->json(['error' => 'You cannot register a superadmin as a business admin.'], 400);
         }
-         $validator = Validator::make($request->all(), [
-             'fname' => 'required|string|max:255',
-             'mname' => 'nullable|string|max:255',
-             'lname' => 'nullable|string|max:255',
-             'email' => 'required|email|max:255|unique:users',
-             'password' => 'nullable|string|min:8',
-             'user_type' => 'required|in:superadministrator,businessadministrator,businessmanager,customer,driver,user',
-             //'phone' => 'nullable|string|max:20',
-         ]);
-     
-         if ($validator->fails()) {
-             return response()->json(['errors' => $validator->errors()], 422);
-         }
+          $validator = Validator::make(
+            array_merge($request->all(), ['email' => $normalizedEmail]), 
+            [
+                'fname' => 'required|string|max:255',
+                'mname' => 'nullable|string|max:255',
+                'lname' => 'nullable|string|max:255',
+                'email' => 'required|email|max:255|unique:users',
+                'password' => 'nullable|string|min:8',
+                'user_type' => 'required|in:superadministrator,businessadministrator,businessmanager,customer,driver,user',
+            ]
+        );
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
      
          DB::beginTransaction();
          try {
