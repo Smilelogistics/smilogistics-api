@@ -13,12 +13,14 @@ class newDriverMail extends Mailable
 {
     use Queueable, SerializesModels;
     public $createUser;
+    public $branch;
     /**
      * Create a new message instance.
      */
-    public function __construct($createUser)
+    public function __construct($createUser, $branch)
     {
         $this->createUser = $createUser;
+        $this->branch = $branch;
     }
 
     /**
@@ -37,9 +39,13 @@ class newDriverMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            markdown: 'mail.new-driver-mail',
-            with: ['createUser' => $this->createUser],
-        );
+    view: 'mail.new-driver-mail',
+    with: [
+        'createUser' => $this->createUser,
+        'branch'     => $this->branch,
+    ],
+);
+
     }
 
     /**

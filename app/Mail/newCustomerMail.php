@@ -13,12 +13,14 @@ class newCustomerMail extends Mailable
 {
     use Queueable, SerializesModels;
     public $user;
+    public $branch;
     /**
      * Create a new message instance.
      */
-    public function __construct($user)
+    public function __construct($user, $branch)
     {
         $this->user = $user;
+        $this->branch = $branch;
     }
 
     /**
@@ -38,6 +40,9 @@ class newCustomerMail extends Mailable
     {
         return new Content(
             view: 'mail.new-customer-mail',
+            with: ['user' => $this->user,
+                    'branch' => $this->branch
+                ],
         );
     }
 

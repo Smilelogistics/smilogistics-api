@@ -45,7 +45,7 @@ class AuthController extends Controller
             return response()->json(['error' => 'You cannot register a superadmin as a business admin.'], 400);
         }
           $validator = Validator::make(
-            array_merge($request->all(), ['email' => $normalizedEmail]), 
+            array_merge($request->all(), ['email' => $normalized]), 
             [
                 'fname' => 'required|string|max:255',
                 'mname' => 'nullable|string|max:255',
@@ -131,7 +131,10 @@ class AuthController extends Controller
                      'user_id' => $user->id,
                      'branch_id' => $branchId
                  ]);
-                 Mail::to($user->email)->send(new newCustomerMail($user));
+                 $branch = auth()->user()->branch;
+                 
+                 //dd($branch);
+                 Mail::to($user->email)->send(new newCustomerMail($user, $branch));
      
              } elseif ($user->user_type == 'driver') {
                 $authuser = auth()->user();
@@ -140,7 +143,9 @@ class AuthController extends Controller
                      'user_id' => $user->id,
                      'branch_id' => $branchId
                  ]);
-                 Mail::to($user->email)->send(new newDriverMail($user));
+                 $branch = auth()->user()->branch;
+                 dd($branch);
+                 Mail::to($user->email)->send(new newDriverMail($user, $branch));
              }elseif($user->user_type == 'superadministrator'){
                  SuperAdmin::create([
                      'user_id' => $user->id

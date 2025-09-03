@@ -21,11 +21,15 @@
           </tr>
           <tr>
             <td style="text-align: center;">
-              <h4 style="margin: 0px;padding-bottom: 25px; text-transform: uppercase; font-size:22px;">Invoice Generated</h4>
+              <h4 style="margin: 0px;padding-bottom: 25px; text-transform: uppercase; font-size:22px;">Branch Successfully Created</h4>
               <!-- <h2 style="margin: 0px;padding-bottom: 25px;font-size:22px;"> Please renew your subscription</h2> -->
-              <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">This is the content of the invove<br>
-              Email: {{$invoice['net_total']}} <br>
-              Password: 12345678.
+              <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">{{$user['name']}} has been successfully created, Kindly login with the details below and change your password <br>
+              Email: {{$user['email']}} <br>
+              @if (!empty($user['password']))
+                Password: The password you created
+              @else
+              Password: 123456789.
+              @endif
               </p>
               <p style=" margin: 0px 32px;padding-bottom: 25px;line-height: 2; font-size: 15px;"> Warm Regards, <br>
               {{ config('app.name') }}
@@ -36,7 +40,7 @@
           <tr>
             <td style="text-align:center;">
               <h2 style="padding-top: 25px; line-height: 1; margin:0px;">Need Help?</h2>
-              <div style="margin-bottom: 25px; font-size: 15px;margin-top:7px;">Give us a call  {{ optional($branch)->phone ?? '' }}
+              <div style="margin-bottom: 25px; font-size: 15px;margin-top:7px;">Give us a call  +1219-801-5255
               </div>
             </td>
           </tr>

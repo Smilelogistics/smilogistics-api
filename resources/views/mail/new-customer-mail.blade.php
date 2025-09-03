@@ -200,7 +200,7 @@
               <p class="help" style="font-family:Arial,Helvetica,sans-serif; font-weight:800; font-size:22px; line-height:28px; color:#0F172A; margin:0;">Need Help?</p>
               <div class="sp-8"></div>
               <p class="help-call" style="font-family:Arial,Helvetica,sans-serif; font-size:16px; line-height:24px; color:#6B7280; margin:0;">
-                Call: 
+                Call: {{ optional($branch)->phone ?? '' }}
               </p>
             </td></tr>
           </table>

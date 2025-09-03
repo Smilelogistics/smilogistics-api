@@ -12,13 +12,15 @@ use Illuminate\Queue\SerializesModels;
 class InvoiceCreatedMail extends Mailable
 {
     use Queueable, SerializesModels;
-    protected $invoice;
+    public $invoice;
+    public $branch;
     /**
      * Create a new message instance.
      */
-    public function __construct($invoice)
+    public function __construct($invoice, $branch)
     {
         $this->invoice = $invoice;
+        $this->branch = $branch;
     }
 
     /**
@@ -38,7 +40,9 @@ class InvoiceCreatedMail extends Mailable
     {
         return new Content(
             view: 'mail.new-Invoice-mail',
-            with: ['invoice' => $this->invoice],
+            with: ['invoice' => $this->invoice,
+                    'branch' => $this->branch
+            ],
         );
     }
 

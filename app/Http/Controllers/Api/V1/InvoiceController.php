@@ -354,7 +354,9 @@ class InvoiceController extends Controller
 
             //dd($customer->user->email);
             //we can pass the branch data later
-            Mail::to($customer->user->email)->send(new InvoiceCreatedMail($invoice));
+            $branch = $customer->branch;
+            //dd($branch->phone);
+            Mail::to($customer->user->email)->send(new InvoiceCreatedMail($invoice, $branch));
            
 
             DB::commit();
