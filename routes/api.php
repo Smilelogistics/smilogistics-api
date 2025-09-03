@@ -46,23 +46,20 @@ Route::post('/subscription-check', function() {
 })->middleware('throttle:60,1');
 
 //queue worker to run queue jobs
-Route::post('/process-queue', function() {
-    try {
-        Artisan::call('queue:work --stop-when-empty --max-jobs=10 --timeout=60');
-        
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Queue batch processed',
-            'output' => Artisan::output(),
-            'timestamp' => now()->toISOString()
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ], 500);
+Route::post('/process-queue', function(Request $request) {
+    if ($request->header('X-Queue-Token') !== env('QUEUE_SECRET')) {
+        return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
     }
-})->middleware('throttle:5,1');
+
+    Artisan::call('queue:work --stop-when-empty --max-jobs=10 --timeout=60');
+
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Queue batch processed',
+        'timestamp' => now()->toISOString()
+    ]);
+});
+
 
 
 Route::get('/test-email', function (Request $request) {
