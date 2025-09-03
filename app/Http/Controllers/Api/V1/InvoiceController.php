@@ -20,6 +20,7 @@ use App\Models\InvoicePaymentRecord;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\invoiceStatusUpdateMail;
 use App\Models\InvoicePaymentRecieved;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Notifications\InvoiceBilltoNotification;
@@ -302,15 +303,30 @@ class InvoiceController extends Controller
             
                 foreach ($files as $file) {
                     if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/invoice',
-                        ]);
-            
-                        InvoiceDoc::create([
+                         $filename = time() . '_' . $file->getClientOriginalName();
+
+                            $path = $file->storeAs(
+                                'invoice',    // folder inside Wasabi bucket
+                                $filename,  // unique filename
+                                'wasabi'    // disk name from config/filesystems.php
+                            );
+                            $url = Storage::disk('wasabi')->url($path);
+
+                             InvoiceDoc::create([
                             'invoice_id' => $invoice->id,
-                            'file' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file' => $url,
+                            //'public_id' => $uploadedFile->getPublicId()
                         ]);
+
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/invoice',
+                        // ]);
+            
+                        // InvoiceDoc::create([
+                        //     'invoice_id' => $invoice->id,
+                        //     'file' => $uploadedFile->getSecurePath(),
+                        //     'public_id' => $uploadedFile->getPublicId()
+                        // ]);
                     }
                 }
             }
