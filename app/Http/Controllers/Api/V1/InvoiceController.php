@@ -264,6 +264,8 @@ class InvoiceController extends Controller
                 ]);
             }
           //  dd($totalPayments);
+                $paymentStatus = '';
+          
             
             if ($totalPayments > 0) {
                 // Calculate remaining balance
