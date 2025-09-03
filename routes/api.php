@@ -46,19 +46,40 @@ Route::post('/subscription-check', function() {
 })->middleware('throttle:60,1');
 
 //queue worker to run queue jobs
-Route::post('/process-queue', function(Request $request) {
-    if ($request->header('X-Queue-Token') !== env('QUEUE_SECRET')) {
-        return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+
+Route::post('/process-queue', function () {
+    try {
+         if ($request->header('X-Queue-Token') !== env('QUEUE_SECRET')) {
+                return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+            }
+        // Run queue once to process any pending job
+        Artisan::call('queue:work --once --timeout=60 --tries=3');
+
+        $output = Artisan::output();
+
+        // Log output to storage/logs/laravel.log
+        Log::info('Queue processed via endpoint', [
+            'output' => $output,
+            'time' => now()->toDateTimeString()
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Queue batch processed',
+            'timestamp' => now()->toISOString(),
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Queue processing failed', [
+            'error' => $e->getMessage(),
+            'time' => now()->toDateTimeString()
+        ]);
+
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
     }
-
-    Artisan::call('queue:work --stop-when-empty --max-jobs=10 --timeout=60');
-
-    return response()->json([
-        'status' => 'success',
-        'message' => 'Queue batch processed',
-        'timestamp' => now()->toISOString()
-    ]);
-});
+})->middleware('throttle:5,1');
 
 
 
