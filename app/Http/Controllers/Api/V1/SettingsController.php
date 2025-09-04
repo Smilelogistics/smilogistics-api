@@ -113,10 +113,19 @@ public function updateGeneral(Request $request)
             if ($request->hasFile($logoField)) {
                 $file = $request->file($logoField);
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/Branch_Logos',
-                    ]);
-                    $logoPaths[$logoField] = $uploadedFile->getSecurePath();
+                     $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'branch',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
+
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/Branch_Logos',
+                    // ]);
+                    $logoPaths[$logoField] = $url;
                 }
             }
         }

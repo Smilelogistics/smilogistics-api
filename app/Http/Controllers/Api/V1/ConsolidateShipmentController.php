@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Models\ConsolidateShipmentDoc;
+use Illuminate\Support\Facades\Storage;
 use App\Models\ConsolidateShipmentTrack;
 use Illuminate\Support\Facades\Validator;
 use App\Models\ConsolidateShipmentCharges;
@@ -226,15 +227,34 @@ class ConsolidateShipmentController extends Controller
         
             foreach ($files as $file) {
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/consolidate_shipment'
-                    ]);
-        
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'Consolidate_shipment',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
                     ConsolidateShipmentDoc::create([
                         'consolidate_shipment_id' => $consolidateShipment->id,
-                        'file_path' => $uploadedFile->getSecurePath(),
-                        'public_id' => $uploadedFile->getPublicId()
+                        'file_path' => $url,
                     ]);
+
+                      
+
+
+
+
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/consolidate_shipment'
+                    // ]);
+        
+                    // ConsolidateShipmentDoc::create([
+                    //     'consolidate_shipment_id' => $consolidateShipment->id,
+                    //     'file_path' => $uploadedFile->getSecurePath(),
+                    //     'public_id' => $uploadedFile->getPublicId()
+                    // ]);
                 }
             }
         }
@@ -467,14 +487,29 @@ protected function handleFileUploads($request, $consolidateShipment)
     if ($request->hasFile('file_path')) {
         foreach ($request->file('file_path') as $file) {
             if ($file->isValid()) {
-                $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                    'folder' => 'Smile_logistics/consolidate_shipment'
-                ]);
+
+                $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'Consolidate_shipment',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                    ConsolidateShipmentDoc::create([
+                        'consolidate_shipment_id' => $consolidateShipment->id,
+                        'file_path' => $url,
+                    ]);
+
+
+                // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                //     'folder' => 'Smile_logistics/consolidate_shipment'
+                // ]);
                 
-                $consolidateShipment->documents()->create([
-                    'file_path' => $uploadedFile->getSecurePath(),
-                    'public_id' => $uploadedFile->getPublicId()
-                ]);
+                // $consolidateShipment->documents()->create([
+                //     'file_path' => $uploadedFile->getSecurePath(),
+                //     'public_id' => $uploadedFile->getPublicId()
+                // ]);
             }
         }
     }

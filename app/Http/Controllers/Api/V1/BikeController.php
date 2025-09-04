@@ -141,11 +141,18 @@ class BikeController extends Controller
                 }
     
                 foreach ($files as $file) {
-                    $filename = $file->store('bikes', 'public');
+                     $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'bikes',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
     
                     BikeDoc::create([
                         'bike_id' => $bike->id,
-                        'file' => $filename,
+                        'file' => $url,
                     ]);
                 }
             }

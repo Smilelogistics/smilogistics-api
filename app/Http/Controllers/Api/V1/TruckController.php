@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Traits\FileUploadTrait;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 use App\Notifications\DriverAssignedTruckNotification;
@@ -148,15 +149,33 @@ class TruckController extends Controller
                 
                     foreach ($files as $file) {
                         if ($file->isValid()) {
-                            $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                                'folder' => 'Smile_logistics/Trucks',
-                            ]);
+
+                            $filename = time() . '_' . $file->getClientOriginalName();
+
+                            $path = $file->storeAs(
+                                'trucks',    // folder inside Wasabi bucket
+                                $filename,  // unique filename
+                                'wasabi'    // disk name from config/filesystems.php
+                            );
+                            $url = Storage::disk('wasabi')->url($path);
+
+                                TruckDoc::create([
+                                    'truck_id' => $truck->id,
+                                    'file' => $url,
+                                    //'public_id' => $uploadedFile->getPublicId()
+                                ]);
+
+
+                                //Cloudinrayy upload
+                            // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                            //     'folder' => 'Smile_logistics/Trucks',
+                            // ]);
                 
-                            TruckDoc::create([
-                                'truck_id' => $truck->id,
-                                'file' => $uploadedFile->getSecurePath(),
-                                'public_id' => $uploadedFile->getPublicId()
-                            ]);
+                            // TruckDoc::create([
+                            //     'truck_id' => $truck->id,
+                            //     'file' => $uploadedFile->getSecurePath(),
+                            //     'public_id' => $uploadedFile->getPublicId()
+                            // ]);
                         }
                     }
                 } else {
@@ -316,15 +335,34 @@ class TruckController extends Controller
             
                 foreach ($files as $file) {
                     if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/Drivers'
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+
+                    $path = $file->storeAs(
+                        'trucks',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                        TruckDoc::create([
+                            'truck_id' => $truck->id,
+                            'file' => $url,
+                            //'public_id' => $uploadedFile->getPublicId()
                         ]);
+
+
+
+                        
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/Drivers'
+                        // ]);
             
-                        DriverDocs::create([
-                            'driver_id' => $driver->id,
-                            'file' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
-                        ]);
+                        // DriverDocs::create([
+                        //     'driver_id' => $driver->id,
+                        //     'file' => $uploadedFile->getSecurePath(),
+                        //     'public_id' => $uploadedFile->getPublicId()
+                        // ]);
                     }
                 }
             }

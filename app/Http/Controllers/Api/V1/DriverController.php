@@ -324,14 +324,23 @@ class DriverController extends Controller
             
                 foreach ($files as $file) {
                     if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/Drivers'
-                        ]);
+
+                         $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'driver',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
+                        
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/Drivers'
+                        // ]);
             
                         DriverDocs::create([
                             'driver_id' => $driver->id,
-                            'file' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file' => $url
                         ]);
                     }
                 }
@@ -588,14 +597,22 @@ class DriverController extends Controller
         
             foreach ($files as $file) {
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/Drivers'
-                    ]);
+
+                     $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'driver',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/Drivers'
+                    // ]);
         
                     DriverDocs::create([
                         'driver_id' => $driver->id,
-                        'file' => $uploadedFile->getSecurePath(),
-                        'public_id' => $uploadedFile->getPublicId()
+                        'file' => $url
                     ]);
                 }
             }

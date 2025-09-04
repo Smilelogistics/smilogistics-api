@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ShipmentNotifyPartyMail;
 use App\Models\ShipmentConsolidation;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Notifications\Notification;
 use App\Http\Requests\StoreShipmentRequest;
@@ -531,21 +532,31 @@ class ShipmentController extends Controller
                         if (!$file->isValid()) {
                             throw new \Exception("Invalid file: " . $file->getClientOriginalName());
                         }
+
+                            $filename = time() . '_' . $file->getClientOriginalName();
+
+                            $path = $file->storeAs(
+                                'shipment',    // folder inside Wasabi bucket
+                                $filename,  // unique filename
+                                'wasabi'    // disk name from config/filesystems.php
+                            );
+                            $url = Storage::disk('wasabi')->url($path);
+
             
                         // Upload to Cloudinary
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/shipment',
-                            'timeout' => 30
-                        ]);
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/shipment',
+                        //     'timeout' => 30
+                        // ]);
             
-                        if (!$uploadedFile->getSecurePath()) {
+                        if (!$path->getSecurePath()) {
                             throw new \Exception("Cloudinary upload failed for: " . $file->getClientOriginalName());
                         }
             
                         // Create shipment upload record
                         $upload = $shipment->shipmentUploads()->create([
-                            'file_path' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId(),
+                            'file_path' => $url,
+                            //'public_id' => $uploadedFile->getPublicId(),
                             'original_name' => $file->getClientOriginalName()
                         ]);
             
@@ -589,13 +600,13 @@ class ShipmentController extends Controller
             $customer = Customer::where('id', $request->customer_name)->first();
         
             if ($customer && $customer->email) {
-              //  Mail::to($customer->email)->send(new ShipmentCreated($shipment));
+              //Mail::to($customer->email)->send(new ShipmentCreated($shipment));
             }
         }
         // notify party email
         if($request->consignee_email) {
             $consignee_email = $request->consignee_email;
-          //  Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
+          Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
         }
         if($request->first_notify_party_email) {
             $first_notify_party_email = $request->first_notify_party_email;
@@ -1181,14 +1192,25 @@ protected function processUploads($shipment, $uploads)
 {
     foreach ($uploads as $upload) {
         if (isset($upload['file'])) {
-            $uploadedFileUrl = Cloudinary::upload($upload['file']->getRealPath())->getSecurePath();
+            //$uploadedFileUrl = Cloudinary::upload($upload['file']->getRealPath())->getSecurePath();
+
+            $filename = time() . '_' . $file->getClientOriginalName();
+
+            $path = $file->storeAs(
+                'shipment',    // folder inside Wasabi bucket
+                $filename,  // unique filename
+                'wasabi'    // disk name from config/filesystems.php
+            );
+            $url = Storage::disk('wasabi')->url($path);
+
+
             
             if (isset($upload['id'])) {
                 $shipment->shipmentUploads()
                     ->where('id', $upload['id'])
-                    ->update(['file_path' => $uploadedFileUrl]);
+                    ->update(['file_path' => $url]);
             } else {
-                $shipment->shipmentUploads()->create(['file_path' => $uploadedFileUrl]);
+                $shipment->shipmentUploads()->create(['file_path' => $url]);
             }
         }
     }

@@ -13,6 +13,7 @@ use App\Models\SettlementPayment;
 use Illuminate\Support\Facades\DB;
 use App\Models\SettlementDeduction;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use App\Notifications\SettlementNotification;
 use App\Http\Requests\CreateSettlementRequest;
 use App\Http\Requests\UpdateSettlementRequest;
@@ -117,14 +118,22 @@ class SettlementController extends Controller
             
                 foreach ($files as $file) {
                     if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/Settlement',
-                        ]);
+
+                        $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'driver',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/Settlement',
+                        // ]);
             
                         SettlementDoc::create([
                             'settlement_id' => $settlement->id,
-                            'file_path' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file_path' => $url
                         ]);
                     }
                 }
@@ -321,14 +330,24 @@ class SettlementController extends Controller
 
                 foreach ($files as $file) {
                     if ($file->isValid()) {
-                        $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                            'folder' => 'Smile_logistics/Settlement',
-                        ]);
+
+
+                        $filename = time() . '_' . $file->getClientOriginalName();
+                        $path = $file->storeAs(
+                            'settlement',    // folder inside Wasabi bucket
+                            $filename,  // unique filename
+                            'wasabi'    // disk name from config/filesystems.php
+                        );
+
+                        $url = Storage::disk('wasabi')->url($path);
+
+                        // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                        //     'folder' => 'Smile_logistics/Settlement',
+                        // ]);
 
                         SettlementDoc::create([
                             'settlement_id' => $settlement->id,
-                            'file_path' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file_path' => $url
                         ]);
                     }
                 }

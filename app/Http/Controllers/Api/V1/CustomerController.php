@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -160,16 +161,26 @@ class CustomerController extends Controller
         
             foreach ($files as $file) {
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/Customers',
-                    ]);
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+
+                    $path = $file->storeAs(
+                        'customer',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                    
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/Customers',
+                    // ]);
         
                     $customer->documents()->updateOrCreate(
                         [ 
                             'customer_id' => $customer->id],
                         [
-                            'file_path' => $uploadedFile->getSecurePath(),
-                            'public_id' => $uploadedFile->getPublicId()
+                            'file_path' => $url
                     ]);
                 }
             }
@@ -244,15 +255,23 @@ class CustomerController extends Controller
         
             foreach ($files as $file) {
                 if ($file->isValid()) {
-                    $uploadedFile = Cloudinary::upload($file->getRealPath(), [
-                        'folder' => 'Smile_logistics/Customers'
-                    ]);
+
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs(
+                        'customer',    // folder inside Wasabi bucket
+                        $filename,  // unique filename
+                        'wasabi'    // disk name from config/filesystems.php
+                    );
+                    $url = Storage::disk('wasabi')->url($path);
+
+                    // $uploadedFile = Cloudinary::upload($file->getRealPath(), [
+                    //     'folder' => 'Smile_logistics/Customers'
+                    // ]);
 
                     $customer->documents()->updateOrCreate([
                         'customer_id' => $customer->id
                     ], [
-                        'file_path' => $uploadedFile->getSecurePath(),
-                        'public_id' => $uploadedFile->getPublicId()
+                        'file_path' => $url
                     ]
                     );
             }
