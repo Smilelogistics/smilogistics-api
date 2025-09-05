@@ -349,7 +349,8 @@ class DriverController extends Controller
             }
             //dd($request->email);
             ///if($createUser->email) wanted to check if email is present in the request but no need since its required in validation
-            Mail::to($request->email)->send(new newDriverMail($createUser));
+            $branch = auth()->user()->branch;
+            Mail::to($request->email)->send(new newDriverMail($createUser, $branch));
 
             DB::commit();
            

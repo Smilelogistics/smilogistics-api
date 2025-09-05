@@ -101,8 +101,9 @@ class CustomerController extends Controller
             $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
        // dd($validatedData['tags']);
-        //dd($user->email);
-        Mail::to($user->email)->send(new newCustomerMail($user));
+        //dd($user->email)
+        $branch = auth()->user()->branch;
+        Mail::to($user->email)->send(new newCustomerMail($user, $branch));
         // $start_date = null;
         // if(isset($request->start_date))
         //     {
