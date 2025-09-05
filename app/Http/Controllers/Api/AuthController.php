@@ -25,6 +25,7 @@ use App\Notifications\OtpNotification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
 use App\Notifications\NewBranchNotification;
+use Illuminate\Auth\Events\PasswordReset;
 
 class AuthController extends Controller
 {
