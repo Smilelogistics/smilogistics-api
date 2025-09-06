@@ -94,7 +94,7 @@ class TransactionsController extends Controller
         // Get reference from URL parameter or query parameter
         $reference = $reference ?? $request->query('reference') ?? $request->query('trxref');
 
-        dd($reference);
+        //dd($reference);
         
         if (!$reference) {
             return response()->json(['error' => 'Payment reference is required'], 400);
