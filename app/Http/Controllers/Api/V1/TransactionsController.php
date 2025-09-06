@@ -248,124 +248,6 @@ class TransactionsController extends Controller
         return $this->verifyPaysatckPayment(request(), $reference);
     }
 
-    // public function verifyPaysatckPayment(Request $request)
-    // {
-    //     $trxref = $request->query('trxref');
-    //     $reference = $request->query('reference');
-    //     // $signature = $request->header('x-paystack-signature');
-    //     // if (!$this->validPaystackSignature($signature, $request->getContent())) {
-    //     //     abort(401);
-    //     // }
-
-    //     //$user = auth()->user();
-    //     //dd($trxref);
-    //     try{
-    //         if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
-    //             throw new Exception("Transaction already processed.");
-    //         }
-    //         else{
-    //             $response = Http::withHeaders([
-    //                 'Authorization' => 'Bearer ' . $this->paystackSecretKey,
-    //                 'Content-Type' => 'application/json',
-    //             ])->get('https://api.paystack.co/transaction/verify/' . $reference);
-    
-    //             $responseData = $response->json();
-    
-    //             if (!$response->successful() || !$responseData['status']) {
-    //                 throw new Exception("Failed to verify payment: " . ($responseData['message'] ?? 'Unknown error'));
-    //             }
-
-    //             $auth_code = $responseData['data']['authorization']['authorization_code'];
-    //             $currency = $responseData['data']['currency'];
-
-    //             DB::beginTransaction();
-
-    //             $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
-    //             $transaction->update([
-    //                 'status' => 'success',
-    //                 'payment_gateway_ref' => $responseData['data']['reference'],
-    //                 'payment_type' => $transaction->payment_type,
-    //                 'currency' => $responseData['data']['currency'],
-    //                 'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
-    //                 'channel' => $responseData['data']['channel'] ?? null,
-    //                 'customer_email' => $responseData['data']['customer']['email'] ?? null,
-    //                 'ip_address' => $responseData['data']['ip_address'] ?? null,
-    //                 'device' => $responseData['data']['user_agent'] ?? null,
-    //                 'location' => $responseData['data']['log']['geolocation'] ?? null,
-    //                 //'paid_at' => $responseData['data']['paid_at'] ?? null
-    //             ]);
-
-    //             // $updateUser = User::where('id', $transaction->user_id)->first();
-    //             // $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
-
-    //             // $newEndDate = $currentEndDate->isFuture()
-    //             //     ? $currentEndDate->addDays(30)
-    //             //     : now()->addDays(30);
-
-    //             // $updateUser->update([
-    //             //     'isSubscribed' => 1,
-    //             //     'subscription_end_date' => $newEndDate,
-    //             //     'subscription_start_date' => now(),
-    //             //     'subscription_type' => $transaction->subscription_type,
-    //             //     'subscription_count' => $updateUser->subscription_count + 1
-    //             // ]);
-
-    //             // Get the user and branch
-    //            $user = User::findOrFail($transaction->user_id);
-    //             $branch = $user->branch;
-
-    //             if (!$branch) {
-    //                 throw new \Exception('User is not associated with any branch');
-    //             }
-
-    //             $plan = Plan::findOrFail($transaction->plan_id);
-
-    //             $currentSubscription = $branch->activeSubscription();
-    //             $startDate = now();
-    //             $endDate = $currentSubscription && $currentSubscription->ends_at > now()
-    //                 ? $currentSubscription->ends_at
-    //                 : $startDate;
-
-    //             $endDate = Carbon::parse($endDate);
-    //             $endDate = $plan->interval === 'yearly'
-    //                 ? $endDate->copy()->addYear()
-    //                 : $endDate->copy()->addMonth();
-
-    //             $branch->subscriptions()->isActive()->update([
-    //                 'status' => 'canceled',
-    //                 'canceled_at' => now()
-    //             ]);
-
-    //             $subscription = $branch->subscriptions()->create([
-    //                 'plan_id' => $plan->id,
-    //                 'starts_at' => $startDate,
-    //                 'ends_at' => $endDate,
-    //                 'status' => 'active',
-    //                 //'transaction_id' => $transaction->id
-    //             ]);
-
-    //             $branch->update([
-    //                 'isSubscribed' => true,
-    //                 'subscription_end_date' => $endDate,
-    //                 'subscription_start_date' => $startDate,
-    //                 'subscription_type' => $plan->slug,
-    //                 'subscription_count' => $user->subscription_count + 1
-    //             ]);
-
-
-    //             DB::commit();
-
-    //             return redirect()->to(env('FRONTEND_URL') . '/index.html');
-    //             //return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
-    //             //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
-    //         }
-            
-    //     }catch (Exception $e) {
-    //         Transaction::where('payment_gateway_ref', $reference)->update(['status' => 'failed']);
-    //         return response()->json(['error' => $e->getMessage()], 400);
-    //     }
-    // }
-
     //flutterwave integrt=ation
 
     public function initializePaymentFlutterwave(Request $request)
@@ -453,43 +335,42 @@ class TransactionsController extends Controller
 
 
     public function callbackFlutterwave(Request $request)
-    {
-        $status = $request->query('status');
-        $txid = $request->query('transaction_id');
+{
+    $status = $request->query('status');
+    $txid = $request->query('transaction_id');
 
-        if ($status === 'successful' && $txid) {
+    if ($status === 'successful' && $txid) {
+        $secretKey = env('FLUTTERWAVE_SECRET_KEY');
+        $response = Http::withToken($secretKey)
+            ->get("https://api.flutterwave.com/v3/transactions/{$txid}/verify");
 
-            // Make direct API call to Flutterwave
-            $secretKey = env('FLUTTERWAVE_SECRET_KEY');
-            $response = Http::withToken($secretKey)
-                ->get("https://api.flutterwave.com/v3/transactions/{$txid}/verify");
+        if ($response->failed()) {
+            return response()->json(['status' => 'error', 'message' => 'Unable to verify transaction.'], 500);
+        }
 
-            if ($response->failed()) {
-                return response()->json(['message' => 'Unable to verify transaction.'], 500);
-            }
+        $responseData = $response->json();
 
-            $responseData = $response->json();
+        if ($responseData['status'] !== 'success') {
+            return response()->json(['status' => 'error', 'message' => 'Transaction verification failed.'], 400);
+        }
 
-            //dd($responseData);
+        $reference = $responseData['data']['tx_ref'];
 
-            if ($responseData['status'] !== 'success') {
-                return response()->json(['message' => 'Transaction verification failed.'], 400);
-            }
+        DB::beginTransaction();
 
-            $reference = $responseData['data']['tx_ref'];
-
-            DB::beginTransaction();
-
-            $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
+        try {
+            $transaction = Transaction::where('payment_gateway_ref', $reference)
+                ->where('status', 'pending')
+                ->with(['user', 'plan'])
+                ->first();
 
             if (!$transaction) {
-                return response()->json(['message' => 'Transaction not found or already processed.'], 404);
+                throw new \Exception("Transaction not found or already processed");
             }
 
             $transaction->update([
                 'status' => 'success',
                 'payment_gateway_ref' => $responseData['data']['tx_ref'],
-                'payment_type' => $transaction->payment_type,
                 'currency' => $responseData['data']['currency'],
                 'auth_token' => $responseData['data']['card']['token'] ?? null,
                 'channel' => $responseData['data']['channel'] ?? null,
@@ -497,27 +378,28 @@ class TransactionsController extends Controller
                 'ip_address' => $responseData['data']['ip'] ?? null,
                 'device' => $responseData['data']['device_fingerprint'] ?? null,
                 'location' => $responseData['data']['log']['geolocation'] ?? null,
+                'paid_at' => isset($responseData['data']['created_at'])
+                    ? Carbon::parse($responseData['data']['created_at'])
+                    : now(),
             ]);
 
-            $user = User::findOrFail($transaction->user_id);
+            $user = $transaction->user;
             $branch = $user->branch;
-
             if (!$branch) {
                 throw new \Exception('User is not associated with any branch');
             }
 
-            $plan = Plan::findOrFail($transaction->plan_id);
-
+            $plan = $transaction->plan;
             $currentSubscription = $branch->activeSubscription();
+
             $startDate = now();
             $endDate = $currentSubscription && $currentSubscription->ends_at > now()
                 ? $currentSubscription->ends_at
                 : $startDate;
 
-            $endDate = Carbon::parse($endDate);
             $endDate = $plan->interval === 'yearly'
-                ? $endDate->copy()->addYear()
-                : $endDate->copy()->addMonth();
+                ? Carbon::parse($endDate)->addYear()
+                : Carbon::parse($endDate)->addMonth();
 
             $branch->subscriptions()->isActive()->update([
                 'status' => 'canceled',
@@ -529,7 +411,6 @@ class TransactionsController extends Controller
                 'starts_at' => $startDate,
                 'ends_at' => $endDate,
                 'status' => 'active',
-                //'transaction_id' => $transaction->id
             ]);
 
             $branch->update([
@@ -537,29 +418,38 @@ class TransactionsController extends Controller
                 'subscription_end_date' => $endDate,
                 'subscription_start_date' => $startDate,
                 'subscription_type' => $plan->slug,
-                'subscription_count' => $user->subscription_count + 1
+                'subscription_count' => $branch->subscription_count + 1
             ]);
 
             DB::commit();
 
-             return redirect()->to(env('FRONTEND_URL') . '/index.html');
+            if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+                return $this->formatSuccessResponse($transaction);
+            }
+            return redirect()->to(config('app.frontend_url') . '/receipt.html?reference=' . $reference);
 
-            // return response()->json([
-            //     'status' => 'success',
-            //     'message' => 'Subscription payment processed successfully',
-            //     'data' => [
-            //         'user' => $user,
-            //         'subscription' => $subscription,
-            //         'plan' => $plan,
-            //         'features' => $plan->allFeatures
-            //     ]
-            // ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Transaction::where('payment_gateway_ref', $reference)->update(['status' => 'failed']);
+
+            if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+            return redirect()->to(config('app.frontend_url') . '/payment-error.html?error=' . urlencode($e->getMessage()));
         }
-
-        return response()->json([
-            'message' => 'Payment failed or cancelled',
-        ], 400);
     }
+
+    return response()->json([
+        'status' => 'error',
+        'message' => 'Payment failed or cancelled',
+    ], 400);
+}
+
 
     private function generateUniqueFlutterwaveReference()
     {

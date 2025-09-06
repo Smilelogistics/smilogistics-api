@@ -182,6 +182,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
     // Handle reset submission
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('guest')->name('password.update');
     Route::get('/verify-paystack/{reference}', [TransactionsController::class, 'verifyPaymentAPI']);
+    // Route::get('/verify/flutterwave/{reference?}', [TransactionsController::class, 'callbackFlutterwave']);
 
     //Route::get('/verify-paystack', [TransactionsController::class, 'verifyPaysatckPayment']);
     Route::get('/callback-flutterwave', [TransactionsController::class, 'callbackFlutterwave']);
