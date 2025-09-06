@@ -102,7 +102,7 @@ class PaymentService
             'amount' => $plan->price,
             'currency' => $transaction->currency,
             'payment_options' => 'card,account,ussd',
-            'redirect_url' => config('app.url').'/api/v1/callback-flutterwave?type=flutterwave',
+            'redirect_url' => config('app.frontend_url').'/receipt.html?type=flutterwave',
             'customer' => [
                 'email' => $user->email,
                 'name' => $user->fname. ' '. $user->lname,
