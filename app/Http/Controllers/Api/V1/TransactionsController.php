@@ -226,6 +226,21 @@ class TransactionsController extends Controller
     // Helper method to format success response
     private function formatSuccessResponse($transaction)
     {
+        dd(response()->json([
+            'status' => 'success',
+            'message' => 'Payment verified successfully',
+            'payment' => [
+                'reference' => $transaction->payment_gateway_ref,
+                'email' => $transaction->customer_email ?? $transaction->user->email,
+                'amount' => $transaction->amount,
+                'currency' => $transaction->currency ?? 'NGN',
+                'gateway' => 'Paystack',
+                'date' => $transaction->paid_at ?? $transaction->updated_at,
+                'plan' => $transaction->plan->name ?? null,
+                'status' => $transaction->status
+            ]
+        ], 200));
+        
         return response()->json([
             'status' => 'success',
             'message' => 'Payment verified successfully',
