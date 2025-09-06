@@ -182,8 +182,7 @@ class TransactionsController extends Controller
                 'plan_id' => $plan->id,
                 'starts_at' => $startDate,
                 'ends_at' => $endDate,
-                'status' => 'active',
-                'transaction_id' => $transaction->id
+                'status' => 'active'
             ]);
 
             // Update branch
@@ -219,6 +218,7 @@ class TransactionsController extends Controller
             }
 
             // Redirect to error page for browser access
+            //dd($e);
             return redirect()->to(config('app.frontend_url') . '/payment-error.html?error=' . urlencode($e->getMessage()));
         }
     }
@@ -240,7 +240,7 @@ class TransactionsController extends Controller
                 'status' => $transaction->status
             ]
         ], 200));
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Payment verified successfully',
