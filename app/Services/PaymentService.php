@@ -33,22 +33,20 @@ class PaymentService
 
     protected function initializePaystack(User $user, Plan $plan, Transaction $transaction)
     {
-        //dd(env('PAYSTACK_SECRET_KEY'));
-        // dd(config('app.url'));
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.env('PAYSTACK_SECRET_KEY'),
             'Content-Type' => 'application/json',
         ])->post('https://api.paystack.co/transaction/initialize', [
             'email' => $user->email,
-            'amount' => $plan->price * 100, // Paystack uses kobo
+            'amount' => $plan->price * 100,
             'reference' => $transaction->payment_gateway_ref,
-            'callback_url' => config('app.frontend_url') . '/payment_success.html',
+            'callback_url' => config('app.frontend_url') . '/receipt.html',
             'metadata' => [
                 'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'transaction_id' => $transaction->id,
             ]
         ]);
-        
-        //dd($response->json());
 
         if (!$response->successful()) {
             throw new \Exception('Failed to initialize Paystack payment');
@@ -61,6 +59,37 @@ class PaymentService
             'reference' => $transaction->payment_gateway_ref,
         ];
     }
+
+    // protected function initializePaystack(User $user, Plan $plan, Transaction $transaction)
+    // {
+    //     //dd(env('PAYSTACK_SECRET_KEY'));
+    //     // dd(config('app.url'));
+    //     $response = Http::withHeaders([
+    //         'Authorization' => 'Bearer '.env('PAYSTACK_SECRET_KEY'),
+    //         'Content-Type' => 'application/json',
+    //     ])->post('https://api.paystack.co/transaction/initialize', [
+    //         'email' => $user->email,
+    //         'amount' => $plan->price * 100, // Paystack uses kobo
+    //         'reference' => $transaction->payment_gateway_ref,
+    //         'callback_url' => config('app.frontend_url') . '/receipt.html',
+    //         'metadata' => [
+    //             'user_id' => $user->id,
+    //         ]
+    //     ]);
+        
+    //     //dd($response->json());
+
+    //     if (!$response->successful()) {
+    //         throw new \Exception('Failed to initialize Paystack payment');
+    //     }
+
+    //     $data = $response->json();
+
+    //     return [
+    //         'payment_link' => $data['data']['authorization_url'],
+    //         'reference' => $transaction->payment_gateway_ref,
+    //     ];
+    // }
 
     protected function initializeFlutterwave(User $user, Plan $plan, Transaction $transaction)
     {

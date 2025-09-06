@@ -88,188 +88,278 @@ class TransactionsController extends Controller
 
 
 
-    // public function initiatePaystackPayment(Request $request)
-    // {
-    //     $user = auth()->user();
-    //     //dd($this->paystackSecretKey);
-    //     $validatedData = Validator::make($request->all(), [
-    //         'amount' => 'required|numeric',
-    //         'plan_name' => 'required|string',
-    //     ]);
-
-    //     if ($validatedData->fails()) {
-    //         return response()->json(['errors' => $validatedData->errors()], 422);
-    //     }
-
-    //     try{
-
-    //         $plans = Plan::where('name', $request->plan_name)->first();
-
-    //         if (!$plans) {
-    //             throw new Exception("Plan not found.");
-    //         }
-    //         elseif($plans->price != $request->amount){
-    //             throw new Exception("Plan price mismatch.");
-    //         }
-    //         else{
-
-    //         $response = Http::withHeaders([
-    //             'Authorization' => 'Bearer ' . $this->paystackSecretKey,
-    //             'Content-Type' => 'application/json',
-    //         ])->post('https://api.paystack.co/transaction/initialize', [
-    //             'email' => $user->email,
-    //             'amount' => $request->amount * 100,
-    //             'metadata' => [
-    //                 'user_id' => $user->id,
-    //             ],
-    //         ]);
-
-    //         $responseData = $response->json();
-
-    //         if (!$response->successful() || !$responseData['status']) {
-    //             throw new Exception("Failed to initialize payment: " . ($responseData['message'] ?? 'Unknown error'));
-    //         }
-    //         //dd($responseData);
-            
-    //         $transaction = Transaction::create([
-    //             'user_id' => $user->id,
-    //             'amount' => $request->amount,
-    //             'payment_gateway_ref' => $responseData['data']['reference'],
-    //             'payment_method' => 'paystack',
-    //             'payment_type' => $request->payment_type,
-    //             'status' => 'pending',
-    //         ]);
-    //     }
-            
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'redirect_url' => $responseData['data']['authorization_url'],
-    //             'reference' => $responseData['data']['reference'],
-    //         ]);
-
-
-    //     } catch (\Throwable $th) {
-    //         return response()->json(['message' => $th->getMessage()], 500);
-    //     }
-    // }
-
-    public function verifyPaysatckPayment(Request $request)
+    public function verifyPaysatckPayment(Request $request, $reference = null)
     {
-        $trxref = $request->query('trxref');
-        $reference = $request->query('reference');
-        // $signature = $request->header('x-paystack-signature');
-        // if (!$this->validPaystackSignature($signature, $request->getContent())) {
-        //     abort(401);
-        // }
+        // Get reference from URL parameter or query parameter
+        $reference = $reference ?? $request->query('reference') ?? $request->query('trxref');
+        
+        if (!$reference) {
+            return response()->json(['error' => 'Payment reference is required'], 400);
+        }
 
-        //$user = auth()->user();
-        //dd($trxref);
-        try{
-            if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
-                throw new Exception("Transaction already processed.");
+        try {
+            // Check if transaction already processed
+            if (Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()) {
+                // If already processed, still return success for receipt display
+                $existingTransaction = Transaction::where('payment_gateway_ref', $reference)
+                    ->where('status', 'success')
+                    ->with(['user', 'plan'])
+                    ->first();
+                    
+                return $this->formatSuccessResponse($existingTransaction);
             }
-            else{
-                $response = Http::withHeaders([
-                    'Authorization' => 'Bearer ' . $this->paystackSecretKey,
-                    'Content-Type' => 'application/json',
-                ])->get('https://api.paystack.co/transaction/verify/' . $reference);
-    
-                $responseData = $response->json();
-    
-                if (!$response->successful() || !$responseData['status']) {
-                    throw new Exception("Failed to verify payment: " . ($responseData['message'] ?? 'Unknown error'));
-                }
 
-                $auth_code = $responseData['data']['authorization']['authorization_code'];
-                $currency = $responseData['data']['currency'];
+            // Verify payment with Paystack
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('PAYSTACK_SECRET_KEY'),
+                'Content-Type' => 'application/json',
+            ])->get('https://api.paystack.co/transaction/verify/' . $reference);
 
-                DB::beginTransaction();
+            $responseData = $response->json();
 
-                $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
-                $transaction->update([
-                    'status' => 'success',
-                    'payment_gateway_ref' => $responseData['data']['reference'],
-                    'payment_type' => $transaction->payment_type,
-                    'currency' => $responseData['data']['currency'],
-                    'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
-                    'channel' => $responseData['data']['channel'] ?? null,
-                    'customer_email' => $responseData['data']['customer']['email'] ?? null,
-                    'ip_address' => $responseData['data']['ip_address'] ?? null,
-                    'device' => $responseData['data']['user_agent'] ?? null,
-                    'location' => $responseData['data']['log']['geolocation'] ?? null,
-                    //'paid_at' => $responseData['data']['paid_at'] ?? null
-                ]);
-
-                // $updateUser = User::where('id', $transaction->user_id)->first();
-                // $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
-
-                // $newEndDate = $currentEndDate->isFuture()
-                //     ? $currentEndDate->addDays(30)
-                //     : now()->addDays(30);
-
-                // $updateUser->update([
-                //     'isSubscribed' => 1,
-                //     'subscription_end_date' => $newEndDate,
-                //     'subscription_start_date' => now(),
-                //     'subscription_type' => $transaction->subscription_type,
-                //     'subscription_count' => $updateUser->subscription_count + 1
-                // ]);
-
-                // Get the user and branch
-               $user = User::findOrFail($transaction->user_id);
-                $branch = $user->branch;
-
-                if (!$branch) {
-                    throw new \Exception('User is not associated with any branch');
-                }
-
-                $plan = Plan::findOrFail($transaction->plan_id);
-
-                $currentSubscription = $branch->activeSubscription();
-                $startDate = now();
-                $endDate = $currentSubscription && $currentSubscription->ends_at > now()
-                    ? $currentSubscription->ends_at
-                    : $startDate;
-
-                $endDate = Carbon::parse($endDate);
-                $endDate = $plan->interval === 'yearly'
-                    ? $endDate->copy()->addYear()
-                    : $endDate->copy()->addMonth();
-
-                $branch->subscriptions()->isActive()->update([
-                    'status' => 'canceled',
-                    'canceled_at' => now()
-                ]);
-
-                $subscription = $branch->subscriptions()->create([
-                    'plan_id' => $plan->id,
-                    'starts_at' => $startDate,
-                    'ends_at' => $endDate,
-                    'status' => 'active',
-                    //'transaction_id' => $transaction->id
-                ]);
-
-                $branch->update([
-                    'isSubscribed' => true,
-                    'subscription_end_date' => $endDate,
-                    'subscription_start_date' => $startDate,
-                    'subscription_type' => $plan->slug,
-                    'subscription_count' => $user->subscription_count + 1
-                ]);
-
-
-                DB::commit();
-
-                return redirect()->to(env('FRONTEND_URL') . '/index.html');
-                //return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
-                //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
+            if (!$response->successful() || !$responseData['status']) {
+                throw new Exception("Failed to verify payment: " . ($responseData['message'] ?? 'Unknown error'));
             }
+
+            DB::beginTransaction();
+
+            $transaction = Transaction::where('payment_gateway_ref', $reference)
+                ->where('status', 'pending')
+                ->with(['user', 'plan'])
+                ->first();
+
+            if (!$transaction) {
+                throw new Exception("Transaction not found or already processed");
+            }
+
+            // Update transaction
+            $transaction->update([
+                'status' => 'success',
+                'payment_gateway_ref' => $responseData['data']['reference'],
+                'currency' => $responseData['data']['currency'],
+                'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
+                'channel' => $responseData['data']['channel'] ?? null,
+                'customer_email' => $responseData['data']['customer']['email'] ?? null,
+                'ip_address' => $responseData['data']['ip_address'] ?? null,
+                'device' => $responseData['data']['user_agent'] ?? null,
+                'location' => $responseData['data']['log']['geolocation'] ?? null,
+                'paid_at' => $responseData['data']['paid_at'] ?? now(),
+            ]);
+
+            // Update subscription
+            $user = $transaction->user;
+            $branch = $user->branch;
+
+            if (!$branch) {
+                throw new \Exception('User is not associated with any branch');
+            }
+
+            $plan = $transaction->plan;
+            $currentSubscription = $branch->activeSubscription();
+            $startDate = now();
+            $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+                ? $currentSubscription->ends_at
+                : $startDate;
+
+            $endDate = Carbon::parse($endDate);
+            $endDate = $plan->interval === 'yearly'
+                ? $endDate->copy()->addYear()
+                : $endDate->copy()->addMonth();
+
+            // Cancel existing active subscriptions
+            $branch->subscriptions()->isActive()->update([
+                'status' => 'canceled',
+                'canceled_at' => now()
+            ]);
+
+            // Create new subscription
+            $subscription = $branch->subscriptions()->create([
+                'plan_id' => $plan->id,
+                'starts_at' => $startDate,
+                'ends_at' => $endDate,
+                'status' => 'active',
+                'transaction_id' => $transaction->id
+            ]);
+
+            // Update branch
+            $branch->update([
+                'isSubscribed' => true,
+                'subscription_end_date' => $endDate,
+                'subscription_start_date' => $startDate,
+                'subscription_type' => $plan->slug,
+                'subscription_count' => $branch->subscription_count + 1
+            ]);
+
+            DB::commit();
+
+            // Return JSON response for AJAX calls
+            if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+                return $this->formatSuccessResponse($transaction);
+            }
+
+            // Redirect to receipt page for direct browser access
+            return redirect()->to(config('app.frontend_url') . '/receipt.html?reference=' . $reference);
+
+        } catch (Exception $e) {
+            DB::rollback();
             
-        }catch (Exception $e) {
+            // Mark transaction as failed
             Transaction::where('payment_gateway_ref', $reference)->update(['status' => 'failed']);
-            return response()->json(['error' => $e->getMessage()], 400);
+            
+            if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $e->getMessage()
+                ], 400);
+            }
+
+            // Redirect to error page for browser access
+            return redirect()->to(config('app.frontend_url') . '/payment-error.html?error=' . urlencode($e->getMessage()));
         }
     }
+
+    // Helper method to format success response
+    private function formatSuccessResponse($transaction)
+    {
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Payment verified successfully',
+            'payment' => [
+                'reference' => $transaction->payment_gateway_ref,
+                'email' => $transaction->customer_email ?? $transaction->user->email,
+                'amount' => $transaction->amount,
+                'currency' => $transaction->currency ?? 'NGN',
+                'gateway' => 'Paystack',
+                'date' => $transaction->paid_at ?? $transaction->updated_at,
+                'plan' => $transaction->plan->name ?? null,
+                'status' => $transaction->status
+            ]
+        ], 200);
+    }
+
+    // Add route for API verification
+    public function verifyPaymentAPI($reference)
+    {
+        return $this->verifyPaysatckPayment(request(), $reference);
+    }
+
+    // public function verifyPaysatckPayment(Request $request)
+    // {
+    //     $trxref = $request->query('trxref');
+    //     $reference = $request->query('reference');
+    //     // $signature = $request->header('x-paystack-signature');
+    //     // if (!$this->validPaystackSignature($signature, $request->getContent())) {
+    //     //     abort(401);
+    //     // }
+
+    //     //$user = auth()->user();
+    //     //dd($trxref);
+    //     try{
+    //         if(Transaction::where('payment_gateway_ref', $reference)->where('status', 'success')->exists()){
+    //             throw new Exception("Transaction already processed.");
+    //         }
+    //         else{
+    //             $response = Http::withHeaders([
+    //                 'Authorization' => 'Bearer ' . $this->paystackSecretKey,
+    //                 'Content-Type' => 'application/json',
+    //             ])->get('https://api.paystack.co/transaction/verify/' . $reference);
+    
+    //             $responseData = $response->json();
+    
+    //             if (!$response->successful() || !$responseData['status']) {
+    //                 throw new Exception("Failed to verify payment: " . ($responseData['message'] ?? 'Unknown error'));
+    //             }
+
+    //             $auth_code = $responseData['data']['authorization']['authorization_code'];
+    //             $currency = $responseData['data']['currency'];
+
+    //             DB::beginTransaction();
+
+    //             $transaction = Transaction::where('payment_gateway_ref', $reference)->where('status', 'pending')->first();
+    //             $transaction->update([
+    //                 'status' => 'success',
+    //                 'payment_gateway_ref' => $responseData['data']['reference'],
+    //                 'payment_type' => $transaction->payment_type,
+    //                 'currency' => $responseData['data']['currency'],
+    //                 'auth_token' => $responseData['data']['authorization']['authorization_code'] ?? null,
+    //                 'channel' => $responseData['data']['channel'] ?? null,
+    //                 'customer_email' => $responseData['data']['customer']['email'] ?? null,
+    //                 'ip_address' => $responseData['data']['ip_address'] ?? null,
+    //                 'device' => $responseData['data']['user_agent'] ?? null,
+    //                 'location' => $responseData['data']['log']['geolocation'] ?? null,
+    //                 //'paid_at' => $responseData['data']['paid_at'] ?? null
+    //             ]);
+
+    //             // $updateUser = User::where('id', $transaction->user_id)->first();
+    //             // $currentEndDate = Carbon::parse($updateUser->subscription_end_date);
+
+    //             // $newEndDate = $currentEndDate->isFuture()
+    //             //     ? $currentEndDate->addDays(30)
+    //             //     : now()->addDays(30);
+
+    //             // $updateUser->update([
+    //             //     'isSubscribed' => 1,
+    //             //     'subscription_end_date' => $newEndDate,
+    //             //     'subscription_start_date' => now(),
+    //             //     'subscription_type' => $transaction->subscription_type,
+    //             //     'subscription_count' => $updateUser->subscription_count + 1
+    //             // ]);
+
+    //             // Get the user and branch
+    //            $user = User::findOrFail($transaction->user_id);
+    //             $branch = $user->branch;
+
+    //             if (!$branch) {
+    //                 throw new \Exception('User is not associated with any branch');
+    //             }
+
+    //             $plan = Plan::findOrFail($transaction->plan_id);
+
+    //             $currentSubscription = $branch->activeSubscription();
+    //             $startDate = now();
+    //             $endDate = $currentSubscription && $currentSubscription->ends_at > now()
+    //                 ? $currentSubscription->ends_at
+    //                 : $startDate;
+
+    //             $endDate = Carbon::parse($endDate);
+    //             $endDate = $plan->interval === 'yearly'
+    //                 ? $endDate->copy()->addYear()
+    //                 : $endDate->copy()->addMonth();
+
+    //             $branch->subscriptions()->isActive()->update([
+    //                 'status' => 'canceled',
+    //                 'canceled_at' => now()
+    //             ]);
+
+    //             $subscription = $branch->subscriptions()->create([
+    //                 'plan_id' => $plan->id,
+    //                 'starts_at' => $startDate,
+    //                 'ends_at' => $endDate,
+    //                 'status' => 'active',
+    //                 //'transaction_id' => $transaction->id
+    //             ]);
+
+    //             $branch->update([
+    //                 'isSubscribed' => true,
+    //                 'subscription_end_date' => $endDate,
+    //                 'subscription_start_date' => $startDate,
+    //                 'subscription_type' => $plan->slug,
+    //                 'subscription_count' => $user->subscription_count + 1
+    //             ]);
+
+
+    //             DB::commit();
+
+    //             return redirect()->to(env('FRONTEND_URL') . '/index.html');
+    //             //return redirect()->to('https://smileslogistics-frontend.vercel.app/index.html');
+    //             //return response()->json(['message' => 'Payment verified successfully', 'transaction' => $transaction], 200);
+    //         }
+            
+    //     }catch (Exception $e) {
+    //         Transaction::where('payment_gateway_ref', $reference)->update(['status' => 'failed']);
+    //         return response()->json(['error' => $e->getMessage()], 400);
+    //     }
+    // }
 
     //flutterwave integrt=ation
 
