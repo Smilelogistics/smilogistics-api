@@ -45,17 +45,34 @@ use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 class ShipmentController extends Controller
 {
     use FileUploadTrait;
-    public function index()
+   public function index()
     {
         $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
-        $shipments = Shipment::with(['branch','customer', 'billTo', 'shipmentContainers', 'shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads', 'invoice.customer.user'])
-            ->where('branch_id', $branchId)
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
+        $branchId = $user->getBranchId();
+
+        $query = Shipment::with([
+            'branch',
+            'customer',
+            'billTo',
+            'shipmentContainers',
+            'shipmentCharges',
+            'shipmentNotes',
+            'shipmentExpenses',
+            'shipmentUploads',
+            'invoice.customer.user'
+        ])
+        ->where('branch_id', $branchId)
+        ->where('user_id', $user->id);
+
+        if ($user->hasRole('customer')) {
+            $query->where('customer_id', $user->customer->id);
+        }
+
+        $shipments = $query->latest()->get();
+
         return response()->json(['shipments' => $shipments]);
     }
+
 
     public function show($id)
     {
@@ -93,7 +110,7 @@ class ShipmentController extends Controller
         $validatedData = $request->validated();
 
         //dd($validatedData);
-
+        $total_fuelL = 0;
         if($validatedData['shipment_type'] == 'land')
         {
             $total_miles = $validatedData['total_miles'];
@@ -114,7 +131,14 @@ class ShipmentController extends Controller
             $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
         }
 
-        
+        if($user->user_type)
+        {
+            $customer_id_ = $user->customer->id;
+
+            //dd($customer_id);
+        }
+        // dd($user->user_type);
+        // return;
 
         //dd($validatedData);
         if (isset($validatedData['tags'])) {
@@ -153,6 +177,7 @@ class ShipmentController extends Controller
             'driver_id' => $validateData['driver_id'] ?? null,
             'user_id' => $user->id ?? null,
             'created_by_driver_id' => $creatorDriver,
+            'customer_id' => $validatedData['bill_to'] ?? $customer_id_ ?? null,
             'carrier_id' => $validatedData['carrier_id'] ?? null,
             'truck_id' => $validatedData['truck_id'] ?? null,
             'bike_id' => $validatedData['bike_id'] ?? null,
@@ -300,7 +325,7 @@ class ShipmentController extends Controller
                 
                  $invoice = Invoice::create([
                 'shipment_id' => $shipment->id,
-                'customer_id' => $validatedData['bill_to'] ?? null,
+                'customer_id' => $validatedData['bill_to'] ?? $customer_id_?? null,
                 'user_id' => auth()->user()->id,
                 'branch_id' => $branchId,
                 'invoice_number' => $invoiceNumber,
