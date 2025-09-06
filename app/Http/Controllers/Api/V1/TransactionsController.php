@@ -146,7 +146,9 @@ class TransactionsController extends Controller
                 'ip_address' => $responseData['data']['ip_address'] ?? null,
                 'device' => $responseData['data']['user_agent'] ?? null,
                 'location' => $responseData['data']['log']['geolocation'] ?? null,
-                'paid_at' => $responseData['data']['paid_at'] ?? now(),
+                'paid_at' => isset($responseData['data']['paid_at'])
+                ? Carbon::parse($responseData['data']['paid_at'])
+                : now(),
             ]);
 
             // Update subscription
