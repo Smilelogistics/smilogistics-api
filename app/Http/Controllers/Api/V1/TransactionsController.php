@@ -60,6 +60,7 @@ class TransactionsController extends Controller
             'status' => 'pending',
             'payment_gateway_ref' => $this->generateReference($validated['payment_method']),
         ]);
+        //dd($transaction);
 
         // Initialize payment based on method
         try {
@@ -92,6 +93,8 @@ class TransactionsController extends Controller
     {
         // Get reference from URL parameter or query parameter
         $reference = $reference ?? $request->query('reference') ?? $request->query('trxref');
+
+        dd($reference);
         
         if (!$reference) {
             return response()->json(['error' => 'Payment reference is required'], 400);
