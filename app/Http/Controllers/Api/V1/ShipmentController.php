@@ -273,45 +273,7 @@ class ShipmentController extends Controller
                 ]);
                 
             }
-            if (!empty($request->pickups['location_name']) && is_array($request->pickups['location_name'])) {
-                foreach ($request->pickups['location_name'] as $index => $locationName) {
-                    $shipment->pickups()->create([
-                        'type' => 'pickup',
-                        'sequence' => $index + 1,
-                        'pick_up_type' => $request->pickups['pick_up'][$index] ?? null,
-                        'location_name' => $locationName,
-                        'address' => $request->pickups['address'][$index] ?? null,
-                        'city' => $request->pickups['city'][$index] ?? null,
-                        'state' => $request->pickups['state'][$index] ?? null,
-                        'zip' => $request->pickups['zip'][$index] ?? null,
-                        'latitude' => $request->pickups['latitude'][$index] ?? null,
-                        'longitude' => $request->pickups['longitude'][$index] ?? null,
-                        'appt_date' => $request->pickups['appt_date'][$index] ?? null,
-                        'no_latter_than_date' => $request->pickups['no_latter_than_date'][$index] ?? null,
-                        'no_latter_than_time' => $request->pickups['no_latter_than_time'][$index] ?? null,
-                    ]);
-                }
-            }
-
-            if (!empty($request->dropoffs['location_name']) && is_array($request->dropoffs['location_name'])) {
-                foreach ($request->dropoffs['location_name'] as $index => $locationName) {
-                    $shipment->dropoffs()->create([
-                        'type' => 'dropoff',
-                        'sequence' => $index + 1,
-                        'drop_at_type' => $request->dropoffs['drop_at'][$index] ?? null,
-                        'location_name' => $locationName,
-                        'address' => $request->dropoffs['address'][$index] ?? null,
-                        'city' => $request->dropoffs['city'][$index] ?? null,
-                        'state' => $request->dropoffs['state'][$index] ?? null,
-                        'zip' => $request->dropoffs['zip'][$index] ?? null,
-                        'latitude' => $request->dropoffs['latitude'][$index] ?? null,
-                        'longitude' => $request->dropoffs['longitude'][$index] ?? null,
-                        'appt_date' => $request->dropoffs['appt_date'][$index] ?? null,
-                        'no_latter_than_date' => $request->dropoffs['no_latter_than_date'][$index] ?? null,
-                        'no_latter_than_time' => $request->dropoffs['no_latter_than_time'][$index] ?? null,
-                    ]);
-                }
-            }
+     
             $this->storeLocations($shipment, $request->pickups ?? [], 'pickup');
             $this->storeLocations($shipment, $request->dropoffs ?? [], 'dropoff');
 
@@ -912,6 +874,10 @@ class ShipmentController extends Controller
                 ]);
     
                 //$shipment->update($shipmentData);
+
+            $this->storeLocations($shipment, $request->pickups ?? [], 'pickup');
+            $this->storeLocations($shipment, $request->dropoffs ?? [], 'dropoff');
+
 
                 // Handle charges
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
