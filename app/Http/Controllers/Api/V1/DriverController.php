@@ -38,14 +38,14 @@ class DriverController extends Controller
         return response()->json($driver);
     }
 
-    public function getMyshipment()
-    {
-        $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
-        $driverId = $user->driver->id;
-        $shipments = Shipment::with('driver.user')->where('driver_id', $driverId)->get();
-        return response()->json(['shipments' => $shipments], 200);
-    }
+    // public function getMyshipment()
+    // {
+    //     $user = auth()->user();
+    //     $branchId = auth()->user()->getBranchId();
+    //     $driverId = $user->driver->id;
+    //     $shipments = Shipment::with('driver.user')->where('driver_id', $driverId)->get();
+    //     return response()->json(['shipments' => $shipments], 200);
+    // }
 
     public function acceptShipment(Request $request)
     { 

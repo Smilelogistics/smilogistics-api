@@ -1342,10 +1342,13 @@ protected function processUploads($shipment, $uploads)
     {
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
-        $driverId = $user->driver ? $user->driver->id : null;
-        $shipment = Shipment::with('driver')->where('driver_id', $driverId)->where('branch_id', $branchId)->latest();
+        $driverId = $user->driver->id;
 
-        if(!$shipment)
+        $shipments = Shipment::with('driver.user')->where('driver_id', $driverId)
+        ->where('branch_id', $branchId)->latest()
+        ->get();
+
+        if(!$shipments)
         {
             return response()->json([
                 'success' => false,
@@ -1353,7 +1356,7 @@ protected function processUploads($shipment, $uploads)
                 
             ]);
         }else{
-            return response()->json(['shipments' => $shipment]);
+            return response()->json(['shipments' => $shipments]);
         }
         
     }
