@@ -75,12 +75,12 @@ class Shipment extends Model
     {
         return $this->hasMany(BillTo::class, 'shipment_id');
     }
-      public function pickupLocations()
+      public function pickups()
     {
         return $this->hasMany(ShipmentLocation::class)->where('type', 'pickup')->orderBy('sequence');
     }
 
-    public function dropoffLocations()
+    public function dropoffs()
     {
         return $this->hasMany(ShipmentLocation::class)->where('type', 'dropoff')->orderBy('sequence');
     }
