@@ -1381,6 +1381,7 @@ protected function processUploads($shipment, $uploads)
         $shipment = Shipment::where('id', $id)
         // ->where('branch_id', $branchId)
         ->first();
+       
         if($request->status == 1){
             $shipment->update(['dispatcher_accepted_status' => $request->status]);
         }
