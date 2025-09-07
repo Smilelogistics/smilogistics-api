@@ -94,7 +94,7 @@ class ShipmentController extends Controller
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = auth()->user()->getBranchId();
-        $driverId = $user->driver ? $user->driver->id : null;
+        $driverId = $user->driver? $user->driver->id : null;
         $checkSubscription = false;
         $creatorDriver = $user->driver ? $user->driver->id : null;
 
@@ -131,7 +131,7 @@ class ShipmentController extends Controller
             $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
         }
 
-        if($user->user_type)
+        if($user->user_type == 'customer')
         {
             $customer_id_ = $user->customer->id;
 
@@ -875,8 +875,10 @@ class ShipmentController extends Controller
     
                 //$shipment->update($shipmentData);
 
+            $shipment->allLocations()->delete();
             $this->storeLocations($shipment, $request->pickups ?? [], 'pickup');
             $this->storeLocations($shipment, $request->dropoffs ?? [], 'dropoff');
+
 
 
                 // Handle charges
