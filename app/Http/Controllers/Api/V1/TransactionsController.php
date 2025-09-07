@@ -228,7 +228,7 @@ class TransactionsController extends Controller
     }
 
     //flutterwave integrt=ation
-    public function callbackFlutterwave(Request $request)
+    public function verifyFlutterwavePayment(Request $request)
     {
         $status = $request->query('status');
         $txid = $request->query('transaction_id');
