@@ -598,12 +598,12 @@ class ShipmentController extends Controller
                     'address' => $locations['address'][$index] ?? 'N/A',
                     'city' => $locations['city'][$index] ?? 'N/A',
                     'state' => $locations['state'][$index] ?? 'N/A',
-                    'zip' => $locations['zip'][$index] ?? 'N/A',
-                    'latitude' => $locations['latitude'][$index] ?? 'N/A',
-                    'longitude' => $locations['longitude'][$index] ?? 'N/A',
-                    'appt_date' => $locations['appt_date'][$index] ?? 'N/A',
-                    'no_latter_than_date' => $locations['no_latter_than_date'][$index] ?? 'N/A',
-                    'no_latter_than_time' => $locations['no_latter_than_time'][$index] ?? 'N/A',
+                    'zip' => $locations['zip'][$index] ?? 0,
+                    'latitude' => $locations['latitude'][$index] ?? 0.0,
+                    'longitude' => $locations['longitude'][$index] ?? 0.0,
+                    'appt_date' => $locations['appt_date'][$index] ?? null,
+                    'no_latter_than_date' => $locations['no_latter_than_date'][$index] ?? null,
+                    'no_latter_than_time' => $locations['no_latter_than_time'][$index] ?? null
                 ]);
             }
         }
