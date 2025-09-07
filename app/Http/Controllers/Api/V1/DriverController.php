@@ -6,6 +6,7 @@ use Log;
 use Exception;
 use App\Models\User;
 use App\Models\Driver;
+use App\Models\Shipment;
 use App\Models\DriverDocs;
 use App\Mail\newDriverMail;
 use Illuminate\Http\Request;
@@ -35,6 +36,23 @@ class DriverController extends Controller
         ->where('branch_id', $branchId)
         ->get();
         return response()->json($driver);
+    }
+
+    public function getMyshipment()
+    {
+        $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+        $driverId = $user->driver->id;
+        $shipments = Shipment::with('driver.user')->where('driver_id', $driverId)->get();
+        return response()->json(['shipments' => $shipments], 200);
+    }
+
+    public function acceptShipment(Request $request)
+    { 
+            
+            $validator = Validator::make(request()->all(), [
+                'status'
+            ]);
     }
 
     public function getFlashMessageShipment($id)

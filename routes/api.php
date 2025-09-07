@@ -264,6 +264,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
                 Route::get('bikedrivers', [DriverController::class, 'getBikeDrivers']);
                 Route::get('get-flash-message-shipment/{id}', [DriverController::class, 'getFlashMessageShipment'])->name('customer.flash-message');
                 Route::get('get-flash-message-accounting/{id}', [DriverController::class, 'getFlashMessageAccounting'])->name('customer.flash-message-account');
+                Route::get('shipments', [DriverController::class, 'getMyshipment']);
             });
 
               Route::prefix('trucks')->group(function () {
