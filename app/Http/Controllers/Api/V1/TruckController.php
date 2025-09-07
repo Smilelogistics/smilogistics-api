@@ -225,7 +225,7 @@ class TruckController extends Controller
                 'customer_id' => 'sometimes|nullable|integer|exists:customers,id',
                 'driver_id' => 'sometimes|nullable|integer|exists:drivers,id',
                 'truck_number' => 'sometimes|nullable|string|max:50',
-                'office' => 'sometimes|nullable|string|max:255',
+                'truck_office' => 'sometimes|nullable|string|max:255',
                 'make_model' => 'sometimes|required|string|max:100',
                 'make_year' => 'sometimes|nullable|integer|min:1900|max:' . date('Y'),
                 'engine_year' => 'sometimes|nullable|integer|min:1900|max:' . date('Y'),
@@ -308,6 +308,7 @@ class TruckController extends Controller
             $truck->update([
                 'branch_id' => $branchId,
                 'user_id' => $authUser->id,
+                'office' => $validatedTruck['truck_office'],
                 ...$validatedTruck
             ]);
 
