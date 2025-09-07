@@ -55,7 +55,7 @@ class TruckController extends Controller
                 'customer_id' => 'nullable|integer|exists:customers,id',
                 //'user_id' => 'required|integer|exists:users,id',
                 'truck_number' => 'nullable|string|max:50',
-                'office' => 'nullable|string|max:255',
+                'truck_office' => 'nullable|string|max:255',
                 'make_model' => 'nullable|string|max:100',
                 'make_year' => 'nullable|integer|min:1900|max:' . date('Y'),
                 'engine_year' => 'nullable|integer|min:1900|max:' . date('Y'),
@@ -134,7 +134,7 @@ class TruckController extends Controller
             $truck = Truck::create([
                 'branch_id' => $branchId,
                 'user_id' => $authUser->id,
-                 'office'    => $validatedTruck['office'] ?? null,
+                 'office'    => $validatedTruck['truck_office'] ?? null,
                 ...$validatedTruck
             ]);
 
