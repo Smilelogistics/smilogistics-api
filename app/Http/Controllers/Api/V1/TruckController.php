@@ -134,7 +134,7 @@ class TruckController extends Controller
             $truck = Truck::create([
                 'branch_id' => $branchId,
                 'user_id' => $authUser->id,
-                'office' => $validateTruck['truck_office'],
+                 'office'    => $validatedTruck['office'] ?? null,
                 ...$validatedTruck
             ]);
 
