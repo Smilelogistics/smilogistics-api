@@ -1047,6 +1047,7 @@ protected function processInvoiceCharges($shipment, $validatedData, $branchId)
         $invoice = Invoice::create([
             'shipment_id'     => $shipment->id,
             'branch_id'       => $branchId,
+            'user_id' => auth()->user()->id,
             'net_total'       => 0,
             'total_discount'  => 0,
         ]);
