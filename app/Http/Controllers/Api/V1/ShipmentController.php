@@ -84,6 +84,7 @@ class ShipmentController extends Controller
         'shipmentContainers',
         'branch',
         'pickups',
+        'driver.user',
         'dropoffs'
     ])->findOrFail($id);
 
