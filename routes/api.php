@@ -224,6 +224,9 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
         Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
         Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
     })->middleware('role:businessadministrator');
+
+    
+    Route::delete('users/delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
     });
 
     
@@ -333,7 +336,6 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
                 Route::get('current-branch', [UnivController::class, 'getBranches']);
                 //
                 Route::put('update/{id}', [UnivController::class, 'updateUser'])->name('users.update');
-                Route::delete('delete/{id}', [UnivController::class, 'destroyUser'])->name('users.destroy');
                 Route::get('get-offices', [UnivController::class, 'getOffices'])->name('offices.index');
             })->middleware(['role:businessadministrator|superadministrator']);
 
