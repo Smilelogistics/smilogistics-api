@@ -165,7 +165,8 @@ class UnivController extends Controller
 
             // Set start and end dates (100 years from now)
             $startDate = now();
-            $endDate = now()->addYears(5);
+            //$endDate = now()->addYears(5);
+            $endDate = null;
 
             // Cancel any existing active subscriptions
             $branch->subscriptions()->where('status', 'active')->update([
@@ -177,7 +178,7 @@ class UnivController extends Controller
             $subscription = $branch->subscriptions()->create([
                 'plan_id' => $plan->id,
                 'starts_at' => $startDate,
-                'ends_at' => null, //$endDate,
+                'ends_at' => $endDate,
                 'status' => 'active'
             ]);
 
@@ -194,8 +195,8 @@ class UnivController extends Controller
             $transaction = Transaction::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
-                'amount' => 0, // Free for special users
-                'currency' => 'NGN', // or your default currency
+                'amount' => 0, // Free for special user
+                'currency' => 'NGN',
                 'status' => 'success',
                 'payment_method' => 'admin',
                 'payment_type' => 'unlimited_grant',
