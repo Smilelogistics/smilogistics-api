@@ -111,6 +111,8 @@ class ShipmentController extends Controller
 
         //dd($validatedData);
         $total_fuelL = 0;
+        $shipping_cost = 0;
+        $totaleS = 0;
         if($validatedData['shipment_type'] == 'land')
         {
             $total_miles = $validatedData['total_miles'];
@@ -129,6 +131,8 @@ class ShipmentController extends Controller
             $shipping_cost = ($total_miles * 2)* $price_per_mile;
 
             $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+
+            $totaleS = $shipping_cost + $total_fuelL;
         }
 
         if($user->user_type == 'customer')
@@ -259,7 +263,7 @@ class ShipmentController extends Controller
             'signature' => null,
             'delivery_type' => $validatedData['delivery_type'] ?? null,
             'shipping_cost' => $shipping_cost ?? 0.00,
-            'total_shipment_cost' => $shipping_cost ?? 0.00,
+            'total_shipment_cost' => $totaleS ?? 0.00,
             //'comment' => $validatedData['comment'] ?? null,
             ]);
             
@@ -507,7 +511,7 @@ class ShipmentController extends Controller
                         // ]);
             
                         if (!$path->getSecurePath()) {
-                            throw new \Exception("Cloudinary upload failed for: " . $file->getClientOriginalName());
+                            throw new \Exception("wasabi upload failed for: " . $file->getClientOriginalName());
                         }
             
                         // Create shipment upload record
