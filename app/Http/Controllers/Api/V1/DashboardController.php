@@ -10,6 +10,7 @@ use App\Models\Invoice;
 use App\Models\Customer;
 use App\Models\Delivery;
 use App\Models\Shipment;
+use App\Models\Settlement;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Helpers\NumberFormatter;
@@ -99,10 +100,11 @@ class DashboardController extends Controller
                 ]
             ]);
         }elseif($user->hasRole('driver')) {
-            $shipmentRevenue = Shipment::where('driver_id', $user->driver->id)->sum('net_total_charges');
-            $consolidatedRevenue = ConsolidateShipment::where('driver_id', $user->driver->id)->sum('total_shipping_cost');
-            $grandFuelCost = Shipment::where('driver_id', $user->driver->id)->sum('total_fuel_cost');
-            $totalRevenue = $shipmentRevenue + $consolidatedRevenue + $grandFuelCost;
+            // $shipmentRevenue = Shipment::where('driver_id', $user->driver->id)->sum('net_total_charges');
+            // $consolidatedRevenue = ConsolidateShipment::where('driver_id', $user->driver->id)->sum('total_shipping_cost');
+            // $grandFuelCost = Shipment::where('driver_id', $user->driver->id)->sum('total_fuel_cost');
+            //$totalRevenue = $shipmentRevenue + $consolidatedRevenue + $grandFuelCost;
+            $totalRevenue = Settlement::where('driver_id', $user->driver->id)->sum('net_total_payments');
     
         // Count of shipments
         $shipmentCount = Shipment::where('driver_id', $user->driver->id)->count();

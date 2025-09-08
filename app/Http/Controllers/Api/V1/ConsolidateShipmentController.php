@@ -524,7 +524,8 @@ protected function handleFileUploads($request, $consolidateShipment)
         $consolidateShipment = ConsolidateShipment::with('driver')
         // ->where('branch_id', $branchId)
         ->where('driver_id', $driverId)
-        ->latest();
+        ->latest()
+        ->get();
 
         return response()->json([
             'success' => true,
