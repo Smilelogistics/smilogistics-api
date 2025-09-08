@@ -616,8 +616,8 @@ protected function handleFileUploads($request, $consolidateShipment)
 
     public function getPayments()
     {
-        $branchId = $user->getBranchId();
         $user = auth()->user();
+        $branchId = $user->getBranchId();
         $payments = ConsolidateShipment::with('branch','user')
         ->where('branch_id', $branchId)
         ->where('payment_status', 'paid')
@@ -628,6 +628,7 @@ protected function handleFileUploads($request, $consolidateShipment)
 
     public function showPayment($id)
     {
+        $user = auth()->user();
         $branchId = $user->getBranchId();
         $payment = ConsolidateShipment::with('branch','user')->where('id', $id)->first();
 
