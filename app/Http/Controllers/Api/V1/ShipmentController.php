@@ -72,13 +72,42 @@ class ShipmentController extends Controller
 
         return response()->json(['shipments' => $shipments]);
     }
-
-
+    
     public function show($id)
-    {
-        $shipment = Shipment::with(['shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads', 'billTo', 'shipmentContainers', 'branch', 'pickups', 'dropoffs'])->findOrFail($id);
-        return response()->json($shipment);
+{
+    $shipment = Shipment::with([
+        'shipmentCharges',
+        'shipmentNotes',
+        'shipmentExpenses',
+        'shipmentUploads',
+        'billTo',
+        'shipmentContainers',
+        'branch',
+        'pickups',
+        'dropoffs'
+    ])->findOrFail($id);
+
+    // If branch has a logo, create a signed URL
+    if ($shipment->branch && $shipment->branch->invoice_logo) {
+        $path = str_replace(
+            "https://s3.eu-central-2.wasabisys.com/smileslogistics/",
+            "",
+            $shipment->branch->invoice_logo
+        );
+
+        $shipment->branch->invoice_logo_url = Storage::disk('wasabi')
+            ->temporaryUrl($path, now()->addMinutes(30));
     }
+
+    return response()->json($shipment);
+}
+
+
+    // public function show($id)
+    // {
+    //     $shipment = Shipment::with(['shipmentCharges', 'shipmentNotes', 'shipmentExpenses', 'shipmentUploads', 'billTo', 'shipmentContainers', 'branch', 'pickups', 'dropoffs'])->findOrFail($id);
+    //     return response()->json($shipment);
+    // }
 
 
     
