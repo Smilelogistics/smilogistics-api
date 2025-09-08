@@ -231,7 +231,7 @@ class ShipmentController extends Controller
 
         'po_number' => $validatedData['po_number'] ?? Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10),
 
-            'shipment_weight' => $validatedData['shipment_weight'] ?? null,
+            'shipment_weight' => $validatedData['load_weight'] ?? null,
             'commodity' => $validatedData['commodity'] ?? null,
             'pieces' => $validatedData['pieces'] ?? null,
             'pickup_number' => $validatedData['pickup_number'] ?? Shipment::generateUniqueCode('shipments', 'pickup_number', 'PU-', 10),
@@ -667,7 +667,7 @@ class ShipmentController extends Controller
             'bill_of_laden_number' => 'nullable|string|max:255',
             'booking_number' => 'nullable|string|max:255',
             'po_number' => 'nullable|string|max:255',
-            'shipment_weight' => 'nullable|numeric',
+            'load_weight' => 'nullable|numeric',
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
 
@@ -839,7 +839,7 @@ class ShipmentController extends Controller
                     'bill_of_laden_number' => $validatedData['bill_of_laden_number'] ?? null,
                     'booking_number' => $validatedData['booking_number'] ?? null,
                     'po_number' => $validatedData['po_number'] ?? null,
-                    'shipment_weight' => $validatedData['shipment_weight'] ?? null,
+                    'shipment_weight' => $validatedData['load_weight'] ?? null,
                     'commodity' => $validatedData['commodity'] ?? null,
                     'pieces' => $validatedData['pieces'] ?? null,
                     'pickup_number' => $validatedData['pickup_number'] ?? null,
@@ -960,7 +960,14 @@ protected function processCharges($shipment, $validatedData, $branchId)
     $totalDiscount = 0;
     
     // Delete existing charges
-    ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+    if (ShipmentCharge::where('shipment_id', $shipment->id)->exists()) {
+        ShipmentCharge::where('shipment_id', $shipment->id)->delete();
+        \Log::info("Deleted old charges for shipment ID: {$shipment->id}");
+    } else {
+        \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
+    }
+
+    //ShipmentCharge::where('shipment_id', $shipment->id)->delete();
 
     // Convert all fields to arrays and ensure consistent length
     $chargeData = [
@@ -1034,8 +1041,14 @@ protected function processInvoiceCharges($shipment, $validatedData, $branchId)
     
     // Delete existing charges
     $invoice = Invoice::where('shipment_id', $shipment->id)->first();
+    if (Invoice::where('shipment_id', $shipment->id)->exists()) {
+        InvoiceCharge::where('invoice_id', $invoice->id)->delete();
+        \Log::info("Deleted old charges for shipment ID: {$shipment->id}");
+    } else {
+        \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
+    }
 
-    $invoiveCharge = InvoiceCharge::where('invoice_id', $invoice->id)->delete();
+    //$invoiveCharge = InvoiceCharge::where('invoice_id', $invoice->id)->delete();
 
     // Convert all fields to arrays and ensure consistent length
     $chargeData = [
@@ -1141,8 +1154,15 @@ protected function processInvoiceCharges($shipment, $validatedData, $branchId)
 
     protected function processContainers($shipment, $validatedData, $branchId)
     {
-        
+
+        if (ShipmentContainer::where('shipment_id', $shipment->id)->exists()) {
         ShipmentContainer::where('shipment_id', $shipment->id)->delete();
+        \Log::info("Deleted old charges for shipment ID: {$shipment->id}");
+        } else {
+            \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
+        }
+        
+        
 
         foreach ($validatedData['container_type'] as $i => $container) {
         
@@ -1167,7 +1187,13 @@ protected function processExpenses($shipment, $validatedData, $branchId)
     $credit_total = 0;
     $expense_total = 0;
     
-    ShipmentExpense::where('shipment_id', $shipment->id)->delete();
+    
+    if (ShipmentExpense::where('shipment_id', $shipment->id)->exists()) {
+        ShipmentExpense::where('shipment_id', $shipment->id)->delete();
+        \Log::info("Deleted old charges for shipment ID: {$shipment->id}");
+        } else {
+            \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
+        }
 
     foreach ($validatedData['expense_type'] as $i => $expenseType) {
         $expense = [
@@ -1211,6 +1237,7 @@ protected function processExpenses($shipment, $validatedData, $branchId)
 
 protected function processUploads($shipment, $uploads)
 {
+    
     foreach ($uploads as $upload) {
         if (isset($upload['file'])) {
             //$uploadedFileUrl = Cloudinary::upload($upload['file']->getRealPath())->getSecurePath();

@@ -47,7 +47,7 @@ class StoreShipmentRequest extends FormRequest
             'bill_of_laden_number' => 'nullable|string|max:255',
             'booking_number' => 'nullable|string|max:255',
             'po_number' => 'nullable|string|max:255',
-            'shipment_weight' => 'nullable|numeric',
+            'load_weight' => 'nullable|numeric',
             'commodity' => 'nullable|string|max:255',
             'pieces' => 'nullable|integer',
             'pickup_number' => 'nullable|string|max:255',
