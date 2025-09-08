@@ -198,6 +198,32 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
     Route::get('users/members', [UnivController::class, 'getUsers'])->name('users.index');       
     Route::post('users/unlimited-access', [UnivController::class, 'grantUnlimitedAccess'])->name('unlimited');
     Route::get('users/user/{id}', [UnivController::class, 'getUser'])->name('users.show');
+
+
+    //free viwwable routes after subscritpu=ion expires
+    
+    Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+    Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
+
+    Route::prefix('trucks')->group(function(){
+        Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');
+        Route::get('trucks', [TruckController::class, 'index'])->name('trucks.index');
+    })->middleware('role:businessadministrator');
+
+    Route::prefix('invoices')->group(function(){
+        Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
+        Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+    });
+
+    Route::prefix('customers')->group(function(){
+        Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+        Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
+    })->middleware('role:businessadministrator');
+
+    Route::prefix('consolidate')->group(function(){
+        Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
+        Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
+    })->middleware('role:businessadministrator');
     });
 
     
@@ -236,8 +262,8 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
         //Basic Subscription
         Route::middleware('subscription:basic')->group(function () {
             // Shipment routes
-            Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
-            Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
+            // Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
+            // Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
             Route::post('/shipments/create', [ShipmentController::class, 'store'])->name('shipments.store');
             Route::put('/updateShipmentStatus/{id}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
             Route::get('/shipments/track/{id}', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
@@ -270,15 +296,15 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
               Route::prefix('trucks')->group(function () {
                 Route::post('create', [TruckController::class, 'store'])->name('trucks.store');
                 Route::put('update/{id}', [TruckController::class, 'update'])->name('trucks.update');
-                Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');
-                Route::get('trucks', [TruckController::class, 'index'])->name('trucks.index');
+                // Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');
+                // Route::get('trucks', [TruckController::class, 'index'])->name('trucks.index');
                 Route::delete('delete/{id}', [TruckController::class, 'destroy'])->name('trucks.destroy');
             })->middleware('role:businessadministrator');
             Route::prefix('invoices')->group(function () {
                 Route::post('create', [InvoiceController::class, 'store'])->name('invoices.store');
                 //Route::put('update/{id}', [InvoiceController::class, 'update'])->name('invoices.update');
-                Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
-                Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
+                // Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
+                // Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
                 Route::get('invoices/search', [InvoiceController::class, 'search'])->name('invoices.search');
                 Route::get('customer', [InvoiceController::class, 'getCustomer'])->name('invoices.customer');
                 Route::put('updatestatus/{id}', [InvoiceController::class, 'updateStatus'])->name('invoices.updateStatus');
@@ -296,8 +322,8 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             Route::prefix('customers')->group(function () {
             Route::post('create', [CustomerController::class, 'store'])->name('customers.store');
             Route::put('update/{id}', [CustomerController::class, 'update'])->name('customers.update');
-            Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
-            Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
+            // Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
+            // Route::get('customer/{id}', [CustomerController::class, 'show'])->name('customers.show');
             Route::get('get-flash-message-shipment/{id}', [CustomerController::class, 'getFlashMessageShipment'])->name('customer.flash-message');
             Route::get('get-flash-message-accounting/{id}', [CustomerController::class, 'getFlashMessageAccounting'])->name('customer.flash-message-account');
             Route::delete('delete/{id}', [CustomerController::class, 'destroy'])->name('customers.destroy')->middleware('role:businessadministrator');
@@ -314,8 +340,8 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             Route::prefix('consolidate')->group(function () {
                 Route::post('/create', [ConsolidateShipmentController::class, 'store'])->name('console.shipments');
             Route::put('/update/{id}', [ConsolidateShipmentController::class, 'update'])->name('console.shipments.update');
-                Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
-                Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
+                // Route::get('/shipments', [ConsolidateShipmentController::class, 'index'])->name('console.shipments.index');
+                // Route::get('/shipment/{id}', [ConsolidateShipmentController::class, 'show'])->name('console.shipments.show');
                 Route::get('payments', [ConsolidateShipmentController::class, 'getPayments'])->name('console.shipments.payments');
                 Route::get('show-payment/{id}', [ConsolidateShipmentController::class, 'showPayment'])->name('console.shipments.show.payment');
                 Route::put('accept/{id}', [ConsolidateShipmentController::class,'acceptConsolidatedDelivery'])->name('console.accept');
