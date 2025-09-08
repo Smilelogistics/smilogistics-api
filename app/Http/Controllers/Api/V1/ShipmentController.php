@@ -1041,11 +1041,24 @@ protected function processInvoiceCharges($shipment, $validatedData, $branchId)
     
     // Delete existing charges
     $invoice = Invoice::where('shipment_id', $shipment->id)->first();
-    if (Invoice::where('shipment_id', $shipment->id)->exists()) {
+
+    // If invoice doesn't exist, create it
+    if (!$invoice) {
+        $invoice = Invoice::create([
+            'shipment_id'     => $shipment->id,
+            'branch_id'       => $branchId,
+            'net_total'       => 0,
+            'total_discount'  => 0,
+        ]);
+        \Log::info("Created new invoice for shipment ID: {$shipment->id}");
+    }
+
+    // Delete existing charges for this invoice
+    if (InvoiceCharge::where('invoice_id', $invoice->id)->exists()) {
         InvoiceCharge::where('invoice_id', $invoice->id)->delete();
-        \Log::info("Deleted old charges for shipment ID: {$shipment->id}");
+        \Log::info("Deleted old charges for invoice ID: {$invoice->id}");
     } else {
-        \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
+        \Log::info("No existing charges for invoice ID: {$invoice->id}, skipping delete.");
     }
 
     //$invoiveCharge = InvoiceCharge::where('invoice_id', $invoice->id)->delete();
