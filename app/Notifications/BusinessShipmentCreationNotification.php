@@ -36,7 +36,7 @@ class BusinessShipmentCreationNotification extends Notification implements Shoul
     {
         return (new MailMessage)
             ->subject('New Shipment Created')
-            ->line('A new shipment has been created by a customer.')
+            ->line('A new shipment has been created by a customer, kindly login to review.')
             ->line('Reference Number: ' . $this->shipment->reference_number)
             // ->line('Status: ' . $this->shipment->status)
             ->action(

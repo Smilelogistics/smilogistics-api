@@ -35,9 +35,10 @@ class NewBranchNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
+         $frontendUrl = env('FRONTEND_URL', config('app.frontend_url'));
         return (new MailMessage)
                     ->line('Your registration is sucessfull, your 30 days free trial is activated.')
-                    ->action('Get started', url('/'))
+                    ->action('Get started', $frontendUrl)
                     ->line('Thank you for using our application!');
     }
 

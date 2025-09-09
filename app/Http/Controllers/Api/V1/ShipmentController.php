@@ -12,6 +12,7 @@ use App\Models\Customer;
 use App\Models\Shipment;
 use App\Models\ShipmentNote;
 use Illuminate\Http\Request;
+use App\Mail\ShipmentCreated;
 use App\Models\InvoiceCharge;
 use App\Models\ShipmentTrack;
 use App\Models\ShipmentCharge;
@@ -33,7 +34,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ShipmentNotifyPartyMail;
 use App\Models\ShipmentConsolidation;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\CustomerShipmentCreatedMail;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\CustomerShipmentReviewedMail;
 use Illuminate\Notifications\Notification;
 use App\Http\Requests\StoreShipmentRequest;
 use App\Mail\ShipmentAdditionalNotifyPartyMail;
@@ -120,13 +123,18 @@ class ShipmentController extends Controller
         //you should be able to create customer account from hete
         $checkCreateAccount = false;
         $user = auth()->user();
-        $branch = Branch::where('user_id', $user->id)->first();
+        //$branch = Branch::where('user_id', $user->id)->first();
         $branch_prfx = $user->branch ? $user->branch->parcel_tracking_prefix : null;
         $shipment_prefix = $branch_prfx ? $branch_prfx : '';
         $branchId = auth()->user()->getBranchId();
+        $branch = Branch::where('id', $branchId)->first();
         $driverId = $user->driver? $user->driver->id : null;
         $checkSubscription = false;
         $creatorDriver = $user->driver ? $user->driver->id : null;
+        $customerEmail = '';
+        $branchEmail = $branch->user->email;
+        //dd($branch->user->email);
+        
 
        
 
@@ -165,12 +173,22 @@ class ShipmentController extends Controller
             $totaleS = $shipping_cost + $total_fuelL;
         }
 
-        if($user->user_type == 'customer')
-        {
+        $onbehalf = false;
+        if ($user->user_type === 'customer') {
             $customer_id_ = $user->customer->id;
-
-            //dd($customer_id);
+        } else {
+            $customer_id_ = $request->bill_to;
+            $onbehalf = true;
         }
+
+        $customer = Customer::find($request->customer_id ?? $customer_id_);
+        if ($customer) {
+            $customerEmail = $customer->user->email;
+        } else {
+            $customerEmail = null;
+        }
+
+        //dd($customerEmail);
         // dd($user->user_type);
         // return;
 
@@ -562,13 +580,15 @@ class ShipmentController extends Controller
            ;
             
             } 
-            //dd($branchUser = auth()->user()->customer->branch->user);
-            if(auth()->user()->user_type == 'customer') {
-                //dd($branchUser = auth()->user()->customer->branch->user);
-                $branchUser = auth()->user()->customer->branch->user;
-                //dd($branchUser);
-                ///dd(base64_encode($shipment->id));
+            //dd($shipment);
+            if($user->user_type == 'customer') {
+                $branchUser = $branch->user;
                 $branchUser->notify(new BusinessShipmentCreationNotification($shipment));
+                 Mail::to($branchEmail)->send(new CustomerShipmentCreatedMail($shipment, $branch));
+            }
+            else{
+                
+                 Mail::to($branchEmail)->send(new CustomerShipmentCreatedMail($shipment, $branch));
             }
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
@@ -583,21 +603,24 @@ class ShipmentController extends Controller
             throw $e;
         }
        
-       
-        if ($request->email) {
-            //Mail::to($request->email)->send(new ShipmentCreated($shipment));
-        } else {
-            // Retrieve customer ID from the customer_name field
-            $customer = Customer::where('id', $request->customer_name)->first();
+       //dd($customer_id_);
+        if ($request->customer_id || $customer_id_) {
+            
+            //dd($branchEmail);
+            // Mail::to($customerEmail)->send(new ShipmentCreated($shipment));
+            // Mail::to($branchEmail)->send(new ShipmentCreated($shipment));
+        } 
+        // else {
+        //     $customer = Customer::where('id', $request->customer_id)->first();
         
-            if ($customer && $customer->email) {
-              //Mail::to($customer->email)->send(new ShipmentCreated($shipment));
-            }
-        }
+        //     if ($customer && $customer->user->email) {
+        //       Mail::to($customer->email)->send(new ShipmentCreated($shipment));
+        //     }
+        // }
         // notify party email
         if($request->consignee_email) {
             $consignee_email = $request->consignee_email;
-          Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
+          //Mail::to($consignee_email)->send(new ShipmentConsigneeMail($shipment));
         }
         if($request->first_notify_party_email) {
             $first_notify_party_email = $request->first_notify_party_email;
@@ -607,7 +630,9 @@ class ShipmentController extends Controller
         if($request->second_notify_party_email) {
             $second_notify_party_email = $request->second_notify_party_email;
             //Mail::to($second_notify_party_email)->send(new ShipmentAdditionalNotifyPartyMail($shipment));
-        }            
+        }
+   
+
         //Log::info(request()->headers->all());
         //Log::info('Authorization Header:', [request()->header('Authorization')]);
 
@@ -648,6 +673,8 @@ class ShipmentController extends Controller
     {
         $user = auth()->user();
         $branchId = auth()->user()->getBranchId();
+        $branch = Branch::where('id', $branchId)->first();
+        $branchEmail = $branch->user->email;
         $shipment = Shipment::findOrFail($id);
     
         $validator = Validator::make($request->all(), [
@@ -785,11 +812,49 @@ class ShipmentController extends Controller
     
         $validatedData = $validator->validated();
 
-        $total_miles = $validatedData['total_miles'];
-        $fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
+        //$total_miles = $validatedData['total_miles'];
+        //$fuel_rate_per_gallon = $validatedData['fuel_rate_per_gallon'];
         $mpg = auth()->user()->getMPG();
 
-        $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+        //$total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+
+
+        $total_fuelL = 0;
+        $shipping_cost = 0;
+        $totaleS = 0;
+        if($validatedData['shipment_type'] == 'land')
+        {
+            $total_miles = $validatedData['total_miles'];
+            $fuel_rate_per_gallon = $user->branch->price_per_gallon ?? 1;
+            //dd($fuel_rate_per_gallon);
+            $mpg = $user->branch->mpg ?? 1;
+            //dd($mpg);
+            $price_per_mile = $user->branch->price_per_mile ?? 1;
+
+             if ($mpg <= 0) {
+                return response()->json([
+                    'error' => 'Invalid MPG value',
+                    'message' => 'Miles per gallon (MPG) must be greater than zero'
+                ], 400);
+            }
+
+            $shipping_cost = ($total_miles * 2)* $price_per_mile;
+
+            $total_fuelL = ($total_miles * 2)*  $fuel_rate_per_gallon / $mpg;
+
+            $totaleS = $shipping_cost + $total_fuelL;
+        }
+
+        if($user->user_type == 'customer')
+        {
+            $customer_id_ = $user->customer->id;
+
+            //dd($customer_id);
+        }
+
+
+//dd($total_fuelL);
+
 
         $arrayFields = [
             'overweight_hazmat' => $request->input('overweight_hazmat', []),
@@ -900,6 +965,8 @@ class ShipmentController extends Controller
                     'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
                     'signature' => null,
                     'delivery_type' => $validatedData['delivery_type'] ?? null,
+                    'shipping_cost' => $shipping_cost ?? 0.00,
+                    'total_shipment_cost' => $totaleS ?? 0.00,
                     // 'tags' => $validatedData['tags'],
                     // 'overweight_hazmat' => !empty($validatedData['overweight_hazmat']) 
                     //     ? json_encode(array_filter($validatedData['overweight_hazmat'])) 
@@ -934,6 +1001,16 @@ class ShipmentController extends Controller
                 // Handle uploads
                 if (isset($validatedData['shipment_uploads'])) {
                     $this->processUploads($shipment, $validatedData['shipment_uploads']);
+                }
+
+                //dd($user->user_type);
+
+                 if($user->user_type == 'customer') {
+                    
+                }
+                else{
+                    
+                    Mail::to($branchEmail)->send(new CustomerShipmentReviewedMail($shipment, $branch));
                 }
 
     

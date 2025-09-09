@@ -134,7 +134,8 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     }
 
     if ($user->hasVerifiedEmail()) { 
-        return response()->json(['message' => 'Email already verified.'], 200);
+        //return response()->json(['message' => 'Email already verified.'], 200);
+        return Redirect::to('https://app.smileslogistics.com/?verified=1');
     }
 
     $user->markEmailAsVerified();
