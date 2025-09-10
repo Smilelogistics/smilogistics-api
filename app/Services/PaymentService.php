@@ -102,7 +102,7 @@ class PaymentService
             'amount' => $plan->price,
             'currency' => $transaction->currency,
             'payment_options' => 'card,account,ussd',
-            'redirect_url' => 'app.smileslogistics.com/receipt.html?type=flutterwave',
+            'redirect_url' => 'https://app.smileslogistics.com/receipt.html?type=flutterwave',
             'customer' => [
                 'email' => $user->email,
                 'name' => $user->fname. ' '. $user->lname,
