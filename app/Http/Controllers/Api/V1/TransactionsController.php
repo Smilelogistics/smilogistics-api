@@ -230,10 +230,16 @@ class TransactionsController extends Controller
     //flutterwave integrt=ation
     public function verifyFlutterwavePayment(Request $request)
     {
-        //dd($request);
         $status = $request->query('status');
         $txid = $request->query('transaction_id');
         $txRef = $request->query('tx_ref');
+
+         \Log::debug('Dump payload data:', [
+            'status' => $status ?? null,
+            'txid' => $txid ?? null,
+            'txRef' => $txRef ?? null,
+        ]);
+
         
         //dd(env('FLUTTERWAVE_SECRET_KEY'));
 
