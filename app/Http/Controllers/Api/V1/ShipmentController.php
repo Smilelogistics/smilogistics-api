@@ -88,7 +88,8 @@ class ShipmentController extends Controller
         'branch',
         'pickups',
         'driver.user',
-        'dropoffs'
+        'dropoffs',
+        'invoice.customer.user'
     ])->findOrFail($id);
 
     // If branch has a logo, create a signed URL
