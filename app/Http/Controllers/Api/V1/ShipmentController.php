@@ -682,6 +682,7 @@ class ShipmentController extends Controller
             'driver_id' => 'nullable|exists:drivers,id',
             'user_id' => 'nullable|exists:users,id',
             'carrier_id' => 'nullable|exists:carriers,id',
+            'bill_to' => 'nullable|exists:customers,id',
             'truck_id' => 'nullable|exists:trucks,id',
             'bike_id' => 'nullable|exists:bikes,id',
             'shipment_status' => 'nullable|string|max:255',
@@ -883,7 +884,6 @@ class ShipmentController extends Controller
             $tagsArray = array_values(array_filter(array_map('trim', $tagsArray)));
             $validatedData['tags'] = !empty($tagsArray) ? $tagsArray : null;
         }
-    
         DB::beginTransaction();
         try {
             // Check if there are changes before updating
@@ -985,6 +985,7 @@ class ShipmentController extends Controller
 
                 // Handle charges
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
+                    //dd($validatedData['charge_type']);
                     $this->processCharges($shipment, $validatedData, $branchId, $user);
                     $this->processInvoiceCharges($shipment, $validatedData, $branchId);
                 }
@@ -1037,6 +1038,14 @@ protected function processCharges($shipment, $validatedData, $branchId, $user)
         'amount' => $validatedData['amount'] ?? null,
         'units' => $validatedData['units'] ?? null,
     ]);
+
+    $onbehalf = false;
+        if ($user->user_type === 'customer') {
+            $customer_id_ = $user->customer->id;
+        } else {
+            $customer_id_ = $validatedData['bill_to'];
+            $onbehalf = true;
+        }
 
     $total = 0;
     $totalDiscount = 0;
