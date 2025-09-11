@@ -1024,6 +1024,9 @@ class ShipmentController extends Controller
         }
     }
 
+
+
+
 protected function processCharges($shipment, $validatedData, $branchId)
 {
     // Debug the incoming data
@@ -1036,6 +1039,7 @@ protected function processCharges($shipment, $validatedData, $branchId)
 
     $total = 0;
     $totalDiscount = 0;
+     $old_net = $shipment->net_total_charges ?? 0;
     
     // Delete existing charges
     if (ShipmentCharge::where('shipment_id', $shipment->id)->exists()) {
@@ -1044,6 +1048,21 @@ protected function processCharges($shipment, $validatedData, $branchId)
     } else {
         \Log::info("No existing charges for shipment ID: {$shipment->id}, skipping delete.");
     }
+
+    $existingInvoice = Invoice::where('shipment_id', $shipment->id)->first();
+    if ($existingInvoice) {
+        InvoiceCharge::where('invoice_id', $existingInvoice->id)->delete();
+        $existingInvoice->delete();
+        \Log::info("Deleted old invoice for shipment ID: {$shipment->id}");
+    } else {
+        \Log::info("No existing invoice for shipment ID: {$shipment->id}, skipping delete.");
+    }
+
+
+    //Automatically create an invoice for the shipment
+    $invoicePrefx = $user->branch ? $user->branch->invoice_prefix : null;
+    $invoiceNumber = $invoicePrefx . Invoice::generateInvoiceNumber();
+   
 
     //ShipmentCharge::where('shipment_id', $shipment->id)->delete();
 
@@ -1060,6 +1079,35 @@ protected function processCharges($shipment, $validatedData, $branchId)
 
     // Get the count based on charge_type (assuming it's the primary field)
     $chargeCount = count($chargeData['charge_type']);
+
+     if ($chargeCount === 0) {
+            $shipment->update([
+                'total_charges' => 0,
+                'total_discount_charges' => 0,
+                'net_total_charges' => 0,
+                'total_shipment_cost' => ($shipment->total_shipment_cost ?? 0) - $old_net,
+            ]);
+
+            \DB::commit();
+            \Log::debug('No charges provided — cleared totals and adjusted shipment cost.');
+            return;
+        }
+
+        $invoicePrefix = $user && $user->branch ? $user->branch->invoice_prefix : null;
+        $invoiceNumber = ($invoicePrefix ?? '') . Invoice::generateInvoiceNumber();
+
+        $customerId = $validatedData['bill_to'] ?? $validatedData['customer_id'] ?? null;
+
+        $invoice = Invoice::create([
+            'shipment_id' => $shipment->id,
+            'customer_id' => $customerId,
+            'user_id' => $user->id,
+            'branch_id' => $branchId,
+            'invoice_number' => $invoiceNumber,
+        ]);
+
+        $invoiceChargesBatch = [];
+
 
     // Process each charge
     for ($i = 0; $i < $chargeCount; $i++) {
@@ -1084,6 +1132,24 @@ protected function processCharges($shipment, $validatedData, $branchId)
 
             \Log::debug('Created charge:', $charge->toArray());
 
+              // Prepare batch insert for invoice charges
+            $invoiceChargesBatch[] = [
+                'invoice_id' => $invoice->id,
+                'charge_type' => $chargeData['charge_type'][$i] ?? null,
+                'units' => $chargeData['units'][$i] ?? null,
+                'unit_rate' => $chargeData['rate'][$i] ?? null,
+                'amount' => $amount,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+
+             if (!empty($invoiceChargesBatch)) {
+            InvoiceCharge::insert($invoiceChargesBatch);
+            }
+
+            $net = $total - $totalDiscount;
+        
+
         } catch (\Exception $e) {
             \Log::error('Failed to create charge:', [
                 'index' => $i,
@@ -1100,10 +1166,17 @@ protected function processCharges($shipment, $validatedData, $branchId)
 
     // Update shipment totals
     $shipment->update([
-        'net_total_charges' => $total - $totalDiscount,
-        'total_discount_charges' => $totalDiscount,
-        'total_charges' => $total
-    ]);
+            'total_charges' => $total,
+            'total_discount_charges' => $totalDiscount,
+            'net_total_charges' => $net,
+            'total_shipment_cost' => ($shipment->total_shipment_cost ?? 0) - $old_net + $net,
+        ]);
+
+        // Update invoice totals
+        $invoice->update([
+            'total_discount' => $totalDiscount,
+            'net_total' => $net,
+        ]);
 
     \Log::debug('Updated shipment totals:', [
         'net_total_charges' => $total - $totalDiscount,
