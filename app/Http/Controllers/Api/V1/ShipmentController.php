@@ -984,7 +984,7 @@ class ShipmentController extends Controller
 
                 // Handle charges
                 if (!empty($validatedData['charge_type']) && is_array($validatedData['charge_type'])) {
-                    $this->processCharges($shipment, $validatedData, $branchId);
+                    $this->processCharges($shipment, $validatedData, $branchId, $user);
                     $this->processInvoiceCharges($shipment, $validatedData, $branchId);
                 }
 
@@ -1027,7 +1027,7 @@ class ShipmentController extends Controller
 
 
 
-protected function processCharges($shipment, $validatedData, $branchId)
+protected function processCharges($shipment, $validatedData, $branchId, $user)
 {
     // Debug the incoming data
     \Log::debug('Processing charges with data:', [
