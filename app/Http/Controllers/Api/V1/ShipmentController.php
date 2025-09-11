@@ -845,13 +845,14 @@ class ShipmentController extends Controller
             $totaleS = $shipping_cost + $total_fuelL;
         }
 
-        if($user->user_type == 'customer')
-        {
+            $onbehalf = false;
+        if ($user->user_type === 'customer') {
             $customer_id_ = $user->customer->id;
-
-            //dd($customer_id);
+        } else {
+            $customer_id_ = $request->bill_to;
+            $onbehalf = true;
         }
-
+        //dd($customer_id_);
 
 //dd($total_fuelL);
 
@@ -893,7 +894,7 @@ class ShipmentController extends Controller
                     'carrier_id' => $validatedData['carrier_id'] ?? null,
                     'bike_id' => $validatedData['bike_id'] ?? null,
                     'truck_id' => $validatedData['truck_id'] ?? null,
-                    'customer_id' => $validatedData['bill_to'] ?? null,
+                    'customer_id' => $validatedData['bill_to'] ?? $customer_id_ ?? null,
                     'shipment_status' => $validatedData['shipment_status'] ?? 'Shipment Updated',
                     'signature' => $validatedData['signature'] ?? null,
                     'office' => $validatedData['office'] ?? null,
