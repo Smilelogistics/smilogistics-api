@@ -74,7 +74,9 @@ class InvoiceController extends Controller
             'invoicecharges', 
             'paymentRecord',
             'branch.user',
-            'shipment'
+            'shipment',
+            'shipment.pickups',
+            'shipment.dropoffs'
         ]);
 
         if ($user->hasRole('businessadministrator')) {
