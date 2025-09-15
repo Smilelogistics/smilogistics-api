@@ -65,13 +65,13 @@ class InvoiceController extends Controller
     public function show($id)
     {
         $user = auth()->user();
-        
-        $invoice = Invoice::with([
-            'customer.user', 
-            'user', 
-            'invoicedocs', 
-            'invoicepayments', 
-            'invoicecharges', 
+
+        $invoiceQuery = Invoice::with([
+            'customer.user',
+            'user',
+            'invoicedocs',
+            'invoicepayments',
+            'invoicecharges',
             'paymentRecord',
             'branch.user',
             'shipment',
@@ -79,8 +79,18 @@ class InvoiceController extends Controller
             'shipment.dropoffs'
         ]);
 
-           // If branch has a logo, create a signed URL
-            if ($invoice->shipment->branch && $invoice->shipment->branch->invoice_logo) {
+        if ($user->hasRole('businessadministrator') && $user->branch) {
+            $invoiceQuery->where('branch_id', $user->branch->id);
+        } elseif ($user->hasRole('customer') && $user->customer) {
+            $invoiceQuery->where('customer_id', $user->customer->id);
+        } else {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        try {
+            $invoice = $invoiceQuery->findOrFail($id);
+
+            if ($invoice->shipment && $invoice->shipment->branch && $invoice->shipment->branch->invoice_logo) {
                 $path = str_replace(
                     "https://s3.eu-central-2.wasabisys.com/smileslogistics/",
                     "",
@@ -91,26 +101,12 @@ class InvoiceController extends Controller
                     ->temporaryUrl($path, now()->addMinutes(30));
             }
 
-        if ($user->hasRole('businessadministrator')) {
-            if ($user->branch) {
-                $invoice->where('branch_id', $user->branch->id);
-            }
-        } 
-        elseif ($user->hasRole('customer') && $user->customer) {
-            $invoice->where('customer_id', $user->customer->id);
-        } 
-        else {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        try {
-            $invoice = $invoice->findOrFail($id);
             return response()->json(['invoice' => $invoice]);
-            
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['message' => 'Invoice not found'], 404);
         }
     }
+
 
     // public function show($id)
     // {
