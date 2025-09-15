@@ -79,6 +79,18 @@ class InvoiceController extends Controller
             'shipment.dropoffs'
         ]);
 
+           // If branch has a logo, create a signed URL
+            if ($invoice->shipment->branch && $invoice->shipment->branch->invoice_logo) {
+                $path = str_replace(
+                    "https://s3.eu-central-2.wasabisys.com/smileslogistics/",
+                    "",
+                    $invoice->shipment->branch->invoice_logo
+                );
+
+                $invoice->shipment->branch->invoice_logo_url = Storage::disk('wasabi')
+                    ->temporaryUrl($path, now()->addMinutes(30));
+            }
+
         if ($user->hasRole('businessadministrator')) {
             if ($user->branch) {
                 $invoice->where('branch_id', $user->branch->id);
