@@ -221,6 +221,15 @@ class ShipmentController extends Controller
         }
         //dd($validatedData['bill_to']);
 
+        $bill_of_lad = $validatedData['bill_of_laden_number'] 
+            ?? Shipment::generateUniqueCode('shipments', 'bill_of_laden_number', 'BOL-', 10);
+
+        $reference_num = $validatedData['reference_number'] ?? Shipment::generateUniqueCode('shipments', 'reference_number', 'REF-', 10) ?? null;
+
+        $po_num = $validatedData['po_number'] ?? Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10);
+
+        $bookn_num =  $validatedData['booking_number'] ?? Shipment::generateUniqueCode('shipments', 'booking_number', 'BK-', 10);
+
        
         DB::beginTransaction();
 
@@ -243,13 +252,12 @@ class ShipmentController extends Controller
             'load_type_note' => $validatedData['load_type_note'] ?? null,
             'brokered' => $validatedData['brokered'] ?? null,
             'shipment_image' => $validatedData['shipment_image'] ?? null,
-            'reference_number' => $validatedData['reference_number'] ?? Shipment::generateUniqueCode('shipments', 'reference_number', 'REF-', 10) ?? null,
-            'bill_of_laden_number' => $validatedData['bill_of_laden_number'] 
-            ?? Shipment::generateUniqueCode('shipments', 'bill_of_laden_number', 'BOL-', 10),
+            'reference_number' => $reference_num,
+            'bill_of_laden_number' => $bill_of_lad,
 
-        'booking_number' => $validatedData['booking_number'] ?? Shipment::generateUniqueCode('shipments', 'booking_number', 'BK-', 10),
+        'booking_number' => $bookn_num,
 
-        'po_number' => $validatedData['po_number'] ?? Shipment::generateUniqueCode('shipments', 'po_number', 'PO-', 10),
+        'po_number' => $po_num,
 
             'shipment_weight' => $validatedData['load_weight'] ?? null,
             'commodity' => $validatedData['commodity'] ?? null,
@@ -347,7 +355,15 @@ class ShipmentController extends Controller
                 'user_id' => auth()->user()->id,
                 'branch_id' => $branchId,
                 'invoice_number' => $invoiceNumber,
+                'bill_of_landing_number' => $bill_of_lad,
+                'booking_number' => $bookn_num,
+                'reference_number' => $reference_num,
+                'po_number' => $po_num,
+                'load_weight' => $validatedData['load_weight'] ?? null,
+                'commodity' => $validatedData['commodity'] ?? null,
                 ]);
+
+                //dd($po_num);
                 
 
                 // Process each charge
@@ -1115,6 +1131,12 @@ protected function processCharges($shipment, $validatedData, $branchId, $user)
             'user_id' => $user->id,
             'branch_id' => $branchId,
             'invoice_number' => $invoiceNumber,
+            'bill_of_landing_number' => $validatedData['bill_of_landing_number'] ?? null,
+            'booking_number' => $validatedData['booking_number'] ?? null,
+            'reference_number' => $validatedData['reference_number'] ?? null,
+            'po_number' => $validatedData['po_number'] ?? null,
+            'load_weight' => $validatedData['load_weight'] ?? null,
+            'commodity' => $validatedData['commodity'] ?? null,
         ]);
 
         $invoiceChargesBatch = [];
