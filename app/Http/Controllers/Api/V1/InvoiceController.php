@@ -43,13 +43,13 @@ class InvoiceController extends Controller
         //dd($branchId, $customerId);
         if ($user->hasRole('businessadministrator')) {
             $invoices = Invoice::where('branch_id', $branchId)
-                            ->with('customer.user', 'user')
+                            ->with('customer.user', 'user', 'shipment')
                             ->latest()
                             ->get();
         }
         elseif ($user->hasRole('customer')) {
             $invoices = Invoice::where('customer_id', $customerId)
-                            ->with('branch.user', 'user')
+                            ->with('branch.user', 'user', 'shipment')
                             ->latest()
                             ->get();
         } else {
@@ -73,7 +73,8 @@ class InvoiceController extends Controller
             'invoicepayments', 
             'invoicecharges', 
             'paymentRecord',
-            'branch.user'
+            'branch.user',
+            'shipment'
         ]);
 
         if ($user->hasRole('businessadministrator')) {
