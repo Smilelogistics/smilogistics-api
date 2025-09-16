@@ -111,7 +111,10 @@ class DashboardController extends Controller
         $consolidatedCount = ConsolidateShipment::where('driver_id', $user->driver->id)->count();
         $deliveryCount = Delivery::where('driver_id', $user->driver->id)->count();
 
-        $recentTransactions = Shipment::where('created_by_driver_id', $user->creatorDriver->id)
+        // $recentTransactions = Shipment::where('created_by_driver_id', $user->creatorDriver->id)
+        // ->orderBy('created_at', 'desc')
+        // ->take(10);
+         $recentTransactions = Shipment::where('driver_id', $user->driver->id)
         ->orderBy('created_at', 'desc')
         ->take(10);
     

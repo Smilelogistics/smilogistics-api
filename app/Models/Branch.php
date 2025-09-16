@@ -12,6 +12,7 @@ class Branch extends Model
     use Notifiable;
     
     protected $fillable = [
+        'id',
         'user_id',
         'branch_code',
         'address',
