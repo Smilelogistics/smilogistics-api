@@ -116,7 +116,8 @@ class DashboardController extends Controller
         // ->take(10);
          $recentTransactions = Shipment::where('driver_id', $user->driver->id)
         ->orderBy('created_at', 'desc')
-        ->take(10);
+        ->take(10)
+        ->get();
     
         
         // Return response
