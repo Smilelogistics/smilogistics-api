@@ -417,7 +417,7 @@ class TransactionsController extends Controller
                 'email' => $transaction->customer_email ?? $transaction->user->email,
                 'amount' => $transaction->amount,
                 'currency' => $transaction->currency ?? 'NGN',
-                'gateway' => 'Paystack',
+                'gateway' => $transaction->payment_method,
                 'date' => $transaction->paid_at ?? $transaction->updated_at,
                 'plan' => $transaction->plan->name ?? null,
                 'status' => $transaction->status
