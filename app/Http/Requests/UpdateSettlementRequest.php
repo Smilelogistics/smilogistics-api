@@ -27,6 +27,7 @@ class UpdateSettlementRequest extends FormRequest
             'office' => 'nullable|string|max:255',
             // 'settlement_no' => 'nullable|string|max:255',
             'settlement_date' => 'nullable|date',
+            'settlement_week' => 'nullable|string',
             'driver_id' => 'nullable|integer|exists:drivers,id',
             'truck_id' => 'nullable|integer|exists:trucks,id',
             'carrier_id' => 'nullable|integer|exists:carriers,id',
