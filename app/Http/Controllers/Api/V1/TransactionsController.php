@@ -286,7 +286,16 @@ class TransactionsController extends Controller
                     ->with(['user', 'plan'])
                     ->first();
 
-                if (!$transaction) {
+                if ($transaction === 'success') {
+                    if ($request->expectsJson() || $request->header('Accept') === 'application/json') {
+                    return $this->formatSuccessResponse($transaction, 'flutterwave');
+                }
+
+                return redirect()->to(config('app.frontend_url') . '/receipt.html?reference=' . $reference . '&type=flutterwave');
+
+                    
+                }
+                else{
                     throw new \Exception("Transaction not found or already processed");
                 }
 
