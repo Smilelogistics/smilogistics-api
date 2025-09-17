@@ -348,7 +348,7 @@ class TransactionsController extends Controller
                     'subscription_type' => $plan->slug,
                     'subscription_count' => $branch->subscription_count + 1
                 ]);
-
+//dd($transaction);
                 DB::commit();
 
                 // Return formatted response
