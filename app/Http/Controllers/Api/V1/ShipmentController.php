@@ -64,8 +64,8 @@ class ShipmentController extends Controller
             'shipmentUploads',
             'invoice.customer.user'
         ])
-        ->where('branch_id', $branchId)
-        ->where('user_id', $user->id);
+        ->where('branch_id', $branchId);
+        //->where('user_id', $user->id);
 
         if ($user->hasRole('customer')) {
             $query->where('customer_id', $user->customer->id);
