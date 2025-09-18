@@ -155,6 +155,16 @@ class DashboardController extends Controller
            //dd($user->customer->id);
         $shipmentCount = Shipment::where('customer_id', $user->customer->id)->count();
         $consolidatedCount = ConsolidateShipment::where('customer_id', $user->customer->id)->count();
+       $invoiceCounts = Invoice::where('customer_id', $user->customer->id)
+            ->selectRaw("COUNT(*) as total_count")
+            ->selectRaw("SUM(status = 'paid') as paid_count")
+            ->selectRaw("SUM(status != 'paid') as unpaid_count")
+            ->first();
+
+        $totalInvoiceCount = $invoiceCounts->total_count;
+        $paidInvoiceCount  = $invoiceCounts->paid_count;
+        $unPaidInvoiceCount = $invoiceCounts->unpaid_count;
+
         //dd($shipmentCount, $consolidatedCount);
           
             
@@ -176,10 +186,12 @@ class DashboardController extends Controller
                 'data' => [
                     'myShipmentCount' => $shipmentCount,
                     'myConsolidatedCount' => $consolidatedCount,
+                    'paidInvoiceCount' => $paidInvoiceCount,
+                    'unPaidInvoiceCount' => $unPaidInvoiceCount,
                     // 'grand_fuel_cost' => $grandFuelCost,
                     // 'grand_expense_total' => $grandExpenseTotal,
                     // 'grand_charges_total' => $grandChargesTotal,
-                    'grand_total_amount' => $totalRevenue,
+                    //'grand_total_amount' => $totalRevenue,
                     'recentTransactions' => $recentTransactions
                 ]
             ]);
