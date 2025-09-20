@@ -370,7 +370,7 @@ class ShipmentController extends Controller
                 foreach ($validatedData['charge_type'] as $i => $chargeType) {
                     $amount = (float)($validatedData['amount'][$i] ?? 0);
                     $discount = (float)($validatedData['discount'][$i] ?? 0);
-                    
+                    //dd($validatedData['units'][$i]);
                     // Calculate totals
                     $total += $amount;
                     $totalDiscount += $discount;

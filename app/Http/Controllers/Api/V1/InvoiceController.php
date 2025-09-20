@@ -250,6 +250,7 @@ class InvoiceController extends Controller
 
             //REpayment Record
             if ($request->has('payment_amount')) {
+                dd($request->payment_amount);
                 $totalPayments = 0;
                 $totals = $total - $totalDiscount;
             
