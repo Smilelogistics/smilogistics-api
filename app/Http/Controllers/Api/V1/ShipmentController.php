@@ -422,7 +422,8 @@ class ShipmentController extends Controller
                 $invoice->update([
                     //'total' => $total, 
                     'total_discount' => $totalDiscount,
-                    'net_total' => $total - $totalDiscount
+                    'net_total' => $total - $totalDiscount,
+                    'remaining_balance' => $total - $totalDiscount
                 ]);
 
 
@@ -1209,7 +1210,9 @@ protected function processCharges($shipment, $validatedData, $branchId, $user)
         $invoice->update([
             'total_discount' => $totalDiscount,
             'net_total' => $net,
+            'remaining_balance' => $net - $totalDiscount
         ]);
+        
 
     \Log::debug('Updated shipment totals:', [
         'net_total_charges' => $total - $totalDiscount,

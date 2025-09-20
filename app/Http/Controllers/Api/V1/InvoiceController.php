@@ -709,6 +709,8 @@ protected function handleRepaymentRecords(array $payments, $invoice)
 
         if ($amountPaid <= 0) continue;
 
+        //dd($amountPaid);
+
         $totalPayments += $amountPaid;
 
         $created = InvoicePaymentRecord::create([
@@ -730,6 +732,8 @@ protected function handleRepaymentRecords(array $payments, $invoice)
     $existingPayments = 0;
     $newTotalPayments = $existingPayments + $totalPayments;
     $remainingBalance = max(0, $netTotal - $newTotalPayments);
+
+    //dd($remainingBalance);
 
     $paymentStatus = 'unpaid';
     if ($remainingBalance <= 0) {
