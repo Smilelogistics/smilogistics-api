@@ -250,7 +250,6 @@ class InvoiceController extends Controller
 
             //REpayment Record
             if ($request->has('payment_amount')) {
-                dd($request->payment_amount);
                 $totalPayments = 0;
                 $totals = $total - $totalDiscount;
             
@@ -702,6 +701,8 @@ protected function handleRepaymentRecords(array $payments, $invoice)
 
     $createdRecords = [];
     $totalPayments = 0;
+
+   // dd($payments);
 
     foreach ($payments as $payment) {
         $amountPaid = (float)($payment['payment_amount'] ?? 0);
