@@ -238,6 +238,7 @@ class SettlementController extends Controller
             //send notification
             if($request->has('driver_id')) {
                 $driver = Driver::with('user')->find($request->driver_id);
+                //dd($driver->user);
                 $driver->user->notify(new SettlementNotification($settlement, $branch));
             }
             if($request->has('customer_id')) {
