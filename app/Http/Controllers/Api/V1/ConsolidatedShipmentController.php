@@ -131,7 +131,7 @@ class ConsolidatedShipmentController extends Controller
         return response()->json([
             'consolidated_shipments' => $consolidatedShipments
         ], 200);
-    }
+    } 
 
     public function pendingConsolidatedShipment() {
         $consolidatedShipments = ConsolidatedShipment::with('shipments')->where('status', 'pending')->get();
