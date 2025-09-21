@@ -24,16 +24,16 @@ jobs:
     - name: Run migrations
       run: php artisan migrate --force
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+    # - name: Setup Node.js
+    #   uses: actions/setup-node@v4
+    #   with:
+    #     node-version: '18'
+    #     cache: 'npm'
 
-    - name: Install NPM dependencies and build
-      run: |
-        npm ci
-        npm run build
+    # - name: Install NPM dependencies and build
+    #   run: |
+    #     npm ci
+    #     npm run build
 
     - name: Create deployment artifacts
       run: |
