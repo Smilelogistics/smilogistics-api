@@ -21,7 +21,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader
 
-        # Deploy Laravel core (excluding public/)
+        # Deploy Laravel core (excluding public /)
       - name: Deploy Laravel Core
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
