@@ -2,7 +2,9 @@ name: Deploy API
 
 on:
   push:
-      branches: [ main, master ]
+    branches: 
+      - main
+      - master
 
 jobs:
   deploy:
@@ -21,7 +23,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader
 
-        # Deploy Laravel core (excluding public /)
+      # Deploy Laravel core (excluding public /)
       - name: Deploy Laravel Core
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -36,12 +38,12 @@ jobs:
             node_modules/**
             vendor/**
 
-        # Deploy public folder
+      # Deploy public folder
       - name: Deploy Public Folder
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_PATH }}
+          server-dir: ${{ secrets.FTP_PATH }}/public_html/
           local-dir: ./public
