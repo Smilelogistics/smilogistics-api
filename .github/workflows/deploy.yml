@@ -1,0 +1,113 @@
+name: Deploy to Shared Hosting
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs: 
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, dom, filter, gd, iconv, json, mbstring, pdo
+
+    - name: Install Composer dependencies
+      run: composer install --optimize-autoloader --no-dev --no-interaction
+
+    - name: Run migrations
+      run: php artisan migrate --force
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install NPM dependencies and build
+      run: |
+        npm ci
+        npm run build
+
+    - name: Create deployment artifacts
+      run: |
+        mkdir deployment
+        cp -R app deployment/
+        cp -R bootstrap deployment/
+        cp -R config deployment/
+        cp -R database deployment/
+        cp -R public deployment/
+        cp -R resources deployment/
+        cp -R routes deployment/
+        cp -R storage deployment/
+        cp -R vendor deployment/
+        cp artisan deployment/
+        cp composer.json deployment/
+        cp composer.lock deployment/
+        cp .env.example deployment/
+        
+        # Create .htaccess for Laravel
+        echo '<IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteRule ^(.*)$ public/$1 [L]
+        </IfModule>' > deployment/.htaccess
+
+        # Create a script to run artisan storage:link on the server
+        cat > deployment/setup-storage.php << 'EOF'
+        <?php
+        echo "Running Laravel storage:link command...\n";
+        
+        // Change to the correct directory
+        chdir(__DIR__);
+        
+        // Run artisan storage:link command
+        $output = [];
+        $returnCode = 0;
+        
+        exec('php artisan storage:link 2>&1', $output, $returnCode);
+        
+        echo "Command output:\n";
+        foreach ($output as $line) {
+            echo $line . "\n";
+        }
+        
+        if ($returnCode === 0) {
+            echo "Storage link created successfully!\n";
+        } else {
+            echo "Failed to create storage link. Return code: $returnCode\n";
+        }
+        
+        // Verify the link was created
+        $linkPath = __DIR__ . '/public/storage';
+        if (is_link($linkPath)) {
+            echo "Verification: Storage symlink exists at public/storage\n";
+            echo "Points to: " . readlink($linkPath) . "\n";
+        } else {
+            echo "Verification: Storage symlink not found\n";
+        }
+        EOF
+        
+        # Make the script executable
+        chmod +x deployment/setup-storage.php
+
+    - name: Deploy to server
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./deployment/
+        server-dir: ${{ secrets.FTP_TARGET }}
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          tests/**
+          .env
+        log-level: verbose
