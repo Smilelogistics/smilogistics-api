@@ -142,4 +142,15 @@ class Shipment extends Model
             }
         });
     }
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($shipment) {
+            //if (empty($shipment->booking_date)) {
+                $shipment->booking_date = Carbon::now();
+           // }
+        });
+    }
+
 }

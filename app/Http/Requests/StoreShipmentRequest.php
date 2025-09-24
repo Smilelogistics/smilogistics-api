@@ -171,6 +171,10 @@ class StoreShipmentRequest extends FormRequest
             //Ocean shipment
             'shipment_type' => 'nullable|string',
             'shipper_name' => 'nullable|string',
+            'ocean_shippment_type' => 'nullable|string',
+            'ocean_estimated_loading_date' => 'nullable|date',
+            // 'booking_date' => 'nullable|date',
+            'ocean_shipment_line' => 'nullable|string',
             'ocean_shipper_address' => 'nullable|string',
             'ocean_shipper_reference_number' => 'nullable|string',
             'carrier_name' => 'nullable|string',
