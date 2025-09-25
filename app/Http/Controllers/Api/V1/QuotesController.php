@@ -11,7 +11,7 @@ class QuotesController extends Controller
     public function index()
     {
         $quotes = Quote::with('shipment')->get();
-        return response()->json($quotes);
+        return response()->json(['quotes' => $quotes], 200);
     }
 
     public function show($id)
