@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Driver;
 use Illuminate\Support\Str;
@@ -74,6 +75,11 @@ class Shipment extends Model
     public function billTo()
     {
         return $this->hasMany(BillTo::class, 'shipment_id');
+    }
+
+    public function quote()
+    {
+        return $this->hasOne(Quote::class, 'shipment_id');
     }
       public function pickups()
     {
@@ -148,7 +154,7 @@ class Shipment extends Model
 
         static::creating(function ($shipment) {
             //if (empty($shipment->booking_date)) {
-                $shipment->booking_date = Carbon::now();
+                $shipment->booking_date =  Carbon::now()->toDateString();
            // }
         });
     }

@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\UnivController;
 use App\Http\Controllers\Api\V1\PlansController;
 use App\Http\Controllers\Api\V1\TruckController;
 use App\Http\Controllers\Api\V1\DriverController;
+use App\Http\Controllers\Api\V1\QuotesController;
 use App\Http\Controllers\Api\V1\CarrierController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\CustomerController;
@@ -215,6 +216,12 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
         Route::get('invoices', [InvoiceController::class, 'showAll'])->name('invoices.showAll');
         Route::get('invoice/{id}', [InvoiceController::class, 'show'])->name('invoices.show');
     });
+    
+    Route::prefix('quote')->group(function(){
+        Route::get('quote', [QuotesController::class, 'index'])->name('quote.index');
+        Route::get('quote/{id}', [QuotesController::class, 'show'])->name('quote.show');
+        Route::put('quote/{id}', [QuotesController::class, 'update'])->name('quote.update');
+    })->middleware('role:businessadministrator');
 
     Route::prefix('customers')->group(function(){
         Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');

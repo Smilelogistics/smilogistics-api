@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Models\User;
+use App\Models\Quote;
 use App\Models\Agency;
 use App\Models\BillTo;
 use App\Models\Branch;
@@ -327,11 +328,37 @@ class ShipmentController extends Controller
             'total_shipment_cost' => $totaleS ?? 0.00,
             //'comment' => $validatedData['comment'] ?? null,
             ]);
+
+            //initialize quote
+            $quoteId = Quote::insertGetId([
+                'shipment_id' => $shipment->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            //dd($quoteId);
             
             if ($request->hasFile('signature')) {
-                $uploadedFile = Cloudinary::upload($request->file('signature')->getRealPath(), [
-                'folder' => 'Smile_logistics/signatures',
-                ]);
+
+
+                // get the uploaded file
+                $file = $request->file('signature');
+
+                // generate unique filename
+                $filename = time() . '_' . $file->getClientOriginalName();
+
+                // store the file in Wasabi
+                $path = $file->storeAs(
+                    'signature',   // folder inside the Wasabi bucket
+                    $filename,     // unique filename
+                    'wasabi'       // disk name from config/filesystems.php
+                );
+
+                $url = Storage::disk('wasabi')->url($path);
+
+
+                // $uploadedFile = Cloudinary::upload($request->file('signature')->getRealPath(), [
+                // 'folder' => 'Smile_logistics/signatures',
+                // ]);
               
                 $shipment->update([
                     'signature' => $uploadedFile->getSecurePath()
