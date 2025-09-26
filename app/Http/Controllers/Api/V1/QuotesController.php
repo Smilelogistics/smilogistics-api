@@ -20,7 +20,7 @@ class QuotesController extends Controller
         if (!$quote) {
             return response()->json(['message' => 'Quote not found'], 404);
         }
-        return response()->json($quote);
+        return response()->json(['quote' => $quote], 200);
     }
 
     public function update(Request $request, $id)
@@ -30,6 +30,6 @@ class QuotesController extends Controller
             return response()->json(['message' => 'Quote not found'], 404);
         }
         $quote->update($request->all());
-        return response()->json($quote);
+        return response()->json(['quote' => $quote], 200);
     }
 }
