@@ -33,7 +33,7 @@ class QuotesController extends Controller
             'user_id' => auth()->user()->id,
             'quoted_amount' => $request->input('quoted_amount'),
             'eta' => $request->input('eta'),
-            'esailing_date' => $request->input('sailing_dateta'),
+            'esailing_dateta' => $request->input('sailing_date'),
             'docs_cut_off' => $request->input('docs_cut_off'),
             'original_title_cut_off' => $request->input('original_title_cut_off'),
             'earliest_recievable_date' => $request->input('earliest_recievable_date'),
