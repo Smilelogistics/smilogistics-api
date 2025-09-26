@@ -220,7 +220,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
     Route::prefix('quote')->group(function(){
         Route::get('quote', [QuotesController::class, 'index'])->name('quote.index');
         Route::get('quote/{id}', [QuotesController::class, 'show'])->name('quote.show');
-        Route::put('quote/{id}', [QuotesController::class, 'update'])->name('quote.update');
+        Route::post('quote/{id}', [QuotesController::class, 'update'])->name('quote.update');
     })->middleware('role:businessadministrator');
 
     Route::prefix('customers')->group(function(){
