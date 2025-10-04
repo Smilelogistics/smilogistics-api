@@ -138,7 +138,7 @@ public function sendBOL($id)
             ->temporaryUrl($path, now()->addMinutes(30));
     }
 
-    if($shipment->shipment_type === 'Ocean') {
+    if($shipment->shipment_type === 'ocean') {
         if($shipment->customer && $shipment->customer->user) {
             try {
                 Mail::to($shipment->customer->user->email)
