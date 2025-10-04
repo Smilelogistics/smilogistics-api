@@ -50,33 +50,70 @@ use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 class ShipmentController extends Controller
 {
     use FileUploadTrait;
-   public function index()
-    {
-        $user = auth()->user();
-        $branchId = $user->getBranchId();
+//    public function index()
+//     {
+//         $user = auth()->user();
+//         $branchId = $user->getBranchId();
 
-        $query = Shipment::with([
-            'branch',
-            'customer',
-            'billTo',
-            'shipmentContainers',
-            'shipmentCharges',
-            'shipmentNotes',
-            'shipmentExpenses',
-            'shipmentUploads',
-            'invoice.customer.user'
-        ])
-        ->where('branch_id', $branchId);
-        //->where('user_id', $user->id);
+//         $query = Shipment::with([
+//             'branch',
+//             'customer',
+//             'billTo',
+//             'shipmentContainers',
+//             'shipmentCharges',
+//             'shipmentNotes',
+//             'shipmentExpenses',
+//             'shipmentUploads',
+//             'invoice.customer.user'
+//         ])
+//         ->where('branch_id', $branchId);
+//         //->where('user_id', $user->id);
 
-        if ($user->hasRole('customer')) {
-            $query->where('customer_id', $user->customer->id);
-        }
+//         if ($user->hasRole('customer')) {
+//             $query->where('customer_id', $user->customer->id);
+//         }
 
-        $shipments = $query->latest()->get();
+//         $shipments = $query->latest()->get();
 
-        return response()->json(['shipments' => $shipments]);
+//         return response()->json(['shipments' => $shipments]);
+//     }
+
+public function index()
+{
+    $user = auth()->user();
+    $branchId = $user->getBranchId();
+
+    $query = Shipment::with([
+        'branch',
+        'customer',
+        'billTo',
+        'shipmentContainers',
+        'shipmentCharges',
+        'shipmentNotes',
+        'shipmentExpenses',
+        'shipmentUploads',
+        'invoice.customer.user'
+    ])
+    ->where('branch_id', $branchId)
+    ->where(function ($q) {
+        // For "Ocean" shipments, only include those with quote_accepted_status = 2
+        $q->where('shipment_type', '!=', 'Ocean')
+          ->orWhere(fn($sub) => 
+              $sub->where('shipment_type', 'Ocean')
+                  ->where('quote_accepted_status', 2)
+          );
+    });
+
+    if ($user->hasRole('customer')) {
+        $query->where('customer_id', $user->customer->id);
     }
+
+    // Use select() to fetch only needed columns if relationships already cover others
+    $shipments = $query->latest()->get();
+
+    return response()->json(['shipments' => $shipments]);
+}
+
     
     public function show($id)
 {
