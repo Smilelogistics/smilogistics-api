@@ -8,12 +8,15 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class BillOfLandingMail extends Mailable
 {
     use Queueable, SerializesModels;
     public $shipment;
     public $branch;
+    
     /**
      * Create a new message instance.
      */
@@ -29,7 +32,7 @@ class BillOfLandingMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Bill Of Landing',
+            subject: 'Bill Of Lading - ' . ($this->shipment->shipment_tracking_number ?? ''),
         );
     }
 
@@ -40,6 +43,10 @@ class BillOfLandingMail extends Mailable
     {
         return new Content(
             view: 'mail.bill-of-landing',
+            with: [
+                'shipment' => $this->shipment,
+                'branch' => $this->branch,
+            ]
         );
     }
 
@@ -50,17 +57,16 @@ class BillOfLandingMail extends Mailable
      */
     public function attachments(): array
     {
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView(
+        $pdf = Pdf::loadView(
             'pdf.bill-of-landing',
-            ['branch' => $this->quote, 'shipment' => $this->shipment]
+            ['branch' => $this->branch, 'shipment' => $this->shipment]
         )->setPaper('a4', 'portrait');
 
         return [
             \Illuminate\Mail\Mailables\Attachment::fromData(
                 fn () => $pdf->output(),
-                'bill-of-landing.pdf'
+                'bill-of-landing-' . ($this->shipment->shipment_tracking_number ?? '') . '.pdf'
             )
-            ->as('bill-of-landing.pdf')
             ->withMime('application/pdf'),
         ];
     }

@@ -112,14 +112,14 @@
         <div class="col-span-2 bl-box !border-r-0 !border-b-0">
             <div class="bl-box-header">Shipper:</div>
             <pre class="bl-content-text !font-normal">
-                {{strtoupper($shipment->shipper_name) ?? strtoupper($shipment->branch->user->fname) . ' ' . strtoupper($shipment->branch->user->lname)}}
-                {{strtoupper($shipment->branch->address)}}
+                {{ strtoupper($shipment->shipper_name ?? $branch->user->fname . ' ' . $branch->user->lname) }}
+                {{ strtoupper($branch->address ?? '') }}
 
-                {{ strtoupper($shipment->branch->company_name ?? 'SMILES LOGISTICS GROUP') }}
-                {{ strtoupper($shipment->branch->company_address ?? '2646 HIGHWAY AVE') }}
-                {{ strtoupper($shipment->branch->company_city ?? 'HIGHLAND, INDIANA 46322') }}
-                PHONE: {{ strtoupper($shipment->branch->phone ?? 'N/A') }}
-                EMAIL: {{ strtoupper($shipment->branch->email ?? 'N/A') }}
+                {{ strtoupper($branch->company_name ?? 'SMILES LOGISTICS GROUP') }}
+                {{ strtoupper($branch->company_address ?? '2646 HIGHWAY AVE') }}
+                {{ strtoupper($branch->company_city ?? 'HIGHLAND, INDIANA 46322') }}
+                PHONE: {{ strtoupper($branch->phone ?? 'N/A') }}
+                EMAIL: {{ strtoupper($branch->user->email ?? 'N/A') }}
                 </pre>
         </div>
         
@@ -131,7 +131,7 @@
             </div>
             <div class="bl-box !border-r-0 !border-b-0">
                 <div class="bl-box-header">Export References:</div>
-                <div class="bl-content-text">{{strtoupper($shipment->ocean_shipper_reference_number)}}</div>
+               <div class="bl-content-text">{{ strtoupper($shipment->ocean_shipper_reference_number ?? '-') }}</div>
             </div>
         </div>
 
@@ -177,7 +177,8 @@ EMAIL: {{strtoupper($shipment->notify_party_email) ?? '-'}}</pre>
         <div class="col-span-4 grid grid-cols-6 border-b border-black">
             <div class="col-span-2 bl-box !border-b-0 !border-r-0">
                 <div class="bl-box-header">Vessel(s):</div>
-                <div class="bl-content-text"> {{strtoupper($shipment->vessel_aircraft_name) ?? '-'}} </div>
+                <div class="bl-content-text">{{ strtoupper($shipment->vessel_aircraft_name ?? '-') }}</div>
+
             </div>
             <div class="col-span-2 bl-box !border-b-0 !border-r-0">
                 <div class="bl-box-header">Port of Loading:</div>
@@ -185,7 +186,7 @@ EMAIL: {{strtoupper($shipment->notify_party_email) ?? '-'}}</pre>
             </div>
             <div class="col-span-2 bl-box !border-b-0">
                 <div class="bl-box-header">Voyage-No. / Place of Delivery:</div>
-                <div class="bl-content-text"> {{strtoupper($shipment->voyage_no) ?? '-'}} / {{strtoupper($shipment->port_of_delivery) ?? '-'}} </div>
+                <div class="bl-content-text">{{ strtoupper($shipment->voyage_number ?? 'N/A') }} / {{ strtoupper($shipment->place_of_delivery ?? '-') }}</div>
             </div>
             <div class="col-span-3 bl-box !border-r-0">
                 <div class="bl-box-header">Port of Discharge:</div>

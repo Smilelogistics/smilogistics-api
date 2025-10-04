@@ -206,6 +206,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
     
     Route::get('/shipments', [ShipmentController::class, 'index'])->name('shipments.index');
     Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
+    Route::post('/send-bol/{id}', [ShipmentController::class, 'sendBOL'])->name('shipments.bol');
 
     Route::prefix('trucks')->group(function(){
         Route::get('truck/{id}', [TruckController::class, 'show'])->name('trucks.show');

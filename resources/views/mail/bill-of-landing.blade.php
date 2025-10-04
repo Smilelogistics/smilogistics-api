@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Uqoye is Ready!</title>
+    <title>Your Bill of Lading is Ready!</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +13,7 @@
 
         body {
             font-family: Arial, sans-serif;
-            /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -68,7 +68,7 @@
             transform: translateY(-2px);
         }
 
-        .order-details {
+        .shipment-details {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
@@ -76,24 +76,68 @@
             text-align: left;
         }
 
-        .order-details h3 {
+        .shipment-details h3 {
             color: #333;
             margin-bottom: 10px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .detail-value {
+            color: #6c757d;
         }
     </style>
 </head>
 <body>
     <div class="notification-card">
-        <div class="icon">✓</div>
-        <h1>Your Quote is Ready!</h1>
-        <p>Hello {{$shipment->customer->user->fname ?? ''}} Kindly find the attached booking comfirmation details for your reference. Note we await your response to accept or reject this booking to proceed with creating your shipment</p>
-
-        <p>Please visit us during our business hours to collect your order.</p>
+        <div class="icon">📦</div>
+        <h1>Your Bill of Lading is Ready!</h1>
         
-        <a href="{{env('FRONTEND_URL') . '/view_loads_single.html?id=' . base64_encode($this->shipment->id)}}" class="cta-button">View shipment</a>
+        <p>Hello {{ $shipment->customer->user->fname ?? 'Customer' }},</p>
+        
+        <p>Kindly find the attached Bill of Lading document for your shipment. This document contains all the necessary details for your ocean freight shipment.</p>
+
+        <div class="shipment-details">
+            <h3>Shipment Details</h3>
+            <div class="detail-row">
+                <span class="detail-label">Tracking Number:</span>
+                <span class="detail-value">{{ $shipment->shipment_tracking_number ?? 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Vessel:</span>
+                <span class="detail-value">{{ $shipment->vessel_aircraft_name ?? 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Voyage Number:</span>
+                <span class="detail-value">{{ $shipment->voyage_number ?? 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Port of Loading:</span>
+                <span class="detail-value">{{ $shipment->port_of_loading ?? 'N/A' }}</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Port of Discharge:</span>
+                <span class="detail-value">{{ $shipment->port_of_discharge ?? 'N/A' }}</span>
+            </div>
+        </div>
+
+        <p><strong>Please review the attached PDF document for complete shipment details.</strong></p>
+        
+        <a href="{{ env('FRONTEND_URL') . '/view_loads_single.html?id=' . base64_encode($shipment->id) }}" class="cta-button">View Shipment Details</a>
         
         <p style="margin-top: 20px; font-size: 14px; color: #888;">
-            Need help? Contact us at {{optional($branch->user)->email ?? '' }} {{ optional($branch->user)->email ?? '' }}
+            Need help? Contact us at {{ $branch->user->email ?? 'support@smileslogistics.com' }} or call {{ $branch->phone ?? 'N/A' }}
         </p>
     </div>
 </body>

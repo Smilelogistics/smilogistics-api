@@ -109,6 +109,53 @@ class ShipmentController extends Controller
     return response()->json($shipment);
 }
 
+public function sendBOL($id)
+{
+    $shipment = Shipment::with([
+        'shipmentCharges',
+        'shipmentNotes',
+        'shipmentExpenses',
+        'shipmentUploads',
+        'billTo',
+        'shipmentContainers',
+        'branch.user',
+        'pickups',
+        'driver.user',
+        'customer.user',
+        'dropoffs',
+        'invoice.customer.user'
+    ])->findOrFail($id);
+
+    // If branch has a logo, create a signed URL
+    if ($shipment->branch && $shipment->branch->invoice_logo) {
+        $path = str_replace(
+            "https://s3.eu-central-2.wasabisys.com/smileslogistics/",
+            "",
+            $shipment->branch->invoice_logo
+        );
+
+        $shipment->branch->invoice_logo_url = Storage::disk('wasabi')
+            ->temporaryUrl($path, now()->addMinutes(30));
+    }
+
+    if($shipment->shipment_type === 'Ocean') {
+        if($shipment->customer && $shipment->customer->user) {
+            try {
+                Mail::to($shipment->customer->user->email)
+                    ->send(new BillOfLandingMail($shipment, $shipment->branch));
+                
+                return response()->json(['message' => 'BOL sent successfully']);
+            } catch (\Exception $e) {
+                \Log::error('Failed to send BOL email: ' . $e->getMessage());
+                return response()->json(['message' => 'Failed to send BOL: ' . $e->getMessage()], 500);
+            }
+        } else {
+            return response()->json(['message' => 'Customer not found or customer email missing'], 404);
+        }
+    } else {
+        return response()->json(['message' => 'Shipment is not an ocean shipment'], 400);
+    }
+}
 
     // public function show($id)
     // {
@@ -1091,10 +1138,10 @@ class ShipmentController extends Controller
                     Mail::to($branchEmail)->send(new CustomerShipmentReviewedMail($shipment, $branch));
                 }
 
-                if($validatedData['shipment_type'] === 'ocean')
-                {
-                    Mail::to($customerEmail)->send(new BillOfLandingMail($shipment, $branch));
-                }
+                // if($validatedData['shipment_type'] === 'ocean')
+                // {
+                //     Mail::to($customerEmail)->send(new BillOfLandingMail($shipment, $branch));
+                // }
 
     
          
