@@ -18,6 +18,7 @@ use App\Models\InvoiceCharge;
 use App\Models\ShipmentTrack;
 use App\Models\ShipmentCharge;
 use App\Mail\AssigneDriverMail;
+use App\Mail\BillOfLandingMail;
 use App\Models\ShipmentExpense;
 use App\Models\ShipmentUploads;
 use App\Traits\FileUploadTrait;
@@ -322,6 +323,11 @@ class ShipmentController extends Controller
             'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'] ?? null,
             'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'] ?? null,
             'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
+            'origin_ramp_rail' => $validatedData['origin_ramp_rail'] ?? null,
+            'equipment_qty' => $validatedData['equipment_qty'] ?? null,
+            'equipment_type' => $validatedData['equipment_type'] ?? null,
+            'cargo_origin' => $validatedData['cargo_origin'] ?? null,
+            'booking_type' => $validatedData['booking_type'] ?? null,
             'signature' => null,
             'delivery_type' => $validatedData['delivery_type'] ?? null,
             'shipping_cost' => $shipping_cost ?? 0.00,
@@ -805,6 +811,12 @@ class ShipmentController extends Controller
             'no_original_bill_of_landing' => 'nullable|integer',
             'original_bill_of_landing_payable_at' => 'nullable|string',
             'shipped_on_board_date' => 'nullable|date',
+             'origin_ramp_rail' => 'nullable|string',
+            'equipment_qty' => 'nullable|integer',
+            'equipment_type' => 'nullable|string',
+            'cargo_origin' => 'nullable|string',
+            'booking_type' => 'nullable|string',
+            
             'signature' => 'nullable|file|mimes:jpg,jpeg,png,svg|max:2048',
             
             'ocean_shippment_type' => 'nullable|string',
@@ -1023,6 +1035,11 @@ class ShipmentController extends Controller
                     'no_original_bill_of_landing' => $validatedData['no_original_bill_of_landing'] ?? null,
                     'original_bill_of_landing_payable_at' => $validatedData['original_bill_of_landing_payable_at'] ?? null,
                     'shipped_on_board_date' => $validatedData['shipped_on_board_date'] ?? null,
+                    'origin_ramp_rail' => $validatedData['origin_ramp_rail'] ?? null,
+                    'equipment_qty' => $validatedData['equipment_qty'] ?? null,
+                    'equipment_type' => $validatedData['equipment_type'] ?? null,
+                    'cargo_origin' => $validatedData['cargo_origin'] ?? null,
+                    'booking_type' => $validatedData['booking_type'] ?? null,
                     'signature' => null,
                     'delivery_type' => $validatedData['delivery_type'] ?? null,
                     'shipping_cost' => $shipping_cost ?? 0.00,
@@ -1072,6 +1089,11 @@ class ShipmentController extends Controller
                 else{
                     
                     Mail::to($branchEmail)->send(new CustomerShipmentReviewedMail($shipment, $branch));
+                }
+
+                if($validatedData['shipment_type'] === 'ocean')
+                {
+                    Mail::to($customerEmail)->send(new BillOfLandingMail($shipment, $branch));
                 }
 
     

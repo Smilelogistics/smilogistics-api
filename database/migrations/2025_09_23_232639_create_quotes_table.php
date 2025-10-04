@@ -47,6 +47,7 @@ return new class extends Migration
             $table->dropColumn('ocean_estimated_loading_date');
             $table->dropColumn('booking_date');
             $table->dropColumn('ocean_shipment_line');
+            $table->dropColumn('quote_accepted_status');
         });
     }
 };

@@ -41,10 +41,9 @@ class SettlementNotification extends Notification implements ShouldQueue
             ->subject('Settlement Processed')
             ->greeting('Hello ' . $notifiable->name . ',')
             ->line('A new settlement has been processed for you.')
-            ->line('**Settlement ID:** ' . $this->settlement->id)
             ->line('**Amount:** ' . ($this->branch->currency ?? '$' . number_format($this->settlement->payment_total, 2)))
             ->line('**Processed Date:** ' . $this->settlement->created_at->format('F j, Y, g:i a'))
-            ->line('**Processed By Branch:** ' . $this->branch->name)
+            ->line('**Processed By Branch:** ' . $this->branch->user->fname)
             ->action('View Settlement Details', url('/settlements/' . $this->settlement->id))
             ->line('Thank you for being a valued partner with ' . ($this->branch->name ?? 'Smiles Logistics') . '!');
     }
@@ -57,7 +56,7 @@ class SettlementNotification extends Notification implements ShouldQueue
         return [
             'settlement_id' => $this->settlement->id,
             'amount' => $this->settlement->payment_total,
-            'branch_name' => $this->branch->name,
+            'branch_name' => $this->branch->user->fname,
             'created_at' => $this->settlement->created_at,
             'link' => env('FRONTEND_URL') . '/view_settlement_single.html?id=' . base64_encode($this->settlement->id),
             //'url' => url('/settlements/' . $this->settlement->id),

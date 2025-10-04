@@ -81,6 +81,10 @@ class Shipment extends Model
     {
         return $this->hasOne(Quote::class, 'shipment_id');
     }
+    public function carrier()
+    {
+        return $this->belongsTo(Carrier::class, 'carrier_id');
+    }
       public function pickups()
     {
         return $this->hasMany(ShipmentLocation::class)->where('type', 'pickup')->orderBy('sequence');

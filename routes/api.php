@@ -221,6 +221,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
         Route::get('quote', [QuotesController::class, 'index'])->name('quote.index');
         Route::get('quote/{id}', [QuotesController::class, 'show'])->name('quote.show');
         Route::put('update/{id}', [QuotesController::class, 'update'])->name('quote.update');
+        Route::put('status/{id}', [QuotesController::class, 'customerDecideQuote'])->name('quote.status');
     })->middleware('role:businessadministrator');
 
     Route::prefix('customers')->group(function(){
