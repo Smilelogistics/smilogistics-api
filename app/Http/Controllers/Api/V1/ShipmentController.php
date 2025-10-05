@@ -97,9 +97,9 @@ public function index()
     ->where('branch_id', $branchId)
     ->where(function ($q) {
         // For "Ocean" shipments, only include those with quote_accepted_status = 2
-        $q->where('shipment_type', '!=', 'Ocean')
+        $q->where('shipment_type', '!=', 'ocean')
           ->orWhere(fn($sub) => 
-              $sub->where('shipment_type', 'Ocean')
+              $sub->where('shipment_type', 'ocean')
                   ->where('quote_accepted_status', 2)
           );
     });

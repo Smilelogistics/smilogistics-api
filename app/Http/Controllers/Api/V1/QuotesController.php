@@ -16,7 +16,10 @@ class QuotesController extends Controller
 {
     public function index()
     {
-        $quotes = Quote::with('shipment')->get();
+        $branchId = $user->getBranchId();
+        $quotes = Quote::with('shipment')
+        ->where('branch_id', $branchId)
+        ->get();
         return response()->json(['quotes' => $quotes], 200);
     }
 
