@@ -106,6 +106,8 @@ public function index()
 
     if ($user->hasRole('customer')) {
         $query->where('customer_id', $user->customer->id);
+    }elseif ($user->hasRole('driver')) {
+        $query->where('driver_id', $user->driver->id);
     }
 
     // Use select() to fetch only needed columns if relationships already cover others

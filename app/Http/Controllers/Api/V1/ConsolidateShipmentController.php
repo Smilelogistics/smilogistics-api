@@ -24,16 +24,40 @@ use App\Notifications\DriverAcceptConsolidationDeliveryNotification;
 
 class ConsolidateShipmentController extends Controller
 {
+    // public function index()
+    // {
+    //     $user = auth()->user();
+    //     $branchId = auth()->user()->getBranchId();
+    //     $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)
+    //     ->where('user_id', $user->id)
+    //     ->latest()
+    //     ->get();
+    //     return response()->json(['consolidateShipments' => $consolidateShipments], 200);
+    // }
+
     public function index()
     {
         $user = auth()->user();
-        $branchId = auth()->user()->getBranchId();
-        $consolidateShipments = ConsolidateShipment::where('branch_id', $branchId)
-        ->where('user_id', $user->id)
-        ->latest()
-        ->get();
+        $branchId = $user->getBranchId();
+
+        // Build base query
+        $query = ConsolidateShipment::where('branch_id', $branchId)
+            ->with(['branch', 'user', 'shipments']) // add relationships if any
+            ->latest();
+
+        if ($user->hasRole('customer')) {
+            $query->where('customer_id', $user->customer->id);
+        } elseif ($user->hasRole('driver')) {
+            $query->where('driver_id', $user->driver->id);
+        } else {
+            $query->where('user_id', $user->id);
+        }
+
+        $consolidateShipments = $query->get();
+
         return response()->json(['consolidateShipments' => $consolidateShipments], 200);
     }
+
     public function show($id)
     {
         $user = auth()->user();
