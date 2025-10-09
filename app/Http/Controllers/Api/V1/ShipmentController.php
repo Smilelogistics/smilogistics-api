@@ -211,9 +211,9 @@ public function sendBOL($id)
     
         $validator = Validator::make($request->all(), [
             //'branch_id' => 'required|exists:branches,id',
-            'driver_id' => 'nullable|exists:drivers,id',
+            //'driver_id' => 'nullable|exists:drivers,id',
            
-            'seal_number' => 'nullable|string|max:255',
+            'ocean_seal_number' => 'nullable|string|max:255',
            
               //container details
               'container.*' => 'nullable|string|max:255',
@@ -235,7 +235,7 @@ public function sendBOL($id)
         $validatedData = $validator->validated();
         $shipment->update([
             //'driver_id' => $validatedData['driver_id'],
-            'seal_number' => $validatedData['seal_number'],
+            'seal_number' => $validatedData['ocean_seal_number'],
         ]);
 
         if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
