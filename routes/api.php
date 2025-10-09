@@ -279,6 +279,7 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
             // Route::get('/shipments/show/{id}', [ShipmentController::class, 'show'])->name('shipments.show');
             Route::post('/shipments/create', [ShipmentController::class, 'store'])->name('shipments.store');
             Route::put('/updateShipmentStatus/{id}', [ShipmentController::class, 'updateShipment'])->name('shipments.update');
+            Route::put('/shipment/driver-shipment-update/{id}', [ShipmentController::class, 'driverShipmentUpdate'] );
             Route::get('/shipments/track/{id}', [ShipmentController::class, 'trackShipment'])->name('shipments.track');
             Route::get('/shipments/delivery', [ShipmentController::class, 'getShipmentdDelivery'])->name('shipments.delivery');
             Route::put('/shipments/acceptDelivery/{id}', [ShipmentController::class, 'acceptShipmentDelivery'])->name('shipments.acceptDelivery');

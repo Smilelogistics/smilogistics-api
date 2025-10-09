@@ -202,6 +202,47 @@ public function sendBOL($id)
     //     return response()->json($shipment);
     // }
 
+    public function driverShipmentUpdate(Request $request, $id) {
+       $user = auth()->user();
+        $branchId = auth()->user()->getBranchId();
+        $branch = Branch::where('id', $branchId)->first();
+        $branchEmail = $branch->user->email;
+        $shipment = Shipment::findOrFail($id);
+    
+        $validator = Validator::make($request->all(), [
+            //'branch_id' => 'required|exists:branches,id',
+            'driver_id' => 'nullable|exists:drivers,id',
+           
+            'seal_number' => 'nullable|string|max:255',
+           
+              //container details
+              'container.*' => 'nullable|string|max:255',
+              'container_size.*' => 'nullable|string|max:255',
+              'container_type.*' => 'nullable|string|max:255',
+              'container_number.*' => 'nullable|string|max:255',
+              'chasis.*' => 'nullable|string|max:255',
+              'chasis_size.*' => 'nullable|string|max:255',
+              'chasis_type.*' => 'nullable|string|max:255',
+              'chasis_vendor.*' => 'nullable|string|max:255',
+              'isLoaded.*' => 'nullable|string|max:255',
+
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+    
+        $validatedData = $validator->validated();
+        $shipment->update([
+            //'driver_id' => $validatedData['driver_id'],
+            'seal_number' => $validatedData['seal_number'],
+        ]);
+
+        if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
+            $this->processContainers($shipment, $validatedData, $branchId);
+        }
+    }
+
 
     
     public function store(StoreShipmentRequest $request)
