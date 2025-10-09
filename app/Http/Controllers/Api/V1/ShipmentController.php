@@ -233,14 +233,25 @@ public function sendBOL($id)
         }
     
         $validatedData = $validator->validated();
-        $shipment->update([
-            //'driver_id' => $validatedData['driver_id'],
-            'seal_number' => $validatedData['ocean_seal_number'],
-        ]);
 
-        if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
-            $this->processContainers($shipment, $validatedData, $branchId);
+        DB::beginTransaction();
+        try {
+            
+            $shipment->update([
+                //'driver_id' => $validatedData['driver_id'],
+                'seal_number' => $validatedData['ocean_seal_number'],
+            ]);
+
+            if (!empty($validatedData['container_type']) && is_array($validatedData['container_type'])) {
+                $this->processContainers($shipment, $validatedData, $branchId);
+            }
+            DB::commit();
+            return response()->json(['message' => 'Shipment updated successfully', 'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentUploads'])], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to update shipment', 'error' => $e->getMessage()], 500);
         }
+        
     }
 
 
