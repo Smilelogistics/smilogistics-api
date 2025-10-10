@@ -305,6 +305,9 @@ Route::get('/config/maps', [UnivController::class, 'getMapsData']);
                 Route::get('get-flash-message-shipment/{id}', [DriverController::class, 'getFlashMessageShipment'])->name('customer.flash-message');
                 Route::get('get-flash-message-accounting/{id}', [DriverController::class, 'getFlashMessageAccounting'])->name('customer.flash-message-account');
                 Route::get('shipments', [DriverController::class, 'getMyshipment']);
+
+                Route::post('location/update', [DriverController::class, 'updateLocation']);
+                Route::get('location/{id}', [DriverController::class, 'getLocation']);
             });
 
               Route::prefix('trucks')->group(function () {

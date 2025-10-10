@@ -83,6 +83,54 @@ class DriverController extends Controller
         ]);
     }
 
+    public function updateLocation(Request $request)
+{
+    $validated = $request->validate([
+        'driver_id' => 'required|integer|exists:drivers,id',
+        'latitude' => 'required|numeric|between:-90,90',
+        'longitude' => 'required|numeric|between:-180,180',
+        'speed' => 'nullable|numeric',
+        'heading' => 'nullable|numeric|min:0|max:360',
+        'accuracy' => 'nullable|numeric|min:0',
+        'status' => 'nullable|in:idle,on_delivery,offline',
+    ]);
+
+    $driver = Driver::find($validated['driver_id']);
+
+    $driver->update([
+        'latitude' => $validated['latitude'],
+        'longitude' => $validated['longitude'],
+        'speed' => $validated['speed'] ?? null,
+        'heading' => $validated['heading'] ?? null,
+        'accuracy' => $validated['accuracy'] ?? null,
+        'status' => $validated['status'] ?? 'on_delivery',
+        'last_updated' => now(),
+    ]);
+
+    // (Optional) Trigger event for real-time tracking (via Pusher/WebSockets)
+    // event(new \App\Events\DriverLocationUpdated($driver));
+
+    return response()->json(['message' => 'Location updated successfully']);
+}
+
+public function getLocation($id)
+{
+    $driver = Shipment::with('driver')->findOrFail($id);
+    // $driver = Driver::select(
+    //     'id',
+    //     'latitude',
+    //     'longitude',
+    //     'speed',
+    //     'heading',
+    //     'accuracy',
+    //     'status',
+    //     'last_updated'
+    // )->findOrFail($id);
+
+    return response()->json([$driver]);
+}
+
+
     public function getTruckDrivers()
     {
         $user = auth()->user();
