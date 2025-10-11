@@ -115,20 +115,14 @@ class DriverController extends Controller
 
 public function getLocation($id)
 {
-    $driver = Shipment::with('driver')->findOrFail($id);
-    // $driver = Driver::select(
-    //     'id',
-    //     'latitude',
-    //     'longitude',
-    //     'speed',
-    //     'heading',
-    //     'accuracy',
-    //     'status',
-    //     'last_updated'
-    // )->findOrFail($id);
-
-    return response()->json([$driver]);
+   try {
+        $shipment = Shipment::findOrFail($id);
+        return response()->json($shipment);
+    } catch (ModelNotFoundException $e) {
+        return response()->json(['error' => 'Driver not found'], 404);
+    }
 }
+
 
 
     public function getTruckDrivers()
