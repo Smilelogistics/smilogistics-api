@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use DB;
 use Log;
 use Exception;
 use App\Models\User;
@@ -13,7 +14,6 @@ use Illuminate\Http\Request;
 use App\Models\AppIntegration;
 use Illuminate\Support\Carbon;
 use App\Traits\FileUploadTrait;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -113,17 +113,36 @@ class DriverController extends Controller
     return response()->json(['message' => 'Location updated successfully']);
 }
 
-public function getLocation($id)
+public function getLocation($shipmentId)
 {
-   try {
-        $shipment = Shipment::findOrFail($id);
-        return response()->json($shipment);
-    } catch (ModelNotFoundException $e) {
-        return response()->json(['error' => 'Driver not found'], 404);
+    try {
+        $driverData = DB::table('drivers')
+            ->select(
+                'drivers.id',
+                'drivers.latitude', 
+                'drivers.longitude',
+                'drivers.speed',
+                'drivers.heading',
+                'drivers.accuracy', 
+                'drivers.status',
+                'drivers.last_updated'
+            )
+            ->join('shipments', 'shipments.driver_id', '=', 'drivers.id')
+            ->where('shipments.id', $shipmentId)
+            ->first();
+
+        if (!$driverData) {
+            return response()->json(['error' => 'Driver location not found'], 404);
+        }
+
+        return response()->json([
+            'driver' => $driverData
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Failed to fetch location', 'error_message' => $e->getMessage()], 500);
     }
 }
-
-
 
     public function getTruckDrivers()
     {
