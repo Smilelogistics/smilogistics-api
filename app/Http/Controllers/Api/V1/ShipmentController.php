@@ -87,6 +87,7 @@ public function index()
         'branch',
         'customer',
         'billTo',
+        'driver',
         'shipmentContainers',
         'shipmentCharges',
         'shipmentNotes',
