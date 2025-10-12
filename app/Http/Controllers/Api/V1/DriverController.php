@@ -87,6 +87,7 @@ class DriverController extends Controller
 {
     $user = auth()->user();
     $validated = $request->validate([
+        'driver_id' => 'required|integer|exists:drivers,id',
         'latitude' => 'required|numeric|between:-90,90',
         'longitude' => 'required|numeric|between:-180,180',
         'speed' => 'nullable|numeric',
