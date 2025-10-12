@@ -85,8 +85,8 @@ class DriverController extends Controller
 
     public function updateLocation(Request $request)
 {
+    $user = auth()->user();
     $validated = $request->validate([
-        'driver_id' => 'required|integer|exists:drivers,id',
         'latitude' => 'required|numeric|between:-90,90',
         'longitude' => 'required|numeric|between:-180,180',
         'speed' => 'nullable|numeric',
@@ -95,7 +95,7 @@ class DriverController extends Controller
         'status' => 'nullable|in:idle,on_delivery,offline',
     ]);
 
-    $driver = Driver::find($validated['driver_id']);
+    $driver = Driver::find($user->driver->id);
 
     $driver->update([
         'latitude' => $validated['latitude'],
