@@ -112,33 +112,35 @@ class DriverController extends Controller
 
     return response()->json(['message' => 'Location updated successfully']);
 }
-
+ 
 public function getLocation($shipmentId)
 {
     try {
-        $driver = Driver::select(
-            'drivers.id', 'drivers.latitude', 'drivers.longitude', 
-            'drivers.speed', 'drivers.heading', 'drivers.accuracy', 
-            'drivers.status', 'drivers.last_updated'
-        )
-        ->join('shipments', 'shipments.driver_id', '=', 'drivers.id')
-        ->where('shipments.id', $shipmentId)
-        ->first();
+        $driverData = DB::table('drivers')
+            ->select(
+                'drivers.id',
+                'drivers.latitude', 
+                'drivers.longitude',
+                'drivers.speed',
+                'drivers.heading',
+                'drivers.accuracy', 
+                'drivers.status',
+                'drivers.last_updated'
+            )
+            ->join('shipments', 'shipments.driver_id', '=', 'drivers.id')
+            ->where('shipments.id', $shipmentId)
+            ->first();
 
-        if (!$driver) {
-            return response()->json(['error' => 'Driver not found'], 404)
-                ->header('Access-Control-Allow-Origin', '*')
-                ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        if (!$driverData) {
+            return response()->json(['error' => 'Driver location not found'], 404);
         }
 
-        return response()->json(['driver' => $driver])
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        return response()->json([
+            'driver' => $driverData
+        ]);
 
     } catch (\Exception $e) {
-        return response()->json(['error' => 'Server error'], 500)
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        return response()->json(['error' => 'Failed to fetch location', 'error_message' => $e->getMessage()], 500);
     }
 }
 
