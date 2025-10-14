@@ -105,9 +105,10 @@ public function index()
           );
     });
 
-    if ($user->hasRole('customer')) {
+    if ($user->user_type == 'customer') {
         $query->where('customer_id', $user->customer->id);
-    }elseif ($user->hasRole('driver')) {
+    }elseif ($user->user_type == 'driver') {
+        //dd($user);
         $query->where('driver_id', $user->driver->id);
     }
 
