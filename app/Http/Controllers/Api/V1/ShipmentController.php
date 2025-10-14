@@ -1673,7 +1673,7 @@ protected function processUploads($shipment, $uploads)
         $validator = Validator::make($request->all(), [
             'shipment_status' => 'required|string|max:255',
             'shipment_tracking_number' => 'required|string|max:255',
-            'driver' => 'nullable|integer|exists:drivers,id'
+            //'driver' => 'nullable|integer|exists:drivers,id'
         ]);
 
         if ($validator->fails()) {    
@@ -1689,14 +1689,14 @@ protected function processUploads($shipment, $uploads)
         $shipment->update([
             'shipment_status' => $request->shipment_status,
             'shipment_tracking_number' => $request->shipment_tracking_number,
-            'driver_id' => $request->driver
+            //'driver_id' => $request->driver
         ]);
 
         ShipmentTrack::create([
             'shipment_id' => $shipment->id,
             'status' => $request->shipment_status,
             'tracking_number' => $request->shipment_tracking_number,
-            'driver_id' => $request->driver
+            //'driver_id' => $request->driver
         ]);
 
           if ($first_notify_party_email) {
@@ -1709,13 +1709,13 @@ protected function processUploads($shipment, $uploads)
             }
 
         // Simplified driver notification logic
-        if ($request->filled('driver')) {
-            $driver = Driver::with('user')->find($request->driver);
-            if ($driver && $driver->user && $driver->user->email) {
-                $driver->notify(new AssigneDriver($shipment, $driver));
-                Mail::to($driver->user->email)->send(new AssigneDriverMail($shipment, $driver));
-            }
-        }
+        // if ($request->filled('driver')) {
+        //     $driver = Driver::with('user')->find($request->driver);
+        //     if ($driver && $driver->user && $driver->user->email) {
+        //         $driver->notify(new AssigneDriver($shipment, $driver));
+        //         Mail::to($driver->user->email)->send(new AssigneDriverMail($shipment, $driver));
+        //     }
+        // }
 
         return response()->json([
             'message' => 'Shipment updated successfully',
