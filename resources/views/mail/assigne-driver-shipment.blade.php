@@ -21,11 +21,10 @@
           </tr>
           <tr>
             <td style="text-align: center;">
-              <h4 style="margin: 0px;padding-bottom: 25px; text-transform: uppercase; font-size:22px;">Branch Successfully Created</h4>
-              <!-- <h2 style="margin: 0px;padding-bottom: 25px;font-size:22px;"> Please renew your subscription</h2> -->
-              <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">{{$user['name']}} has been successfully created, Kindly login with the details below and change your password <br>
-              Email: {{$user['email']}} <br>
-              Password: 12345678.
+              <h4 style="margin: 0px;padding-bottom: 25px; text-transform: uppercase; font-size:22px;">Shipment Assignment</h4>
+              <p style=" margin: 0px 40px;padding-bottom: 25px;line-height: 2; font-size: 15px;">Hello {{ $driver->user->name }},<br><br>
+              You have been assigned to shipment <strong>#{{ $shipment->id }}</strong>.<br><br>
+              Please log in to your dashboard to view more details.
               </p>
               <p style=" margin: 0px 32px;padding-bottom: 25px;line-height: 2; font-size: 15px;"> Warm Regards, <br>
               {{ config('app.name') }}
