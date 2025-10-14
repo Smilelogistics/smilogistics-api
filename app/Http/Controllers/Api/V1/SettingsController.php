@@ -541,7 +541,7 @@ public function updateGeneral(Request $request)
             'start_date' => 'sometimes|nullable|string|min:5',
             'credit_limit' => 'sometimes|nullable|string|min:1',
             'alert_percentage' => 'sometimes|nullable|string|min:1|max:100',
-            'yeyears_of_experiencear' => 'sometimes|nullable|string|min:1',
+            
         ]);
     
         DB::beginTransaction();
@@ -718,7 +718,7 @@ public function updateGeneral(Request $request)
             'flash_notes_to_dispatch' => 'sometimes|nullable|string|min:10',
             'flash_notes_to_payroll' => 'sometimes|nullable|string|min:10',
             'internal_notes' => 'sometimes|nullable|string|min:10',
-            'driver_status' => 'sometimes|nullable|string|min:10',
+            //'driver_status' => 'sometimes|nullable|string|min:10',
         ]);
     
         DB::beginTransaction();
