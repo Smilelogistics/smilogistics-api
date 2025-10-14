@@ -109,7 +109,8 @@ public function index()
         $query->where('customer_id', $user->customer->id);
     }elseif ($user->user_type == 'driver') {
         //dd($user);
-        $query->where('driver_id', $user->driver->id);
+        $query->where('driver_id', $user->driver->id)
+        ->where('dispatcher_accepted_status',  '2');
     }
     $shipments = $query->latest()->get();
 
@@ -1827,7 +1828,9 @@ protected function processUploads($shipment, $uploads)
         $driverId = $user->driver->id;
 
         $shipments = Shipment::with('driver.user')->where('driver_id', $driverId)
-        ->where('branch_id', $branchId)->latest()
+        ->where('branch_id', $branchId)
+        
+        ->latest()
         ->get();
 
         if(!$shipments)
