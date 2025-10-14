@@ -783,6 +783,14 @@ public function sendBOL($id)
                 
                  Mail::to($branchEmail)->send(new CustomerShipmentCreatedMail($shipment, $branch));
             }
+
+            if ($request->filled('driver_id')) {
+                $driver = Driver::with('user')->find($request->driver_id);
+                if ($driver && $driver->user && $driver->user->email) {
+                    $driver->notify(new AssigneDriver($shipment, $driver));
+                    Mail::to($driver->user->email)->send(new AssigneDriverMail($shipment, $driver));
+                }
+            }
             ShipmentTrack::create([
                 'shipment_id' => $shipment->id,
                 'user_id' => Auth::id(),
@@ -869,6 +877,7 @@ public function sendBOL($id)
         $branch = Branch::where('id', $branchId)->first();
         $branchEmail = $branch->user->email;
         $shipment = Shipment::findOrFail($id);
+        $originalDriverId = $shipment->driver_id ?? null;
     
         $validator = Validator::make($request->all(), [
             //'branch_id' => 'required|exists:branches,id',
@@ -1234,8 +1243,19 @@ public function sendBOL($id)
                 //     Mail::to($customerEmail)->send(new BillOfLandingMail($shipment, $branch));
                 // }
 
-    
-         
+             
+
+
+                // Only send email if driver_id was provided AND it's different from the original
+                if ($request->filled('driver_id') && $request->driver_id != $originalDriverId) {
+                    $driver = Driver::with('user')->find($request->driver);
+                    
+                    if ($driver && $driver->user && $driver->user->email) {
+                        $driver->notify(new AssigneDriver($shipment, $driver));
+                        Mail::to($driver->user->email)->send(new AssigneDriverMail($shipment, $driver));
+                    }
+                }
+
     
             DB::commit();
             return response()->json(['message' => 'Shipment updated successfully', 'shipment' => $shipment->load(['shipmentUploads', 'shipmentCharges', 'shipmentExpenses', 'shipmentUploads'])], 200);
