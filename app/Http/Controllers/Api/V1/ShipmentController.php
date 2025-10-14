@@ -110,7 +110,7 @@ public function index()
     }elseif ($user->user_type == 'driver') {
         //dd($user);
         $query->where('driver_id', $user->driver->id)
-        ->where('dispatcher_accepted_status',  '2');
+        ->where('dispatcher_accepted_status',  '0');
     }
     $shipments = $query->latest()->get();
 
