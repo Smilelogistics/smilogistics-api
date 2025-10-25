@@ -280,6 +280,7 @@ class AuthController extends Controller
     {
         $result = AuthService::attemptLogin($request->all());
 
+            dd($result);
         if ($result['status'] === 'error') {
             return response()->json($result, isset($result['errors']) ? 422 : 401);
         }
@@ -312,6 +313,7 @@ class AuthController extends Controller
                 'otp_expires_at' => now()->addMinutes(5),
                 'otp_last_sent_at' => now()
             ]);
+
 
             //Mail::to($user->email)->send(new OtpMail($otp, 5));
             $user->notify(new OtpNotification($otp, 5));

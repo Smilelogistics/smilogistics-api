@@ -16,9 +16,9 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-    //     $this->call(LaratrustSeeder::class);
-    //    $this->call(FeaturesSeeder::class);
-    //    $this->call(PlansSeeder::class);
+        $this->call(LaratrustSeeder::class);
+       $this->call(FeaturesSeeder::class);
+       $this->call(PlansSeeder::class);
        $user = User::factory()->create([
             'fname' => 'Dev',
             'email' => 'codedkolobanny@gmail.com',
