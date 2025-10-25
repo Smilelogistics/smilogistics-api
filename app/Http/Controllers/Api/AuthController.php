@@ -280,7 +280,7 @@ class AuthController extends Controller
     {
         $result = AuthService::attemptLogin($request->all());
 
-            dd($result);
+            //dd($result);
         if ($result['status'] === 'error') {
             return response()->json($result, isset($result['errors']) ? 422 : 401);
         }
