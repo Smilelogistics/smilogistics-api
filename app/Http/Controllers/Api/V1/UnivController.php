@@ -214,7 +214,7 @@ class UnivController extends Controller
                 'message' => 'Unlimited access granted successfully',
                 'user' => $user->email,
                 'plan' => $plan->name,
-                'subscription_end_date' => $endDate->format('Y-m-d H:i:s'),
+                'subscription_end_date' => optional($endDate)->format('Y-m-d H:i:s'),
                 'subscription' => $subscription,
                 'transaction' => $transaction
             ], 200);
