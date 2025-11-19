@@ -208,7 +208,7 @@ class UnivController extends Controller
                 'description' => 'Unlimited access granted for special user'
             ]);
 
-            //DB::commit();
+            DB::commit();
 
             return response()->json([
                 'message' => 'Unlimited access granted successfully',
