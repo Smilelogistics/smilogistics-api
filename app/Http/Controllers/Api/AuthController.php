@@ -145,7 +145,7 @@ class AuthController extends Controller
                      'branch_id' => $branchId
                  ]);
                  $branch = auth()->user()->branch;
-                 dd($branch);
+                 //dd($branch);
                  Mail::to($user->email)->send(new newDriverMail($user, $branch));
              }elseif($user->user_type == 'superadministrator'){
                  SuperAdmin::create([
