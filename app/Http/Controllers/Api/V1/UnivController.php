@@ -179,6 +179,7 @@ class UnivController extends Controller
 
             // Create new unlimited subscription
             $subscription = $branch->subscriptions()->create([
+                'user_id' => $user->id,
                 'plan_id' => $plan->id,
                 'starts_at' => $startDate,
                 'ends_at' => $endDate,
