@@ -168,8 +168,8 @@ class UnivController extends Controller
 
             // Set start and end dates (100 years from now)
             $startDate = now();
-            //$endDate = now()->addYears(5);
-            $endDate = null;
+            $endDate = now()->addYears(5);
+            //$endDate = null;
 
             // Cancel any existing active subscriptions
             $branch->subscriptions()->where('status', 'active')->update([
