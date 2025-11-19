@@ -2,17 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\NewAccessToken;
 use Laravel\Jetstream\HasProfilePhoto;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Auth\Events\PasswordReset;
 use Laratrust\Traits\HasRolesAndPermissions;
 use Laravel\Fortify\TwoFactorAuthenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Notifications\PasswordResetNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Auth\Events\PasswordReset;
-
+use Illuminate\Support\Str;
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens;
@@ -72,10 +73,27 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'abilities' => 'string',
+            //'abilities' => 'string',
     
         ];
     }
+
+
+
+// Add this inside the User class
+public function createToken(string $name, array $abilities = null)
+{
+    $plainTextToken = Str::random(40);
+
+    $token = $this->tokens()->create([
+        'name' => $name,
+        'token' => hash('sha256', $plainTextToken),
+        'abilities' => null, 
+    ]);
+
+    return new NewAccessToken($token, $plainTextToken);
+}
+
 
     public function sendPasswordResetNotification($token)
     {
