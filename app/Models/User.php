@@ -73,25 +73,25 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'abilities' => 'string',
+            //'abilities' => 'string',
     
         ];
     }
 
 
 // Add this inside the User class
-public function createToken(string $name)
-{
-    $plainTextToken = Str::random(40);
+// public function createToken(string $name)
+// {
+//     $plainTextToken = Str::random(40);
 
-    $token = $this->tokens()->create([
-        'name' => $name,
-        'token' => hash('sha256', $plainTextToken),
-        'abilities' => null, 
-    ]);
+//     $token = $this->tokens()->create([
+//         'name' => $name,
+//         'token' => hash('sha256', $plainTextToken),
+//         'abilities' => null, 
+//     ]);
 
-    return new NewAccessToken($token, $plainTextToken);
-}
+//     return new NewAccessToken($token, $plainTextToken);
+// }
 
 
 
