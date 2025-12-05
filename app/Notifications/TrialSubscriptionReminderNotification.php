@@ -39,9 +39,9 @@ class TrialSubscriptionReminderNotification extends Notification Implements Shou
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->greeting("Hi {$this->branch->user->name},")
+            ->greeting("Hi {$this->branch->user->fname},")
             ->subject('Trial Subscription Reminder')
-            ->action('Check our plans', url('/pricing'))
+            ->action('Check our plans', env('FRONTEND_URL') . '/pricing' ) //url('/pricing'))
             ->line("Your trial ends in {$this->daysLeft} day(s). Please consider upgrading.");
     }
 

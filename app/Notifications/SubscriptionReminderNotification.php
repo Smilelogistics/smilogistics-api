@@ -39,12 +39,12 @@ class SubscriptionReminderNotification extends Notification implements ShouldQue
         if ($this->daysLeft == 0) {
             return (new MailMessage)
                 ->subject('Subscription Expired')
-                ->line("Hi {$this->branch->user->name}, your subscription has expired today.")
+                ->line("Hi {$this->branch->user->fname}, your subscription has expired today.")
                 ->line('Please renew your subscription to continue using our service.');
         } else {
             return (new MailMessage)
                 ->subject('Subscription Reminder')
-                ->line("Hi {$this->branch->user->name}, your subscription will expire in {$this->daysLeft} day(s).")
+                ->line("Hi {$this->branch->user->fname}, your subscription will expire in {$this->daysLeft} day(s).")
                 ->line('Please consider renewing it soon.');
         }
     }
