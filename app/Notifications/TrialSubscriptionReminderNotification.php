@@ -41,7 +41,7 @@ class TrialSubscriptionReminderNotification extends Notification Implements Shou
         return (new MailMessage)
             ->greeting("Hi {$this->branch->user->fname},")
             ->subject('Trial Subscription Reminder')
-            ->action('Check our plans', env('FRONTEND_URL') . '/pricing' ) //url('/pricing'))
+            ->action('Check our plans', env('FRONTEND_URL') . 'pricing.html' ) //url('/pricing'))
             ->line("Your trial ends in {$this->daysLeft} day(s). Please consider upgrading.");
     }
 
