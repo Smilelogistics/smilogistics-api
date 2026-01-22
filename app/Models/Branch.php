@@ -165,10 +165,22 @@ class Branch extends Model
     {
         return $this->subscriptions()
             ->where('status', 'active')
-            ->where('ends_at', '>', now())
+            ->where(function($query) {
+                $query->whereNull('ends_at')
+                    ->orWhere('ends_at', '>', now());
+            })
             ->latest()
             ->first();
     }
+
+    // public function activeSubscription()
+    // {
+    //     return $this->subscriptions()
+    //         ->where('status', 'active')
+    //         ->where('ends_at', '>', now())
+    //         ->latest()
+    //         ->first();
+    // }
 
     public function hasFeatureAccess(string $featureSlug): bool
     {
